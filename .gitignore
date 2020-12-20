@@ -1,0 +1,6 @@
+data.db
+bot_settings.json
+.idea
+slash.log
+register.py
+__pycache__
