@@ -14,6 +14,7 @@ from modules import sqlite_db
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 slash = discord_slash.SlashCommand(bot, override_type=True)
 db = sqlite_db.SQLiteDB("data")
+guild_ids = [789032594456576001]
 
 logger = logging.getLogger('discord')
 logging.basicConfig(level=logging.INFO)  # DEBUG/INFO/WARNING/ERROR/CRITICAL
@@ -36,10 +37,10 @@ async def init_tags():
             resp = await db.res_sql("""SELECT value FROM tags WHERE cmd_id=?""", (cmd_id,))
             content = resp[0]["value"]
             await ctx.send(content=content)
-        slash.add_slash_command(template, x["name"], guild_ids=[789032594456576001])
+        slash.add_slash_command(template, x["name"], guild_ids=guild_ids)
 
 
-@slash.subcommand(base="tag", name="add")
+@slash.subcommand(base="tag", name="add", guild_ids=guild_ids)
 async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
     is_exist = await db.res_sql("""SELECT * FROM tags WHERE name=?""", (name,))
     if is_exist or name in slash.commands.keys():
@@ -65,10 +66,12 @@ async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
     await ctx.send(content=f"Successfully added tag `{name}`!", complete_hidden=True)
 
 
-@slash.subcommand(base="tag", name="remove")
+@slash.subcommand(base="tag", name="remove", guild_ids=guild_ids)
 async def _tag_remove(ctx: discord_slash.SlashContext, name: str):
     resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=? AND user=?""",
                             (name, ctx.author.id if not isinstance(ctx.author, int) else ctx.author))
+    if (ctx.author.id if not isinstance(ctx.author, int) else ctx.author) == 288302173912170497:
+        resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
     if not resp:
         return await ctx.send(content="Tag not found. Check tag name.", complete_hidden=True)
     await manage_commands.remove_slash_command(bot.user.id,
@@ -80,7 +83,7 @@ async def _tag_remove(ctx: discord_slash.SlashContext, name: str):
     await ctx.send(content=f"Successfully removed tag `{name}`!", complete_hidden=True)
 
 
-@slash.slash(name="subscribe")
+@slash.slash(name="subscribe", guild_ids=guild_ids)
 async def _subscribe(ctx: discord_slash.SlashContext):
     user: discord.Member = ctx.author if not isinstance(ctx.author, int) else await ctx.guild.fetch_member(ctx.author)
     if [x for x in user.roles if x.id == 789773555792740353]:
@@ -89,7 +92,7 @@ async def _subscribe(ctx: discord_slash.SlashContext):
     await ctx.send(content="Successfully subscribed to new release!", complete_hidden=True)
 
 
-@slash.slash(name="unsubscribe")
+@slash.slash(name="unsubscribe", guild_ids=guild_ids)
 async def _unsubscribe(ctx: discord_slash.SlashContext):
     user: discord.Member = ctx.author if not isinstance(ctx.author, int) else await ctx.guild.fetch_member(ctx.author)
     if not [x for x in user.roles if x.id == 789773555792740353]:
