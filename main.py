@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord_slash.utils import manage_commands
 from modules import sqlite_db
 
-bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
+bot = commands.Bot(command_prefix="/", intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False))
 slash = discord_slash.SlashCommand(bot, override_type=True)
 db = sqlite_db.SQLiteDB("data")
 guild_ids = [789032594456576001]
