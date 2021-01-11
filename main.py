@@ -29,18 +29,71 @@ def get_settings(key: str):
     return _json.get(key)
 
 
+tag_opt = manage_commands.create_option("reply_to",
+                                        "Message ID to reply.",
+                                        3,
+                                        False)
+
+
+async def template(ctx, msg_id=None):
+    await ctx.send(5)
+    resp = await db.res_sql("""SELECT value FROM tags WHERE cmd_id=?""", (ctx.command_id,))
+    content = resp[0]["value"]
+    if msg_id:
+        try:
+            msg: discord.Message = await ctx.channel.fetch_message(int(msg_id))
+            return await msg.reply(content)
+        except (discord.Forbidden, discord.HTTPException, discord.NotFound, TypeError, ValueError):
+            await ctx.send(content="Couldn't find message to reply. Normally sending tag.", hidden=True)
+    await ctx.send(content=content)
+
+
 async def init_tags():
+    await bot.wait_until_ready()
     tags = await db.res_sql("""SELECT * FROM tags""")
     for x in tags:
-        async def template(ctx):
-            cmd_id = ctx.command_id
-            resp = await db.res_sql("""SELECT value FROM tags WHERE cmd_id=?""", (cmd_id,))
-            content = resp[0]["value"]
-            await ctx.send(content=content)
-        slash.add_slash_command(template, x["name"], guild_ids=guild_ids)
+        owner = bot.get_user(int(x["user"]))
+        owner = str(owner) if owner else "unknown user"
+        slash.add_slash_command(template, x["name"], guild_ids=guild_ids, options=[tag_opt], description=f"Custom tag by {owner}.")
+    '''
+    await slash.register_all_commands()
+    cmds = await manage_commands.get_all_commands(bot.user.id, bot.http.token, 789032594456576001)
+    for x in cmds:
+        cmd_id = x["id"]
+        cmd_name = x["name"]
+        if cmd_name in ["tag", "subscribe", "unsubscribe"]:
+            continue
+        await db.exec_sql("""UPDATE tags SET cmd_id=? WHERE name=?""", (cmd_id, cmd_name))
+    '''
 
 
-@slash.subcommand(base="tag", name="add", guild_ids=guild_ids)
+add_opt = [
+            {
+                "name": "name",
+                "description": "Name of the tag.",
+                "type": 3,
+                "required": True
+            },
+            {
+                "name": "response",
+                "description": "Response of the tag.",
+                "type": 3,
+                "required": True
+            }
+        ]
+
+rm_opt = [
+            {
+                "name": "name",
+                "description": "Name of the tag.",
+                "type": 3,
+                "required": True
+            }
+        ]
+
+
+@slash.subcommand(base="tag", name="add", guild_ids=guild_ids,
+                  description="Adds a new tag.", options=add_opt)
 async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
     is_exist = await db.res_sql("""SELECT * FROM tags WHERE name=?""", (name,))
     if is_exist or name in slash.commands.keys():
@@ -51,22 +104,18 @@ async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
                                                    bot.http.token,
                                                    ctx.guild.id if not isinstance(ctx.guild, int) else ctx.guild,
                                                    name,
-                                                   f"Custom tag by {ctx.author}.")
+                                                   f"Custom tag by {ctx.author}.",
+                                                   options=[tag_opt])
     cmd_id = resp["id"]
     await db.exec_sql("""INSERT INTO tags VALUES (?, ?, ?, ?)""",
                       (name, response, ctx.author.id if not isinstance(ctx.author, int) else ctx.author, cmd_id))
 
-    async def template(_ctx):
-        _cmd_id = _ctx.command_id
-        _resp = await db.res_sql("""SELECT value FROM tags WHERE cmd_id=?""", (_cmd_id,))
-        content = _resp[0]["value"]
-        await _ctx.send(content=content)
-
-    slash.add_slash_command(template, name, guild_ids=[ctx.guild.id if not isinstance(ctx.guild, int) else ctx.guild])
+    slash.add_slash_command(template, name, guild_ids=[ctx.guild.id if not isinstance(ctx.guild, int) else ctx.guild], options=[tag_opt])
     await ctx.send(content=f"Successfully added tag `{name}`!", complete_hidden=True)
 
 
-@slash.subcommand(base="tag", name="remove", guild_ids=guild_ids)
+@slash.subcommand(base="tag", name="remove", guild_ids=guild_ids,
+                  description="Removes existing tag.", options=rm_opt)
 async def _tag_remove(ctx: discord_slash.SlashContext, name: str):
     resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=? AND user=?""",
                             (name, ctx.author.id if not isinstance(ctx.author, int) else ctx.author))
@@ -83,7 +132,7 @@ async def _tag_remove(ctx: discord_slash.SlashContext, name: str):
     await ctx.send(content=f"Successfully removed tag `{name}`!", complete_hidden=True)
 
 
-@slash.slash(name="subscribe", guild_ids=guild_ids)
+@slash.slash(name="subscribe", guild_ids=guild_ids, description="Subscribes to new release.")
 async def _subscribe(ctx: discord_slash.SlashContext):
     user: discord.Member = ctx.author if not isinstance(ctx.author, int) else await ctx.guild.fetch_member(ctx.author)
     if [x for x in user.roles if x.id == 789773555792740353]:
@@ -92,7 +141,7 @@ async def _subscribe(ctx: discord_slash.SlashContext):
     await ctx.send(content="Successfully subscribed to new release!", complete_hidden=True)
 
 
-@slash.slash(name="unsubscribe", guild_ids=guild_ids)
+@slash.slash(name="unsubscribe", guild_ids=guild_ids, description="Unsubscribes to new release.")
 async def _unsubscribe(ctx: discord_slash.SlashContext):
     user: discord.Member = ctx.author if not isinstance(ctx.author, int) else await ctx.guild.fetch_member(ctx.author)
     if not [x for x in user.roles if x.id == 789773555792740353]:
