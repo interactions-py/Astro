@@ -10,6 +10,8 @@ import discord_slash
 from discord.ext import commands
 from discord_slash.utils import manage_commands
 from modules import sqlite_db
+from modules import sphinx_parser
+from modules import page
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False))
 slash = discord_slash.SlashCommand(bot, override_type=True)
@@ -54,7 +56,7 @@ async def init_tags():
     for x in tags:
         owner = bot.get_user(int(x["user"]))
         owner = str(owner) if owner else "unknown user"
-        slash.add_slash_command(template, x["name"], guild_ids=guild_ids, options=[tag_opt], description=f"Custom tag by {owner}.")
+        #slash.add_slash_command(template, x["name"], guild_ids=guild_ids, options=[tag_opt], description=f"Custom tag by {owner}.")
     '''
     await slash.register_all_commands()
     cmds = await manage_commands.get_all_commands(bot.user.id, bot.http.token, 789032594456576001)
@@ -148,6 +150,37 @@ async def _unsubscribe(ctx: discord_slash.SlashContext):
         return await ctx.send(content="You are already unsubscribed!", complete_hidden=True)
     await user.remove_roles(ctx.guild.get_role(789773555792740353))
     await ctx.send(content="Successfully unsubscribed to new release!", complete_hidden=True)
+
+
+@slash.slash(name="search", guild_ids=guild_ids, description="Searches given text to the document.",
+             options=[manage_commands.create_option("text", "Text to search.", 3, True)])
+async def _docs(ctx: discord_slash.SlashContext, text: str):
+    await ctx.send(5)
+    base_url = "https://discord-py-slash-command.readthedocs.io/en/latest/"
+    resp = await sphinx_parser.search_from_sphinx(base_url+"genindex.html", text)
+    if not resp:
+        return await ctx.send(content="No result found.")
+    base_embed = discord.Embed(title="Document Search", color=discord.Color.from_rgb(225, 225, 225))
+    base_embed.set_footer(text=ctx.author, icon_url=ctx.author.avatar_url)
+    count = 1
+    embed_list = []
+    page_embed = base_embed.copy()
+    for_res = resp.copy()
+    for x in for_res:
+        if count != 1 and count % 5 == 1:
+            embed_list.append(page_embed)
+            page_embed = base_embed.copy()
+        link = base_url + x
+        try:
+            page_embed.add_field(name=str(count), value=f"[`{x.split('#')[1]}`]({link})", inline=False)
+        except IndexError:
+            continue
+        resp.remove(x)
+        count += 1
+    embed_list.append(page_embed)
+    if not embed_list:
+        return await ctx.send(content="No result found.")
+    await page.start_page(bot, ctx, embed_list, embed=True)
 
 
 bot.loop.create_task(init_tags())
