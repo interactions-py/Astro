@@ -1,3 +1,3 @@
 discord.py
-discord-py-slash-command
+discord-py-slash-command >= 1.0.9
 aiosqlite

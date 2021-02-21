@@ -99,63 +99,63 @@ rm_opt = [
 async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
     is_exist = await db.res_sql("""SELECT * FROM tags WHERE name=?""", (name,))
     if is_exist or name in slash.commands.keys():
-        return await ctx.send(content="Uh oh. That name already exists.", complete_hidden=True)
+        return await ctx.send(content="Uh oh. That name already exists.", hidden=True)
     if len(name) < 3:
-        return await ctx.send(content="Name should be at least 3 characters or longer.", complete_hidden=True)
+        return await ctx.send(content="Name should be at least 3 characters or longer.", hidden=True)
     resp = await manage_commands.add_slash_command(bot.user.id,
                                                    bot.http.token,
-                                                   ctx.guild.id if not isinstance(ctx.guild, int) else ctx.guild,
+                                                   ctx.guild_id,
                                                    name,
                                                    f"Custom tag by {ctx.author}.",
                                                    options=[tag_opt])
     cmd_id = resp["id"]
     await db.exec_sql("""INSERT INTO tags VALUES (?, ?, ?, ?)""",
-                      (name, response, ctx.author.id if not isinstance(ctx.author, int) else ctx.author, cmd_id))
+                      (name, response, ctx.author_id, cmd_id))
 
-    slash.add_slash_command(template, name, guild_ids=[ctx.guild.id if not isinstance(ctx.guild, int) else ctx.guild], options=[tag_opt])
-    await ctx.send(content=f"Successfully added tag `{name}`!", complete_hidden=True)
+    slash.add_slash_command(template, name, guild_ids=[ctx.guild_id], options=[tag_opt])
+    await ctx.send(content=f"Successfully added tag `{name}`!", hidden=True)
 
 
 @slash.subcommand(base="tag", name="remove", guild_ids=guild_ids,
                   description="Removes existing tag.", options=rm_opt)
 async def _tag_remove(ctx: discord_slash.SlashContext, name: str):
     resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=? AND user=?""",
-                            (name, ctx.author.id if not isinstance(ctx.author, int) else ctx.author))
-    if (ctx.author.id if not isinstance(ctx.author, int) else ctx.author) == 288302173912170497:
+                            (name, ctx.author_id))
+    if ctx.author_id == 288302173912170497:
         resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
     if not resp:
-        return await ctx.send(content="Tag not found. Check tag name.", complete_hidden=True)
+        return await ctx.send(content="Tag not found. Check tag name.", hidden=True)
     await manage_commands.remove_slash_command(bot.user.id,
                                                bot.http.token,
-                                               ctx.guild.id if not isinstance(ctx.guild, int) else ctx.guild,
+                                               ctx.guild_id,
                                                resp[0]["cmd_id"])
     await db.exec_sql("""DELETE FROM tags WHERE cmd_id=?""", (resp[0]["cmd_id"],))
     del slash.commands[name]
-    await ctx.send(content=f"Successfully removed tag `{name}`!", complete_hidden=True)
+    await ctx.send(content=f"Successfully removed tag `{name}`!", hidden=True)
 
 
 @slash.slash(name="subscribe", guild_ids=guild_ids, description="Subscribes to new release.")
 async def _subscribe(ctx: discord_slash.SlashContext):
-    user: discord.Member = ctx.author if not isinstance(ctx.author, int) else await ctx.guild.fetch_member(ctx.author)
+    user = ctx.author
     if [x for x in user.roles if x.id == 789773555792740353]:
-        return await ctx.send(content="You are already subscribed!", complete_hidden=True)
+        return await ctx.send(content="You are already subscribed!", hidden=True)
     await user.add_roles(ctx.guild.get_role(789773555792740353))
-    await ctx.send(content="Successfully subscribed to new release!", complete_hidden=True)
+    await ctx.send(content="Successfully subscribed to new release!", hidden=True)
 
 
 @slash.slash(name="unsubscribe", guild_ids=guild_ids, description="Unsubscribes to new release.")
 async def _unsubscribe(ctx: discord_slash.SlashContext):
-    user: discord.Member = ctx.author if not isinstance(ctx.author, int) else await ctx.guild.fetch_member(ctx.author)
+    user = ctx.author
     if not [x for x in user.roles if x.id == 789773555792740353]:
-        return await ctx.send(content="You are already unsubscribed!", complete_hidden=True)
+        return await ctx.send(content="You are already unsubscribed!", hidden=True)
     await user.remove_roles(ctx.guild.get_role(789773555792740353))
-    await ctx.send(content="Successfully unsubscribed to new release!", complete_hidden=True)
+    await ctx.send(content="Successfully unsubscribed to new release!", hidden=True)
 
 
 @slash.slash(name="search", guild_ids=guild_ids, description="Searches given text to the document.",
              options=[manage_commands.create_option("text", "Text to search.", 3, True)])
 async def _docs(ctx: discord_slash.SlashContext, text: str):
-    await ctx.send(5)
+    await ctx.respond()
     base_url = "https://discord-py-slash-command.readthedocs.io/en/latest/"
     resp = await sphinx_parser.search_from_sphinx(base_url+"genindex.html", text)
     if not resp:
