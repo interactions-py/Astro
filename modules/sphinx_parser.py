@@ -24,6 +24,10 @@ async def search_from_sphinx(url, keyword, fuzzSort=True):
         data = [x.get("href") for x in soup.find_all("a") if len(x.get("href")) > 3]
 
         for val in data:
+            # remove any links to github or sphinx, we're after docs pages here
+            if re.search(r'\.org*?$', val) or val.startswith("https://github.com/"):
+                continue
+
             # get topic of each link, while still preserving the link itself
             val = (val, re.sub(r'\.html$', '', val)
                    .split(".")[-1]
@@ -35,7 +39,6 @@ async def search_from_sphinx(url, keyword, fuzzSort=True):
 
         # get top 5 values
         data = sorted(rData, key=rData.get, reverse=True)[:5]
-
 
     else:
         data = [x.get("href") for x in soup.findAll("a") if keyword in str(x).lower()]
