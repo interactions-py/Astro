@@ -18,6 +18,8 @@ slash = discord_slash.SlashCommand(bot, override_type=True)
 db = sqlite_db.SQLiteDB("data")
 guild_ids = [789032594456576001]
 
+bot.remove_command('help')
+
 logger = logging.getLogger('discord')
 logging.basicConfig(level=logging.INFO)  # DEBUG/INFO/WARNING/ERROR/CRITICAL
 handler = logging.FileHandler(filename=f'slash.log', encoding='utf-8', mode='w')
@@ -150,6 +152,15 @@ async def _unsubscribe(ctx: discord_slash.SlashContext):
         return await ctx.send(content="You are already unsubscribed!", hidden=True)
     await user.remove_roles(ctx.guild.get_role(789773555792740353))
     await ctx.send(content="Successfully unsubscribed to new release!", hidden=True)
+
+@slash.slash(name="members", guild_ids=guild_ids, description="Show current member count")
+async def _members(ctx: discord_slash.SlashContext):
+    embed = discord.Embed(
+        title="Member count",
+        description=f"Currently, there are {len(ctx.guild.members)} members on {ctx.guild.name}",
+        color=0x7289da
+    )
+    await ctx.send(embed=embed)
 
 
 @slash.slash(name="search", guild_ids=guild_ids, description="Searches given text to the document.",

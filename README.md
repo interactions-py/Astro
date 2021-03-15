@@ -1,7 +1,7 @@
 # slash-bot
 Bot for discord-py-slash-command Discord Server.  
-It basically only have tag feature, and release subscription 
-(but actually just role giving) feature.  
+It basically only have tag feature, release subscription 
+(but actually just role giving), and member count features.  
 I uploaded this for the demonstration of slash command.
 
 ## Requirements (just see `requirements.txt`)
