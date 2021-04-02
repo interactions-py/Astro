@@ -14,9 +14,9 @@ from modules import sphinx_parser
 from modules import page
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False))
-slash = discord_slash.SlashCommand(bot, override_type=True)
+slash = discord_slash.SlashCommand(bot, sync_commands=True)
 db = sqlite_db.SQLiteDB("data")
-guild_ids = [789032594456576001]
+guild_ids = [827520244804222986]
 
 bot.remove_command('help')
 
@@ -40,16 +40,16 @@ tag_opt = manage_commands.create_option("reply_to",
 
 
 async def template(ctx, msg_id=None):
-    await ctx.send(5)
     resp = await db.res_sql("""SELECT value FROM tags WHERE cmd_id=?""", (ctx.command_id,))
     content = resp[0]["value"]
     if msg_id:
         try:
             msg: discord.Message = await ctx.channel.fetch_message(int(msg_id))
+            await ctx.send("Message found, replying", hidden=True)
             return await msg.reply(content)
         except (discord.Forbidden, discord.HTTPException, discord.NotFound, TypeError, ValueError):
-            await ctx.send(content="Couldn't find message to reply. Normally sending tag.", hidden=True)
-    await ctx.send(content=content)
+            await ctx.send("Couldn't find message to reply. Normally sending tag.", hidden=True)
+    await ctx.send(content)
 
 
 async def init_tags():
@@ -101,9 +101,9 @@ rm_opt = [
 async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
     is_exist = await db.res_sql("""SELECT * FROM tags WHERE name=?""", (name,))
     if is_exist or name in slash.commands.keys():
-        return await ctx.send(content="Uh oh. That name already exists.", hidden=True)
+        return await ctx.send("Uh oh. That name already exists.", hidden=True)
     if len(name) < 3:
-        return await ctx.send(content="Name should be at least 3 characters or longer.", hidden=True)
+        return await ctx.send("Name should be at least 3 characters or longer.", hidden=True)
     resp = await manage_commands.add_slash_command(bot.user.id,
                                                    bot.http.token,
                                                    ctx.guild_id,
@@ -115,7 +115,7 @@ async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
                       (name, response, ctx.author_id, cmd_id))
 
     slash.add_slash_command(template, name, guild_ids=[ctx.guild_id], options=[tag_opt])
-    await ctx.send(content=f"Successfully added tag `{name}`!", hidden=True)
+    await ctx.send(f"Successfully added tag `{name}`!", hidden=True)
 
 
 @slash.subcommand(base="tag", name="remove", guild_ids=guild_ids,
@@ -126,32 +126,32 @@ async def _tag_remove(ctx: discord_slash.SlashContext, name: str):
     if ctx.author_id == 288302173912170497:
         resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
     if not resp:
-        return await ctx.send(content="Tag not found. Check tag name.", hidden=True)
+        return await ctx.send("Tag not found. Check tag name.", hidden=True)
     await manage_commands.remove_slash_command(bot.user.id,
                                                bot.http.token,
                                                ctx.guild_id,
                                                resp[0]["cmd_id"])
     await db.exec_sql("""DELETE FROM tags WHERE cmd_id=?""", (resp[0]["cmd_id"],))
     del slash.commands[name]
-    await ctx.send(content=f"Successfully removed tag `{name}`!", hidden=True)
+    await ctx.send(f"Successfully removed tag `{name}`!", hidden=True)
 
 
 @slash.slash(name="subscribe", guild_ids=guild_ids, description="Subscribes to new release.")
 async def _subscribe(ctx: discord_slash.SlashContext):
     user = ctx.author
     if [x for x in user.roles if x.id == 789773555792740353]:
-        return await ctx.send(content="You are already subscribed!", hidden=True)
+        return await ctx.send("You are already subscribed!", hidden=True)
     await user.add_roles(ctx.guild.get_role(789773555792740353))
-    await ctx.send(content="Successfully subscribed to new release!", hidden=True)
+    await ctx.send("Successfully subscribed to new release!", hidden=True)
 
 
 @slash.slash(name="unsubscribe", guild_ids=guild_ids, description="Unsubscribes to new release.")
 async def _unsubscribe(ctx: discord_slash.SlashContext):
     user = ctx.author
     if not [x for x in user.roles if x.id == 789773555792740353]:
-        return await ctx.send(content="You are already unsubscribed!", hidden=True)
+        return await ctx.send("You are already unsubscribed!", hidden=True)
     await user.remove_roles(ctx.guild.get_role(789773555792740353))
-    await ctx.send(content="Successfully unsubscribed to new release!", hidden=True)
+    await ctx.send("Successfully unsubscribed to new release!", hidden=True)
 
 @slash.slash(name="members", guild_ids=guild_ids, description="Show current member count")
 async def _members(ctx: discord_slash.SlashContext):
@@ -166,11 +166,11 @@ async def _members(ctx: discord_slash.SlashContext):
 @slash.slash(name="search", guild_ids=guild_ids, description="Searches given text to the document.",
              options=[manage_commands.create_option("text", "Text to search.", 3, True)])
 async def _docs(ctx: discord_slash.SlashContext, text: str):
-    await ctx.respond()
+    await ctx.defer()
     base_url = "https://discord-py-slash-command.readthedocs.io/en/latest/"
     resp = await sphinx_parser.search_from_sphinx(base_url+"genindex.html", text)
     if not resp:
-        return await ctx.send(content="No result found.")
+        return await ctx.send("No result found.")
     base_embed = discord.Embed(title="Document Search", color=discord.Color.from_rgb(225, 225, 225))
     base_embed.set_footer(text=ctx.author, icon_url=ctx.author.avatar_url)
     count = 1
@@ -190,7 +190,8 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
         count += 1
     embed_list.append(page_embed)
     if not embed_list:
-        return await ctx.send(content="No result found.")
+        return await ctx.send("No result found.")
+    await ctx.send(":arrow_down: Look here for results", hidden=True)
     await page.start_page(bot, ctx, embed_list, embed=True)
 
 
