@@ -16,7 +16,7 @@ from modules import page
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False))
 slash = discord_slash.SlashCommand(bot, sync_commands=True)
 db = sqlite_db.SQLiteDB("data")
-guild_ids = [789032594456576001]
+guild_ids = [827520244804222986]
 
 bot.remove_command('help')
 
