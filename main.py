@@ -153,14 +153,15 @@ async def _unsubscribe(ctx: discord_slash.SlashContext):
     await user.remove_roles(ctx.guild.get_role(789773555792740353))
     await ctx.send("Successfully unsubscribed to new release!", hidden=True)
 
-@slash.slash(name="members", guild_ids=guild_ids, description="Show current member count")
-async def _members(ctx: discord_slash.SlashContext):
-    embed = discord.Embed(
-        title="Member count",
-        description=f"Currently, there are {len(ctx.guild.members)} members on {ctx.guild.name}",
-        color=0x7289da
-    )
-    await ctx.send(embed=embed)
+# just keep it here for best times :)
+# @slash.slash(name="members", guild_ids=guild_ids, description="Show current member count")
+# async def _members(ctx: discord_slash.SlashContext):
+#     embed = discord.Embed(
+#         title="Member count",
+#         description=f"Currently, there are {len(ctx.guild.members)} members on {ctx.guild.name}",
+#         color=0x7289da
+#     )
+#     await ctx.send(embed=embed)
 
 
 @slash.slash(name="search", guild_ids=guild_ids, description="Searches given text to the document.",
