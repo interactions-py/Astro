@@ -5,3 +5,4 @@ slash.log
 register.py
 __pycache__
 clear.py
+venv/

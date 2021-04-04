@@ -1,4 +1,4 @@
 discord.py
-discord-py-slash-command >= 1.0.9
+discord-py-slash-command >= 1.1.0
 aiosqlite
 fuzzywuzzy[speedup]
