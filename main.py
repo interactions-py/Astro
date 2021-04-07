@@ -13,7 +13,7 @@ from modules import sqlite_db
 from modules import sphinx_parser
 from modules import page
 
-bot = commands.Bot(command_prefix="/", intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False))
+bot = commands.Bot("/", intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions(everyone=False))
 slash = discord_slash.SlashCommand(bot, sync_commands=True)
 db = sqlite_db.SQLiteDB("data")
 guild_ids = [789032594456576001]
@@ -194,6 +194,11 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
         return await ctx.send("No result found.")
     await ctx.send(":arrow_down: Look here for results", hidden=True)
     await page.start_page(bot, ctx, embed_list, embed=True)
+
+@bot.event
+async def on_message(message):
+    if message.type == discord.MessageType.new_member:
+        message.add_reaction("\N{SMILING FACE WITH SUNGLASSES}")
 
 
 bot.loop.create_task(init_tags())
