@@ -58,7 +58,7 @@ async def init_tags():
     for x in tags:
         owner = bot.get_user(int(x["user"]))
         owner = str(owner) if owner else "unknown user"
-        #slash.add_slash_command(template, x["name"], guild_ids=guild_ids, options=[tag_opt], description=f"Custom tag by {owner}.")
+        slash.add_slash_command(template, x["name"], guild_ids=guild_ids, options=[tag_opt], description=f"Custom tag by {owner}.")
     '''
     await slash.register_all_commands()
     cmds = await manage_commands.get_all_commands(bot.user.id, bot.http.token, 789032594456576001)
