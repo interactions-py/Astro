@@ -123,7 +123,7 @@ async def _tag_add(ctx: discord_slash.SlashContext, name: str, response: str):
 async def _tag_remove(ctx: discord_slash.SlashContext, name: str):
     resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=? AND user=?""",
                             (name, ctx.author_id))
-    if ctx.author_id == 288302173912170497:
+    if ctx.author_id == 174918559539920897:
         resp = await db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
     if not resp:
         return await ctx.send("Tag not found. Check tag name.", hidden=True)
