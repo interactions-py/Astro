@@ -98,5 +98,5 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
 
 
 bot.load_extension("cogs.tags")
-
+bot.load_extension("cogs.git")
 bot.run(get_settings("token"))
