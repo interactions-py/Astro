@@ -142,7 +142,7 @@ class Tags(commands.Cog):
         },
     )
     async def _tag_remove(self, ctx: SlashContext, name: str):
-        await ctx.defer()
+        await ctx.defer(hidden=True)
         resp = await self.bot.db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
         if not resp:
             return await ctx.send("Tag not found. Check tag name.", hidden=True)
