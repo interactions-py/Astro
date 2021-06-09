@@ -97,6 +97,7 @@ class Tags(commands.Cog):
         },
     )
     async def _tag_add(self, ctx: SlashContext, name: str, response: str):
+        name = name.lower()
         is_exist = await self.bot.db.res_sql("""SELECT * FROM tags WHERE name=?""", (name,))
         if is_exist or name in self.bot.slash.commands.keys():
             return await ctx.send("Uh oh. That name already exists.", hidden=True)
