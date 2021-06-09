@@ -1,17 +1,16 @@
-"""
-This bot is very simple, since this should be enough I think.
-No cog because I'm lazy and want to keep this minimal.
-"""
-
-import json
 import logging
+
 import discord
 import discord_slash
 from discord.ext import commands
 from discord_slash.utils import manage_commands
-from modules import sqlite_db
-from modules import sphinx_parser
+
 from modules import page
+from modules import sphinx_parser
+from modules import sqlite_db
+from modules.get_settings import get_settings, sanity_check
+
+sanity_check()
 
 bot = commands.Bot(
     command_prefix="/",
@@ -22,7 +21,7 @@ bot = commands.Bot(
 slash = discord_slash.SlashCommand(bot, sync_commands=False)
 bot.db = sqlite_db.SQLiteDB("data")
 
-guild_ids = [789032594456576001]
+guild_ids = get_settings("servers")
 
 logger = logging.getLogger("discord")
 logging.basicConfig(level=logging.INFO)  # DEBUG/INFO/WARNING/ERROR/CRITICAL
@@ -31,18 +30,12 @@ handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 
-def get_settings(key: str):
-    with open("bot_settings.json", "r", encoding="UTF-8") as f:
-        _json = json.load(f)
-    return _json.get(key)
-
-
 @slash.slash(name="subscribe", guild_ids=guild_ids, description="Subscribes to new release.")
 async def _subscribe(ctx: discord_slash.SlashContext):
     user = ctx.author
-    if [x for x in user.roles if x.id == 789773555792740353]:
+    if [x for x in user.roles if x.id == get_settings("sub_role_id")]:
         return await ctx.send("You are already subscribed!", hidden=True)
-    await user.add_roles(ctx.guild.get_role(789773555792740353))
+    await user.add_roles(ctx.guild.get_role(get_settings("sub_role_id")))
     await ctx.send("Successfully subscribed to new release!", hidden=True)
 
 
@@ -53,9 +46,9 @@ async def _subscribe(ctx: discord_slash.SlashContext):
 )
 async def _unsubscribe(ctx: discord_slash.SlashContext):
     user = ctx.author
-    if not [x for x in user.roles if x.id == 789773555792740353]:
+    if not [x for x in user.roles if x.id == get_settings("sub_role_id")]:
         return await ctx.send("You are already unsubscribed!", hidden=True)
-    await user.remove_roles(ctx.guild.get_role(789773555792740353))
+    await user.remove_roles(ctx.guild.get_role(get_settings("sub_role_id")))
     await ctx.send("Successfully unsubscribed to new release!", hidden=True)
 
 

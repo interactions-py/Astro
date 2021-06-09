@@ -5,7 +5,9 @@ from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils import manage_commands
 
-guild_ids = [789032594456576001]
+from modules.get_settings import get_settings
+
+guild_ids = get_settings("servers")
 
 
 class Tags(commands.Cog):
