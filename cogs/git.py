@@ -1,30 +1,22 @@
 import asyncio
-import datetime
 import re
-import typing
 
 import discord
-from discord.ext import commands
-
-
 import github.GithubException
+from discord.ext import commands
 from github import Github
 
+from modules.get_settings import get_settings
 
-guild_ids = [701347683591389185]
+guild_ids = get_settings("servers")
 
 
 class Git(commands.Cog):
     def __init__(self, bot):
         self.bot: commands.Bot = bot
 
-        self.git = Github("no u")
-
-    async def get_repo(self):
-        repo = await asyncio.to_thread(
-            self.git.get_repo, "discord-py-slash-commands/discord-py-slash-command"
-        )
-        return repo
+        self.git = Github(get_settings("git_token"))
+        self.repo = self.git.get_repo("discord-py-slash-commands/discord-py-slash-command")
 
     async def get_pull(self, repo, pr_id: int):
         try:
@@ -36,8 +28,8 @@ class Git(commands.Cog):
 
     async def get_issue(self, repo, issue_id: int):
         try:
-            pr = await asyncio.to_thread(repo.get_issue, issue_id)
-            return pr
+            issue = await asyncio.to_thread(repo.get_issue, issue_id)
+            return issue
 
         except github.UnknownObjectException:
             return None
@@ -139,25 +131,20 @@ class Git(commands.Cog):
             if message.guild.id in guild_ids:
                 in_data = message.clean_content.lower()
 
-                if data := re.search(r"((pr|i)#\d(\d*))", in_data):
-                    repo = await self.get_repo()
-                    print(data.group())
-                    if data.group().startswith("pr"):
-                        # pull request
-                        try:
-                            pr = await self.get_pull(repo, int(data.group().split("pr#")[-1]))
-                            print(pr)
-                            if pr:
-                                await self.send_pr(message, pr)
-                        except github.UnknownObjectException:
-                            print("No pull request with that ID")
-                    else:
-                        try:
-                            issue = await self.get_issue(repo, int(data.group().split("i#")[-1]))
-                            if issue:
-                                await self.send_issue(message, issue)
-                        except github.UnknownObjectException:
-                            print("No issue with that ID")
+                data = None
+                try:
+                    if data := re.search(r"(#\d(\d*))", in_data):
+                        issue = await self.get_issue(self.repo, int(data.group().split("#")[-1]))
+                        if not issue:
+                            return
+
+                        if issue.pull_request:
+                            pr = await self.get_pull(self.repo, int(data.group().split("#")[-1]))
+                            return await self.send_pr(message, pr)
+                        return await self.send_issue(message, issue)
+                except github.UnknownObjectException:
+                    print(f"No git object with id: {data.group().split('#')[-1]}")
+
         except Exception as e:
             print(e)
 
