@@ -89,6 +89,12 @@ class Tags(commands.Cog):
                 "required": True,
             },
         ],
+        base_default_permission=False,
+        base_permissions={
+            get_settings("servers")[0]: [
+                manage_commands.create_permission(get_settings("tag_role_id"), 1, True)
+            ]
+        },
     )
     async def _tag_add(self, ctx: SlashContext, name: str, response: str):
         is_exist = await self.bot.db.res_sql("""SELECT * FROM tags WHERE name=?""", (name,))
@@ -128,13 +134,16 @@ class Tags(commands.Cog):
                 "required": True,
             }
         ],
+        base_default_permission=False,
+        base_permissions={
+            get_settings("servers")[0]: [
+                manage_commands.create_permission(get_settings("tag_role_id"), 1, True)
+            ]
+        },
     )
     async def _tag_remove(self, ctx: SlashContext, name: str):
-        resp = await self.bot.db.res_sql(
-            """SELECT cmd_id FROM tags WHERE name=? AND user=?""", (name, ctx.author_id)
-        )
-        if ctx.author_id == 174918559539920897:
-            resp = await self.bot.db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
+        await ctx.defer()
+        resp = await self.bot.db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
         if not resp:
             return await ctx.send("Tag not found. Check tag name.", hidden=True)
         await manage_commands.remove_slash_command(
