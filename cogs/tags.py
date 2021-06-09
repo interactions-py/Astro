@@ -60,7 +60,6 @@ class Tags(commands.Cog):
             self.bot.user.id, self.bot.http.token, guild_ids[0]
         )
         for x in cmds:
-            print(f"updating {x['name']}")
             cmd_id = x["id"]
             cmd_name = x["name"]
             if cmd_name in ["tag", "subscribe", "unsubscribe"]:
