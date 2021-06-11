@@ -25,20 +25,18 @@ async def search_from_sphinx(url, keyword, fuzzSort=True):
 
         for val in data:
             # remove any links to github or sphinx, we're after docs pages here
-            if re.search(r'\.org*?$', val) or val.startswith("https://github.com/"):
+            if re.search(r"\.org*?$", val) or val.startswith("https://github.com/"):
                 continue
 
             # get topic of each link, while still preserving the link itself
-            val = (val, re.sub(r'\.html$', '', val)
-                   .split(".")[-1]
-                   .replace("_", " "))
+            val = (val, re.sub(r"\.html$", "", val).split(".")[-1].replace("_", " "))
 
             # determine how similar this topic is to the keyword
             ratio = fuzz.ratio(val[1].lower(), keyword)
             rData[val[0]] = ratio
 
-        # get top 5 values
-        data = sorted(rData, key=rData.get, reverse=True)[:5]
+        # sort results by similarity
+        data = sorted(rData, key=rData.get, reverse=True)[:20]
 
     else:
         data = [x.get("href") for x in soup.findAll("a") if keyword in str(x).lower()]
