@@ -101,7 +101,8 @@ class Git(commands.Cog):
         embed = discord.Embed(title=f"PR #{pr.number}: {pr.title}")
         embed.url = pr.html_url
         embed.set_footer(
-            text=f"{pr.user.name if pr.user.name else pr.user.login}", icon_url=pr.user.avatar_url
+            text=f"{pr.user.name if pr.user.name else pr.user.login} - {pr.created_at.ctime()}",
+            icon_url=pr.user.avatar_url,
         )
 
         if pr.state == "closed":
@@ -123,27 +124,31 @@ class Git(commands.Cog):
         checklist = checklist.replace("[ ]", "❌")
         embed.add_field(name="Checklist", value=checklist)
 
+        if not pr.merged:
+            embed.add_field(name="Mergeable", value=pr.mergeable_state, inline=False)
+
         await message.reply(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         try:
-            if message.guild.id in guild_ids:
-                in_data = message.clean_content.lower()
+            if message.author.bot:
+                return
+            in_data = message.clean_content.lower()
 
-                data = None
-                try:
-                    if data := re.search(r"(#\d(\d*))", in_data):
-                        issue = await self.get_issue(self.repo, int(data.group().split("#")[-1]))
-                        if not issue:
-                            return
+            data = None
+            try:
+                if data := re.search(r"(?:\s|^)#(\d{1,3})(?:\s|$)", in_data):
+                    issue = await self.get_issue(self.repo, int(data.group(1)))
+                    if not issue:
+                        return
 
-                        if issue.pull_request:
-                            pr = await self.get_pull(self.repo, int(data.group().split("#")[-1]))
-                            return await self.send_pr(message, pr)
-                        return await self.send_issue(message, issue)
-                except github.UnknownObjectException:
-                    print(f"No git object with id: {data.group().split('#')[-1]}")
+                    if issue.pull_request:
+                        pr = await self.get_pull(self.repo, int(data.group(1)))
+                        return await self.send_pr(message, pr)
+                    return await self.send_issue(message, issue)
+            except github.UnknownObjectException:
+                print(f"No git object with id: {data.group().split('#')[-1]}")
 
         except Exception as e:
             print(e)
