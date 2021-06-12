@@ -5,6 +5,7 @@ import discord_slash
 from discord.ext import commands
 from discord_slash.utils import manage_commands
 
+import cogs.language
 from modules import page
 from modules import sphinx_parser
 from modules import sqlite_db
@@ -26,11 +27,15 @@ guild_ids = get_settings("servers")
 logger = logging.getLogger("discord")
 logging.basicConfig(level=logging.INFO)  # DEBUG/INFO/WARNING/ERROR/CRITICAL
 handler = logging.FileHandler(filename=f"slash.log", encoding="utf-8", mode="w")
-handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
+handler.setFormatter(
+    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+)
 logger.addHandler(handler)
 
 
-@slash.slash(name="subscribe", guild_ids=guild_ids, description="Subscribes to new release.")
+@slash.slash(
+    name="subscribe", guild_ids=guild_ids, description="Subscribes to new release."
+)
 async def _subscribe(ctx: discord_slash.SlashContext):
     user = ctx.author
     if [x for x in user.roles if x.id == get_settings("sub_role_id")]:
@@ -64,7 +69,9 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
     resp = await sphinx_parser.search_from_sphinx(base_url + "genindex.html", text)
     if not resp:
         return await ctx.send("No result found.")
-    base_embed = discord.Embed(title="Document Search", color=discord.Color.from_rgb(225, 225, 225))
+    base_embed = discord.Embed(
+        title="Document Search", color=discord.Color.from_rgb(225, 225, 225)
+    )
     base_embed.set_footer(text=ctx.author, icon_url=ctx.author.avatar_url)
     count = 1
     embed_list = []
@@ -90,6 +97,7 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
     await page.start_page(bot, ctx, embed_list, embed=True)
 
 
-bot.load_extension("cogs.tags")
 bot.load_extension("cogs.git")
+bot.load_extension("cogs.language")
+bot.load_extension("cogs.tags")
 bot.run(get_settings("token"))
