@@ -38,18 +38,16 @@ class Language(commands.Cog):
     async def set_language(self, ctx: SlashContext, language: int):
         if language == 1:
             role_id = get_settings("korean_role")
-            message = "당신은 한국 역을 맡았습니다"
+            message = '"한국어" 역할이 주어졌습니다'
         elif language == 2:
             role_id = get_settings("russian_role")
-            message = "Вам дали русскую роль"
+            message = 'Вам была выдана роль "Русский"'
         elif language == 3:
             role_id = get_settings("german_role")
             message = "Sie haben die deutsche Rolle bekommen"
         else:
             # shouldn't be possible, but just in case
-            return await ctx.send(
-                "Sorry, that language choice wasn't recognised", hidden=True
-            )
+            return await ctx.send("Sorry, that language choice wasn't recognised", hidden=True)
         role = ctx.guild.get_role(int(role_id))
         try:
             await ctx.author.add_roles(role, reason="Language role request")
@@ -77,13 +75,9 @@ class Language(commands.Cog):
             for role in ctx.author.roles:
                 if role.id in role_ids:
                     await ctx.author.remove_roles(role)
-            await ctx.send(
-                "Any language roles you had have now been removed", hidden=True
-            )
+            await ctx.send("Any language roles you had have now been removed", hidden=True)
         except:
-            await ctx.send(
-                "Failed to remove roles... please try again later", hidden=True
-            )
+            await ctx.send("Failed to remove roles... please try again later", hidden=True)
 
 
 def setup(bot: commands.Bot):

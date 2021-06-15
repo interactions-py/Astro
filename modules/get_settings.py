@@ -10,6 +10,7 @@ template_json = {
     "sub_role_id": None,
     "korean_role": None,
     "russian_role": None,
+    "german_role": None,
 }
 
 
