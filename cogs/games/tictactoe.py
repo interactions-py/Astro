@@ -105,6 +105,9 @@ class TicTacToe(commands.Cog):
 
         winner = self.determine_win_state(board)
         if winner:
+            for i in range(9):
+                if board[i] != winner:
+                    board[i] = "empty"
             winner = ctx.author.mention if winner == "player" else self.bot.user.mention
 
         if not winner:
