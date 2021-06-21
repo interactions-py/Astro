@@ -5,7 +5,6 @@ import discord_slash
 from discord.ext import commands
 from discord_slash.utils import manage_commands
 
-import cogs.language
 from modules import page
 from modules import sphinx_parser
 from modules import sqlite_db
@@ -100,4 +99,5 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
 bot.load_extension("cogs.git")
 bot.load_extension("cogs.language")
 bot.load_extension("cogs.tags")
+bot.load_extension("cogs.buttons")
 bot.run(get_settings("token"))
