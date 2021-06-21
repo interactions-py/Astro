@@ -53,7 +53,7 @@ class TicTacToe(commands.Cog):
                 elif button["style"] == 1:
                     board.append("player")
                 elif button["style"] == 4:
-                    board.append("ai")
+                    board.append("enemy")
 
         return board
 
