@@ -74,7 +74,7 @@ class Examples(commands.Cog):
             await ctx.send(f"You pressed {ctx.custom_id}!", hidden=True)
         else: # select
             string = ' and '.join(ctx.selected_options) if len(ctx.selected_options) > 1 else ''.join(ctx.selected_options)
-            await ctx.send(f"You selected {string}!")
+            await ctx.send(f"You selected {string}!", hidden=True)
 
 def setup(bot):
     bot.add_cog(Examples(bot))
