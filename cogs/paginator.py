@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from modules.Paginator import Paginator
+from dinteractions_Paginator import Paginator
 from discord_slash import cog_ext
 from modules.get_settings import get_settings
 guild_ids=get_settings("servers")
