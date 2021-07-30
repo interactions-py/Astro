@@ -14,18 +14,23 @@ This simple example shows how to easily create interactive, multiple page embeds
 
 ```py
 import discord
-import discord_slash
+from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from dinteractions_Paginator import Paginator
 
-@slash.slash(name="command")
-async def command(ctx:SlashContext)
-embed1=discord.Embed(title="title")
-embed2=discord.Embed(title="another title")
-embed3=discord.Embed(title="yet another title")
-pages=[embed1,embed2,embed3]
+bot = commands.Bot(command_prefix="/")
+slash = SlashCommand(bot, sync_commands=True)
 
-await Paginator(bot=bot,ctx=ctx,pages=pages)
+@slash.slash(name="command")
+async def command(ctx: SlashContext):
+    embed1 = discord.Embed(title="Title")
+    embed2 = discord.Embed(title="Another Title")
+    embed3 = discord.Embed(title="Yet Another Title")
+    pages = [embed1, embed2, embed3]
+
+    await Paginator(bot=bot, ctx=ctx, pages=pages, content="Hello there")
+
+bot.run("token")
 ```
 
 ## Requirements (just see `requirements.txt`)

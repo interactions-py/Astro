@@ -3,8 +3,9 @@ from discord.ext import commands
 from dinteractions_Paginator import Paginator
 from discord_slash import cog_ext
 from modules.get_settings import get_settings
-guild_ids=get_settings("servers")
-example1="""\
+
+guild_ids = get_settings("servers")
+example1 = """\
 ```py
 import discord
 import discord_slash
@@ -20,7 +21,7 @@ async def command(ctx:SlashContext)
     await Paginator(bot=bot,ctx=ctx,pages=pages)
 ```
 """
-example2="""\
+example2 = """\
 ```py
 import discord
 import discord_slash
@@ -38,22 +39,48 @@ from Paginator import Paginator
             prevEmoji="♥",nextEmoji="♥",prevStyle=1,nextStyle=2,indexStyle=3,timeout=10)
 ```
 """
-class paginator(commands.Cog):
-    def __init__(self,bot):
-        self.bot=bot
 
-    @cog_ext.cog_slash(name="paginator",description="Multiple page embed paginator example",guild_ids=guild_ids)
-    async def paginator(self,ctx):
-        p1=discord.Embed(title="This is an example embed",description="This module allows to have infinitetly long multi page embeds")
-        p2=discord.Embed(title="It's higly customizable",description="It allows you to modify all aspects of the paginator, from the title on the buttons, a persistent message, all the way to a timeout")
-        p3=discord.Embed(title="Easy to implement",description="All you need to do is [download the file](https://github.com/JUGADOR123/Paginator.py), import it and you are ready to rock")
-        p4=discord.Embed(title="Simple Example",description="The simplest way of implementing it only requires a list of the embeds to be added as pages")
-        p4.add_field(name="Example",value=f"{example1}")
-        p5=discord.Embed(title="Customized Example",description="You can change all aspects of the paginator by declaring them when calling the funtion")
-        p6=discord.Embed(title="In depth example",description="Here we can see an example that customizes all the aspects of the paginator, and includes a persistent message")
-        p6.add_field(name="Example",value=f"{example2}")
-        pages=[p1,p2,p3,p4,p5,p6]
-        await Paginator(bot=self.bot,ctx=ctx,pages=pages,content="Paginator example",timeout=60)
+
+class paginator(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @cog_ext.cog_slash(
+        name="paginator",
+        description="Multiple page embed paginator example",
+        guild_ids=guild_ids,
+    )
+    async def paginator(self, ctx):
+        p1 = discord.Embed(
+            title="This is an example embed",
+            description="This module allows to have infinitetly long multi page embeds",
+        )
+        p2 = discord.Embed(
+            title="It's higly customizable",
+            description="It allows you to modify all aspects of the paginator, from the title on the buttons, a persistent message, all the way to a timeout",
+        )
+        p3 = discord.Embed(
+            title="Easy to implement",
+            description="All you need to do is [download the file](https://github.com/JUGADOR123/Paginator.py), import it and you are ready to rock",
+        )
+        p4 = discord.Embed(
+            title="Simple Example",
+            description="The simplest way of implementing it only requires a list of the embeds to be added as pages",
+        )
+        p4.add_field(name="Example", value=f"{example1}")
+        p5 = discord.Embed(
+            title="Customized Example",
+            description="You can change all aspects of the paginator by declaring them when calling the funtion",
+        )
+        p6 = discord.Embed(
+            title="In depth example",
+            description="Here we can see an example that customizes all the aspects of the paginator, and includes a persistent message",
+        )
+        p6.add_field(name="Example", value=f"{example2}")
+        pages = [p1, p2, p3, p4, p5, p6]
+        await Paginator(
+            bot=self.bot, ctx=ctx, pages=pages, content="Paginator example", timeout=60
+        )
 
 
 def setup(bot):
