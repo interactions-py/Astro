@@ -1,11 +1,12 @@
-import discord
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext, ComponentContext
-from discord_slash.utils.manage_commands import create_option
-from discord_slash.utils import manage_components
-from discord_slash.cog_ext import cog_component
-from discord_slash.utils.manage_components import create_button, create_actionrow, create_select, create_select_option
 from discord_slash.model import ButtonStyle
+from discord_slash.utils.manage_components import (
+    create_button,
+    create_actionrow,
+    create_select,
+    create_select_option,
+)
 
 class Examples(commands.Cog):
     def __init__(self, bot):
