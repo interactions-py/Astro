@@ -11,7 +11,8 @@ import discord
 import discord_slash
 from discord_slash import SlashCommand, SlashContext
 from Paginator import Paginator
-    
+
+
 @slash.slash(name="command")
 async def command(ctx:SlashContext)
     embed1=discord.Embed(title="title")
@@ -19,6 +20,8 @@ async def command(ctx:SlashContext)
     embed3=discord.Embed(title="yet another title")
     pages=[embed1,embed2,embed3]
     await Paginator(bot=bot,ctx=ctx,pages=pages)
+    
+
 ```
 """
 example2 = """\
@@ -27,6 +30,7 @@ import discord
 import discord_slash
 from discord_slash import SlashCommand, SlashContext
 from Paginator import Paginator
+
 
 @slash.slash(name="command")
     async def command(ctx:SlashContext)
@@ -37,6 +41,7 @@ from Paginator import Paginator
 
     await Paginator(bot=bot,ctx=ctx,pages=pages,content="Hello there",prevLabel="Back",nextLabel="Forward",
             prevEmoji="♥",nextEmoji="♥",prevStyle=1,nextStyle=2,indexStyle=3,timeout=10)
+
 ```
 """
 

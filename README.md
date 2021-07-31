@@ -21,6 +21,7 @@ from dinteractions_Paginator import Paginator
 bot = commands.Bot(command_prefix="/")
 slash = SlashCommand(bot, sync_commands=True)
 
+
 @slash.slash(name="command")
 async def command(ctx: SlashContext):
     embed1 = discord.Embed(title="Title")
@@ -31,6 +32,7 @@ async def command(ctx: SlashContext):
     await Paginator(bot=bot, ctx=ctx, pages=pages, content="Hello there")
 
 bot.run("token")
+
 ```
 
 ## Requirements (just see `requirements.txt`)
