@@ -1,4 +1,7 @@
 import asyncio
+import copy
+import enum
+import math
 import random
 import typing
 
@@ -15,17 +18,136 @@ from modules.get_settings import get_settings
 guild_ids = get_settings("servers")
 
 
-def create_board() -> list:
-    """Creates the tic tac toe board"""
+class GameState(enum.IntEnum):
+    empty = 0
+    player = -1
+    ai = +1
+
+
+BoardTemplate = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+
+
+def determine_board_state(components: list) -> typing.List[list]:
+    """
+    Extrapolate the current state of the game based on the components of a message
+    :param components: The components object from a message
+    :return: The test_board state
+    :rtype: list[list]
+    """
+    board = copy.deepcopy(BoardTemplate)
+    for i in range(3):
+        for x in range(3):
+            button = components[i]["components"][x]
+            if button["style"] == 2:
+                board[i][x] = GameState.empty
+            elif button["style"] == 1:
+                board[i][x] = GameState.player
+            elif button["style"] == 4:
+                board[i][x] = GameState.ai
+    return board
+
+
+def render_board(board: list, disable=False) -> list:
+    """
+    Converts the test_board into a visual representation using discord components
+    :param board: The game test_board
+    :param disable: Disable the buttons on the test_board
+    :return: List[action-rows]
+    """
     buttons = []
-    for i in range(9):
-        buttons.append(
-            manage_components.create_button(
-                style=ButtonStyle.grey, label="‎", custom_id=f"tic_tac_toe_button||{i}"
+    for i in range(3):
+        for x in range(3):
+            if board[i][x] == GameState.empty:
+                style = ButtonStyle.grey
+            elif board[i][x] == GameState.player:
+                style = ButtonStyle.blurple
+            else:
+                style = ButtonStyle.red
+            buttons.append(
+                manage_components.create_button(
+                    style=style,
+                    label="‎",
+                    custom_id=f"tic_tac_toe_button||{i},{x}",
+                    disabled=disable,
+                )
             )
-        )
-    action_rows = manage_components.spread_to_rows(*buttons, max_in_row=3)
-    return action_rows
+    return manage_components.spread_to_rows(*buttons, max_in_row=3)
+
+
+def determine_win_state(board: list, player: GameState) -> bool:
+    """
+    Determines if the specified player has won
+    :param board: The game test_board
+    :param player: The player to check for
+    :return: bool, have they won
+    """
+    win_states = [
+        [board[0][0], board[0][1], board[0][2]],
+        [board[1][0], board[1][1], board[1][2]],
+        [board[2][0], board[2][1], board[2][2]],
+        [board[0][0], board[1][0], board[2][0]],
+        [board[0][1], board[1][1], board[2][1]],
+        [board[0][2], board[1][2], board[2][2]],
+        [board[0][0], board[1][1], board[2][2]],
+        [board[2][0], board[1][1], board[0][2]],
+    ]
+    if [player, player, player] in win_states:
+        return True
+    return False
+
+
+def determine_possible_positions(board: list) -> list:
+    """
+    Determines all the possible positions in the current game state
+    :param board: The game test_board
+    :return: A list of possible positions
+    """
+    possible_positions = []
+    for i in range(3):
+        for x in range(3):
+            if board[i][x] == GameState.empty:
+                possible_positions.append([i, x])
+    return possible_positions
+
+
+def evaluate(board):
+    if determine_win_state(board, GameState.ai):
+        score = +1
+    elif determine_win_state(board, GameState.player):
+        score = -1
+    else:
+        score = 0
+    return score
+
+
+def min_max(test_board: list, depth: int, player: GameState):
+    if player == GameState.ai:
+        best = [-1, -1, -math.inf]
+    else:
+        best = [-1, -1, +math.inf]
+
+    if (
+        depth == 0
+        or determine_win_state(test_board, GameState.player)
+        or determine_win_state(test_board, GameState.ai)
+    ):
+        score = evaluate(test_board)
+        return [-1, -1, score]
+
+    for cell in determine_possible_positions(test_board):
+        x, y = cell[0], cell[1]
+        test_board[x][y] = player
+        score = min_max(test_board, depth - 1, -player)
+        test_board[x][y] = GameState.empty
+        score[0], score[1] = x, y
+
+        if player == GameState.ai:
+            if score[2] > best[2]:
+                best = score
+        else:
+            if score[2] < best[2]:
+                best = score
+    return best
 
 
 class TicTacToe(commands.Cog):
@@ -40,7 +162,8 @@ class TicTacToe(commands.Cog):
     )
     async def ttt_start(self, ctx: SlashContext):
         await ctx.send(
-            content=f"{ctx.author.mention}'s tic tac toe game", components=create_board()
+            content=f"{ctx.author.mention}'s tic tac toe game",
+            components=render_board(copy.deepcopy(BoardTemplate)),
         )
 
     def determine_board_state(self, components: list):
@@ -49,34 +172,15 @@ class TicTacToe(commands.Cog):
             row = components[i]["components"]
             for button in row:
                 if button["style"] == 2:
-                    board.append("empty")
+                    board.append(GameState.empty)
                 elif button["style"] == 1:
-                    board.append("player")
+                    board.append(GameState.player)
                 elif button["style"] == 4:
-                    board.append("enemy")
+                    board.append(GameState.ai)
 
         return board
 
-    def determine_win_state(self, board: list):
-        if board[0] == board[1] == board[2] != "empty":  # row 1
-            return board[0]
-        if board[3] == board[4] == board[5] != "empty":  # row 2
-            return board[3]
-        if board[6] == board[7] == board[8] != "empty":  # row 3
-            return board[6]
-        if board[0] == board[3] == board[6] != "empty":  # col 1
-            return board[0]
-        if board[1] == board[4] == board[7] != "empty":  # col 2
-            return board[1]
-        if board[2] == board[5] == board[8] != "empty":  # col 3
-            return board[2]
-        if board[0] == board[4] == board[8] != "empty":  # diag 1
-            return board[0]
-        if board[2] == board[4] == board[6] != "empty":  # diag 2
-            return board[2]
-        return None
-
-    @cog_component(components=create_board())
+    @cog_component(components=render_board(board=copy.deepcopy(BoardTemplate)))
     async def process_turn(self, ctx: ComponentContext):
         await ctx.defer(edit_origin=True)
         try:
@@ -84,57 +188,43 @@ class TicTacToe(commands.Cog):
                 return
         except:
             return
-        button_pos = int(ctx.custom_id.split("||")[-1])
+        button_pos = (ctx.custom_id.split("||")[-1]).split(",")
+        button_pos = [int(button_pos[0]), int(button_pos[1])]
         components = ctx.origin_message.components
 
-        board = self.determine_board_state(components)
+        _board = determine_board_state(components)
 
-        if board[button_pos] == "empty":
-            board[button_pos] = "player"
+        if _board[button_pos[0]][button_pos[1]] == GameState.empty:
+            _board[button_pos[0]][button_pos[1]] = GameState.player
+            if not determine_win_state(_board, GameState.player):
+                # ai pos
+                if len(determine_possible_positions(_board)) != 0:
+                    depth = len(determine_possible_positions(_board))
 
-            # ai pos
-            if board.count("empty") != 0:
-                while True:
-                    pos = random.randint(0, 8)
-                    if board[pos] == "empty":
-                        board[pos] = "enemy"
-                        break
-                    await asyncio.sleep(0)
+                    move = await asyncio.to_thread(
+                        min_max, copy.deepcopy(_board), depth, GameState.ai
+                    )
+                    x, y = move[0], move[1]
+                    _board[x][y] = GameState.ai
         else:
             return
 
-        winner = self.determine_win_state(board)
-        if winner:
-            for i in range(9):
-                if board[i] != winner:
-                    board[i] = "empty"
-            winner = ctx.author.mention if winner == "player" else self.bot.user.mention
+        if determine_win_state(_board, GameState.player):
+            winner = ctx.author.mention
+        elif determine_win_state(_board, GameState.ai):
+            winner = self.bot.user.mention
+        elif len(determine_possible_positions(_board)) == 0:
+            winner = "Nobody"
+        else:
+            winner = None
 
-        if not winner:
-            if board.count("empty") == 0:
-                winner = "Nobody"
-
-        # convert the board in buttons
-        for i in range(9):
-            style = (
-                ButtonStyle.grey
-                if board[i] == "empty"
-                else ButtonStyle.blurple
-                if board[i] == "player"
-                else ButtonStyle.red
-            )
-            board[i] = manage_components.create_button(
-                style=style,
-                label="‎",
-                custom_id=f"tic_tac_toe_button||{i}",
-                disabled=True if winner else False,
-            )
+        _board = render_board(_board, disable=winner is not None)
 
         await ctx.edit_origin(
             content=f"{ctx.author.mention}'s tic tac toe game"
             if not winner
             else f"{winner} has won!",
-            components=manage_components.spread_to_rows(*board, max_in_row=3),
+            components=manage_components.spread_to_rows(*_board, max_in_row=3),
         )
 
 
