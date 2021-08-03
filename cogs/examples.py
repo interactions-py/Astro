@@ -6,6 +6,7 @@ from discord_slash.utils.manage_components import (
     create_actionrow,
     create_select,
     create_select_option,
+    wait_for_component,
 )
 
 
@@ -13,11 +14,15 @@ class Examples(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_subcommand(base="example", name="slash", description="Example slash command")
+    @cog_ext.cog_subcommand(
+        base="example", name="slash", description="Example slash command"
+    )
     async def example_slash(self, ctx: SlashContext):
         await ctx.send("Test")  # Sends "Test"
 
-    @cog_ext.cog_subcommand(base="example", name="buttons", description="Example buttons")
+    @cog_ext.cog_subcommand(
+        base="example", name="buttons", description="Example buttons"
+    )
     async def example_buttons(self, ctx: SlashContext):
         buttons = [
             create_button(
@@ -31,9 +36,13 @@ class Examples(commands.Cog):
                 custom_id="Secondary/Gr[a|e]y",
             ),
             create_button(
-                style=ButtonStyle.success, label="Success/Green", custom_id="Success/Green"
+                style=ButtonStyle.success,
+                label="Success/Green",
+                custom_id="Success/Green",
             ),
-            create_button(style=ButtonStyle.danger, label="Danger/Red", custom_id="Danger/Red"),
+            create_button(
+                style=ButtonStyle.danger, label="Danger/Red", custom_id="Danger/Red"
+            ),
             create_button(
                 style=ButtonStyle.URL,
                 label="URL",
@@ -42,6 +51,10 @@ class Examples(commands.Cog):
         ]
         action_row = create_actionrow(*buttons)  # creates action row of 5 buttons
         await ctx.send("All of the buttons:", components=[action_row])
+        while True:
+            button_ctx = await wait_for_component(self.bot, components=action_row)
+            if button_ctx.component_type == 2:  # check if button
+                await ctx.send(f"You pressed {ctx.custom_id}!", hidden=True)
 
     @cog_ext.cog_subcommand(base="example", name="select", description="Example select")
     async def example_select(self, ctx: SlashContext):
@@ -56,15 +69,12 @@ class Examples(commands.Cog):
             max_values=2,  # the maximum number of options a user can select
             custom_id="select",
         )
+        ar = create_actionrow(select)
         await ctx.send(
-            "Example select:", components=[create_actionrow(select)]
+            "Example select:", components=[ar]
         )  # like action row with buttons but without * in front of the variable
-
-    @commands.Cog.listener()
-    async def on_component(self, ctx: ComponentContext):
-        if ctx.component_type == 2:  # button
-            await ctx.send(f"You pressed {ctx.custom_id}!", hidden=True)
-        else:  # select
+        while True:
+            button_ctx = await wait_for_component(self.bot, components=ar)
             string = (
                 " and ".join(ctx.selected_options)
                 if len(ctx.selected_options) > 1
