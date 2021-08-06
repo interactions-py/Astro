@@ -3,3 +3,4 @@ discord-py-slash-command >= 1.1.0
 aiosqlite
 fuzzywuzzy[speedup]
 PyGithub
+dinteractions-Paginator
