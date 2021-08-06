@@ -88,7 +88,7 @@ class paginator(commands.Cog):
         p6.add_field(name="Example", value=f"{example2}")
         pages = [p1, p2, p3, p4, p5, p6]
         await Paginator(
-            bot=self.bot, ctx=ctx, pages=pages, content="Paginator example"
+            bot=self.bot, ctx=ctx, pages=pages, content="Paginator example", timeout=60
         )
 
 
