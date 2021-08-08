@@ -8,7 +8,9 @@ I uploaded this for the demonstration of slash command.
 This simple example shows how to easily create interactive, multiple page embeds that annyone can interact with.
 ### Paginator Installation
 
-> pip install dinteractions-Paginator
+```
+pip install dinteractions-Paginator
+```
 
 ### Paginator Example
 
@@ -41,6 +43,7 @@ bot.run("token")
 > discord.py >= 1.5.1  
 > discord-py-slash-command >= 1.1.0 
 > aiosqlite
+> dinteractions-Paginator
 
 ## Any questions?
 Visit [discord-py-slash-command Discord Server](https://discord.gg/KkgMBVuEkx).
