@@ -1,6 +1,6 @@
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext, ComponentContext
-from discord_slash.model import ButtonStyle
+from discord_slash import cog_ext, SlashContext, MenuContext
+from discord_slash.model import ButtonStyle, ContextMenuType
 from discord_slash.utils.manage_components import (
     create_button,
     create_actionrow,
@@ -93,7 +93,10 @@ class Examples(commands.Cog):
                 ar["components"][0]["disabled"] = True
                 await msg.edit(content="Timed out.", components=[ar])
                 break
-
+            
+    @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Example Context Menu")
+    async def example_context_menu(self, ctx: MenuContext):
+        await ctx.send(f"This is a test. BTW, I know what you said. :)\n||{ctx.target_message.clean_content}||")
 
 def setup(bot):
     bot.add_cog(Examples(bot))
