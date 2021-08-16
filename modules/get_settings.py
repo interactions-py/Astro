@@ -11,7 +11,8 @@ template_json = {
     "korean_role": None,
     "russian_role": None,
     "german_role": None,
-    "french_role": None
+    "french_role": None,
+    "hindi_role": None
 }
 
 
