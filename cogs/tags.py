@@ -52,7 +52,7 @@ class Tags(commands.Cog):
             owner = str(owner) if owner else "unknown user"
             self.bot.slash.add_slash_command(
                 self.template,
-                x["name"],
+                x["name"].strip(),
                 guild_ids=guild_ids,
                 options=[self.tag_opt],
                 description=f"Custom tag by {owner}.",
@@ -98,6 +98,7 @@ class Tags(commands.Cog):
     )
     async def _tag_add(self, ctx: SlashContext, name: str, response: str):
         name = name.lower()
+        name = name.strip()
         is_exist = await self.bot.db.res_sql("""SELECT * FROM tags WHERE name=?""", (name,))
         if is_exist or name in self.bot.slash.commands.keys():
             return await ctx.send("Uh oh. That name already exists.", hidden=True)
@@ -144,6 +145,7 @@ class Tags(commands.Cog):
     )
     async def _tag_remove(self, ctx: SlashContext, name: str):
         await ctx.defer(hidden=True)
+        name = name.strip()
         resp = await self.bot.db.res_sql("""SELECT cmd_id FROM tags WHERE name=?""", (name,))
         if not resp:
             return await ctx.send("Tag not found. Check tag name.", hidden=True)
