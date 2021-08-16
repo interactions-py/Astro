@@ -31,7 +31,8 @@ class Language(commands.Cog):
                     manage_commands.create_choice(value=1, name="한국어 | Korean"),
                     manage_commands.create_choice(value=2, name="русский | Russian"),
                     manage_commands.create_choice(value=3, name="Deutsche | German"),
-                    manage_commands.create_choice(value=4, name="Français | French")
+                    manage_commands.create_choice(value=4, name="Français | French"),
+                    manage_commands.create_choice(value=5, name="हिंदी | Hindi")
                 ],
             )
         ],
@@ -49,6 +50,9 @@ class Language(commands.Cog):
         elif language == 4:
             role_id = get_settings("french_role")
             message = "Vous avez le rôle Français"
+        elif lanuage == 5:
+            role_id = get_settings("hindi_role")
+            message = "अब आपके पास हिंदी की भूमिका है।"
         else:
             # shouldn't be possible, but just in case
             return await ctx.send("Sorry, that language choice wasn't recognised", hidden=True)
@@ -74,7 +78,8 @@ class Language(commands.Cog):
             get_settings("korean_role"),
             get_settings("german_role"),
             get_settings("russian_role"),
-            get_settings("french_role")
+            get_settings("french_role"),
+            get_settings("hindi_role")
         ]
         try:
             for role in ctx.author.roles:
