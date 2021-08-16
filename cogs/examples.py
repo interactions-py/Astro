@@ -94,9 +94,13 @@ class Examples(commands.Cog):
                 await msg.edit(content="Timed out.", components=[ar])
                 break
             
-    @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Example Context Menu")
-    async def example_context_menu(self, ctx: MenuContext):
+    @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Example Message Menu")
+    async def example_message_menu(self, ctx: MenuContext):
         await ctx.send(f"This is a test. BTW, I know what you said. :)\n||{ctx.target_message.clean_content}||")
+    
+    @cog_ext.cog_context_menu(target=ContextMenuType.USER, name="Example User Menu")
+    async def example_user_menu(self, ctx: MenuContext):
+        await ctx.send(f"{ctx.author.display_name} used the context menu on {ctx.target_author.display_name}!")
 
 def setup(bot):
     bot.add_cog(Examples(bot))
