@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext, ComponentContext, MenuContext
+from discord_slash import cog_ext, SlashContext, MenuContext
 from discord_slash.model import ButtonStyle, ContextMenuType
 from discord_slash.utils.manage_components import (
     create_button,
@@ -8,6 +8,7 @@ from discord_slash.utils.manage_components import (
     create_select_option,
     wait_for_component,
 )
+from asyncio import TimeoutError
 
 
 class Examples(commands.Cog):
@@ -50,11 +51,17 @@ class Examples(commands.Cog):
             ),
         ]
         action_row = create_actionrow(*buttons)  # creates action row of 5 buttons
-        await ctx.send("All of the buttons:", components=[action_row])
+        msg = await ctx.send("All of the buttons:", components=[action_row])
         while True:
-            button_ctx = await wait_for_component(self.bot, components=action_row)
-            if button_ctx.component_type == 2:  # check if button
-                await ctx.send(f"You pressed {ctx.custom_id}!", hidden=True)
+            try:
+                button_ctx = await wait_for_component(self.bot, components=action_row, timeout=60)
+                if button_ctx.component_type == 2:  # check if button
+                    await button_ctx.send(f"You pressed {button_ctx.custom_id}!", hidden=True)
+            except TimeoutError:
+                for i in range(4):
+                    action_row["components"][i]["disabled"] = True
+                await msg.edit(content="Timed out.", components=[action_row])
+                break
 
     @cog_ext.cog_subcommand(base="example", name="select", description="Example select")
     async def example_select(self, ctx: SlashContext):
@@ -70,17 +77,22 @@ class Examples(commands.Cog):
             custom_id="select",
         )
         ar = create_actionrow(select)
-        await ctx.send(
+        msg = await ctx.send(
             "Example select:", components=[ar]
         )  # like action row with buttons but without * in front of the variable
         while True:
-            button_ctx = await wait_for_component(self.bot, components=ar)
-            string = (
-                " and ".join(ctx.selected_options)
-                if len(ctx.selected_options) > 1
-                else "".join(ctx.selected_options)
-            )
-            await ctx.send(f"You selected {string}!", hidden=True)
+            try:
+                button_ctx = await wait_for_component(self.bot, components=ar, timeout=60)
+                string = (
+                    " and ".join(button_ctx.selected_options)
+                    if len(button_ctx.selected_options) > 1
+                    else "".join(button_ctx.selected_options)
+                )
+                await button_ctx.send(f"You selected {string}!", hidden=True)
+            except TimeoutError:
+                ar["components"][0]["disabled"] = True
+                await msg.edit(content="Timed out.", components=[ar])
+                break
             
     @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Example Context Menu")
     async def example_context_menu(self, ctx: MenuContext):
