@@ -98,6 +98,7 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
 
 bot.load_extension("cogs.git")
 bot.load_extension("cogs.language")
+bot.load_extension("cogs.tester")
 bot.load_extension("cogs.tags")
 bot.load_extension("cogs.buttons")
 bot.load_extension("cogs.examples")
