@@ -92,7 +92,7 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
     embed_list.append(page_embed)
     if not embed_list:
         return await ctx.send("No result found.")
-    await Paginator(bot=bot, ctx=ctx, pages=embed_list, content=":arrow_down: Look here for results", timeout=60)
+    await Paginator(bot=bot, ctx=ctx, pages=embed_list, content=":arrow_down: Look here for results", timeout=60).run()
 
 
 bot.load_extension("cogs.git")
