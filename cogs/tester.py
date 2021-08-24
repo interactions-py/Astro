@@ -27,7 +27,7 @@ class Tester(commands.Cog):
         role = ctx.guild.get_role(int(role_id))
         try:
             await ctx.author.add_roles(role, reason="Tester role request")
-            await ctx.send(message, hidden=True)
+            await ctx.send("Your tester role has been applied", hidden=True)
         except Exception as e:
             print(e)
             return await ctx.send(
