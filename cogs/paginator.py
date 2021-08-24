@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from dinteractions_Paginator import Paginator
+from dinteractions_Paginator import Paginator as Paginator1
+from ButtonPaginator import Paginator as Paginator2
 from discord_slash import cog_ext
 from modules.get_settings import get_settings
 
@@ -18,7 +19,7 @@ slash = SlashCommand(bot, sync_commands=True)
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
-
+    
 @slash.slash(name="embeds")
 async def embeds(ctx: SlashContext):
     one = discord.Embed(title="1st Embed", description="General Kenobi!", color=discord.Color.red())
@@ -27,85 +28,115 @@ async def embeds(ctx: SlashContext):
     four = discord.Embed(title="4th Embed", description="General Kenobi!", color=discord.Color.green())
     five = discord.Embed(title="5th Embed", description="General Kenobi!", color=discord.Color.blue())
     pages = [one, two, three, four, five]
-
     await Paginator(bot=bot, ctx=ctx, pages=pages, content=["1", "2", "3", "4", "5"], timeout=60).run()
-
+    
 bot.run("token")
 ```
 """
+
 example2 = """\
 ```py
-import discord
+from ButtonPaginator import Paginator
 from discord.ext import commands
-from discord_slash import SlashCommand, SlashContext
-from dinteractions_Paginator import Paginator
+from discord_slash import SlashCommand
+import discord
 
-bot = commands.Bot(command_prefix="/")
-slash = SlashCommand(bot, sync_commands=True)
+bot = commands.Bot("your prefix")
+slash = SlashCommand(bot)
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
 
-@slash.slash(name="command")
-    async def command(ctx: SlashContext):
-    embed1 = discord.Embed(title="Title")
-    embed2 = discord.Embed(title="Another Title")
-    embed3 = discord.Embed(title="Yet Another Title")
-    pages = [embed1, embed2, embed3]
+@bot.command()
+async def button(ctx):
+    embeds = [discord.Embed(title="Page1"), discord.Embed(title="Page3"), discord.Embed(title="Page3")]
+    contents = ["Text 1", "Text2", "Text3"]
+    e = Paginator(bot=bot,
+                  ctx=ctx,
+                  header="An example paginator",
+                  embeds=embeds,
+                  contents=contents,
+                  only=ctx.author)
+    await e.start()
 
-    await Paginator(bot=bot, ctx=ctx,
-        pages=pages, content="Hello there",
-        prevLabel="Back", nextLabel="Forward",
-        prevEmoji="♥", nextEmoji="♥",
-        prevStyle=1, nextStyle=2, 
-        indexStyle=3, timeout=10).run()
-bot.run("token")
+bot.run("your token")
 ```
 """
 
 
-class paginator(commands.Cog):
+class Paginator(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_slash(
-        name="paginator",
-        description="Multiple page embed paginator example",
+    @cog_ext.cog_subcommand(
+        base="paginator",
+        name="dinteractions-paginator",
+        description="Paginator by Jugador and Toricane",
         guild_ids=guild_ids,
     )
-    async def paginator(self, ctx):
+    async def paginator1(self, ctx):
         p1 = discord.Embed(
             title="This is an example embed",
-            description="This module allows to have infinitetly long multi-page embeds, more information [here](https://pypi.org/project/dinteractions-Paginator/)",
+            description="This module allows you to have infinitely long multi-page embeds paginated with buttons and a select, more information [here](https://pypi.org/project/dinteractions-Paginator/)",
         )
         p2 = discord.Embed(
             title="It's highly customizable",
-            description="It allows you to modify all aspects of the paginator, from the title on the buttons, a persistent message, all the way to a timeout!",
+            description="It allows you to modify all aspects of the paginator, from the title on the buttons, a changing content, all the way to a timeout!",
         )
         p3 = discord.Embed(
             title="Easy to implement",
-            description="All you need to do is install the library (`pip install dinteractions-Paginator`), import it, and you are ready to rock!",
+            description="All you need to do is install the library (`pip install -U dinteractions-Paginator`), import it, and you are ready to rock!",
         )
         p4 = discord.Embed(
             title="Simple Example",
-            description="The simplest way of implementing it only requires a list of the embeds to be added as pages!",
+            description=f"The simplest way of implementing it only requires a list of the embeds to be added as pages!\n\n**Example:**\n{example1}",
         )
-        p4.add_field(name="Example", value=f"{example1}")
-        p5 = discord.Embed(
-            title="Customized Example",
-            description="You can change all aspects of the paginator by declaring them when calling the function.",
-        )
-        p6 = discord.Embed(
-            title="In depth example",
-            description="This is an example that customizes all the aspects of the paginator, and includes a persistent message!",
-        )
-        p6.add_field(name="Example", value=f"{example2}")
-        pages = [p1, p2, p3, p4, p5, p6]
-        await Paginator(
-            bot=self.bot, ctx=ctx, pages=pages, content="Paginator example", timeout=60
+        # p4.add_field(name="Example", value=f"{example1}")
+        pages = [p1, p2, p3, p4]
+        await Paginator1(
+            bot=self.bot,
+            ctx=ctx,
+            pages=pages,
+            content=["One", "Two", "Three", "Four"],
+            timeout=60,
         ).run()
+
+    @cog_ext.cog_subcommand(
+        base="paginator",
+        name="dpy-slash-button-paginator",
+        description="Paginator by Catalyst4",
+        guild_ids=guild_ids,
+    )
+    async def paginator2(self, ctx):
+        p1 = discord.Embed(
+            title="This is an example embed",
+            description="This module allows you to have infinitely long multi-page embeds with buttons, more information [here](https://pypi.org/project/dpy-slash-button-paginator/)",
+        )
+        p2 = discord.Embed(
+            title="It's highly customizable",
+            description="It allows you to modify all aspects of the paginator, from the title on the buttons, a changing content, all the way to a timeout!",
+        )
+        p3 = discord.Embed(
+            title="Easy to implement",
+            description="All you need to do is install the library (`pip install --upgrade dpy-slash-button-paginator`), import it, and you are ready to rock!",
+        )
+        p4 = discord.Embed(
+            title="Simple Example",
+            description=f"The simplest way of implementing it only requires a list of the embeds to be added as pages!\n\n**Example:**\n{example2}",
+        )
+        # p4.add_field(name="Example", value=f"{example2}")
+        pages = [p1, p2, p3, p4]
+        e = Paginator2(
+            bot=self.bot,
+            ctx=ctx,
+            embeds=pages,
+            contents=["One", "Two", "Three", "Four"],
+            timeout=60,
+            disable_after_timeout=True,
+        )
+        await e.start()
 
 
 def setup(bot):
-    bot.add_cog(paginator(bot))
+    bot.add_cog(Paginator(bot))
