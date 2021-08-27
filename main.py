@@ -5,7 +5,7 @@ import discord_slash
 from discord.ext import commands
 from discord_slash.utils import manage_commands
 
-from modules import page
+from dinteractions_Paginator import Paginator
 from modules import sphinx_parser
 from modules import sqlite_db
 from modules.get_settings import get_settings, sanity_check
@@ -92,8 +92,7 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
     embed_list.append(page_embed)
     if not embed_list:
         return await ctx.send("No result found.")
-    await ctx.send(":arrow_down: Look here for results", hidden=True)
-    await page.start_page(bot, ctx, embed_list, embed=True)
+    await Paginator(bot=bot, ctx=ctx, pages=embed_list, content=":arrow_down: Look here for results", timeout=60).run()
 
 
 bot.load_extension("cogs.git")
