@@ -47,16 +47,20 @@ class Examples(commands.Cog):
             create_button(
                 style=ButtonStyle.URL,
                 label="URL",
-                url="https://discord-py-slash-command.readthedocs.io/en/latest/components.html",
+                url="https://discord-interactions.readthedocs.io/en/latest/components.html",
             ),
         ]
         action_row = create_actionrow(*buttons)  # creates action row of 5 buttons
         msg = await ctx.send("All of the buttons:", components=[action_row])
         while True:
             try:
-                button_ctx = await wait_for_component(self.bot, components=action_row, timeout=60)
+                button_ctx = await wait_for_component(
+                    self.bot, components=action_row, timeout=60
+                )
                 if button_ctx.component_type == 2:  # check if button
-                    await button_ctx.send(f"You pressed {button_ctx.custom_id}!", hidden=True)
+                    await button_ctx.send(
+                        f"You pressed {button_ctx.custom_id}!", hidden=True
+                    )
             except TimeoutError:
                 for i in range(4):
                     action_row["components"][i]["disabled"] = True
@@ -82,7 +86,9 @@ class Examples(commands.Cog):
         )  # like action row with buttons but without * in front of the variable
         while True:
             try:
-                button_ctx = await wait_for_component(self.bot, components=ar, timeout=60)
+                button_ctx = await wait_for_component(
+                    self.bot, components=ar, timeout=60
+                )
                 string = (
                     " and ".join(button_ctx.selected_options)
                     if len(button_ctx.selected_options) > 1
@@ -93,14 +99,21 @@ class Examples(commands.Cog):
                 ar["components"][0]["disabled"] = True
                 await msg.edit(content="Timed out.", components=[ar])
                 break
-            
-    @cog_ext.cog_context_menu(target=ContextMenuType.MESSAGE, name="Example Message Menu")
+
+    @cog_ext.cog_context_menu(
+        target=ContextMenuType.MESSAGE, name="Example Message Menu"
+    )
     async def example_message_menu(self, ctx: MenuContext):
-        await ctx.send(f"This is a test. BTW, I know what you said. :)\n||{ctx.target_message.clean_content}||")
-    
+        await ctx.send(
+            f"This is a test. BTW, I know what you said. :)\n||{ctx.target_message.clean_content}||"
+        )
+
     @cog_ext.cog_context_menu(target=ContextMenuType.USER, name="Example User Menu")
     async def example_user_menu(self, ctx: MenuContext):
-        await ctx.send(f"{ctx.author.display_name} used the context menu on {ctx.target_author.display_name}!")
+        await ctx.send(
+            f"{ctx.author.display_name} used the context menu on {ctx.target_author.display_name}!"
+        )
+
 
 def setup(bot):
     bot.add_cog(Examples(bot))
