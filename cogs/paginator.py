@@ -28,7 +28,8 @@ async def embeds(ctx: SlashContext):
     four = discord.Embed(title="4th Embed", description="General Kenobi!", color=discord.Color.green())
     five = discord.Embed(title="5th Embed", description="General Kenobi!", color=discord.Color.blue())
     pages = [one, two, three, four, five]
-    await Paginator(bot=bot, ctx=ctx, pages=pages, content=["1", "2", "3", "4", "5"], timeout=60).run()
+    p = Paginator(bot=bot, ctx=ctx, pages=pages, content=["1", "2", "3", "4", "5"], timeout=60)
+    data = await p.run()  # wait for the paginator to end for example data
     
 bot.run("token")
 ```
@@ -47,7 +48,6 @@ slash = SlashCommand(bot)
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
-
 @bot.command()
 async def button(ctx):
     embeds = [discord.Embed(title="Page1"), discord.Embed(title="Page3"), discord.Embed(title="Page3")]
@@ -59,7 +59,6 @@ async def button(ctx):
                   contents=contents,
                   only=ctx.author)
     await e.start()
-
 bot.run("your token")
 ```
 """
@@ -92,15 +91,28 @@ class Paginator(commands.Cog):
             title="Simple Example",
             description=f"The simplest way of implementing it only requires a list of the embeds to be added as pages!\n\n**Example:**\n{example1}",
         )
-        # p4.add_field(name="Example", value=f"{example1}")
         pages = [p1, p2, p3, p4]
-        await Paginator1(
+        e = Paginator1(
             bot=self.bot,
             ctx=ctx,
             pages=pages,
             content=["One", "Two", "Three", "Four"],
             timeout=60,
-        ).run()
+        )
+        d = await e.run()
+        s = ""
+        for user in d.successfulUsers:
+            s += f"{user.mention}" + (", " if len(d.successfulUsers) > 1 else "")
+        await ctx.send(
+            f"""
+The paginator returns some useful optional data!
+{s} used this paginator!
+The paginator ran for {d.timeTaken} seconds!
+This was the last embed of the paginator:
+""",
+            embed=d.lastEmbed,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @cog_ext.cog_subcommand(
         base="paginator",
@@ -125,7 +137,6 @@ class Paginator(commands.Cog):
             title="Simple Example",
             description=f"The simplest way of implementing it only requires a list of the embeds to be added as pages!\n\n**Example:**\n{example2}",
         )
-        # p4.add_field(name="Example", value=f"{example2}")
         pages = [p1, p2, p3, p4]
         e = Paginator2(
             bot=self.bot,
