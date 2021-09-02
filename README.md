@@ -1,5 +1,5 @@
 # slash-bot
-Bot for discord-py-slash-command Discord Server.  
+Bot for discord-interactions Discord Server.  
 It basically only have tag feature, release subscription 
 (but actually just role giving) feature.  
 I uploaded this for the demonstration of slash command.
@@ -31,7 +31,7 @@ async def command(ctx: SlashContext):
     embed3 = discord.Embed(title="Yet Another Title")
     pages = [embed1, embed2, embed3]
 
-    await Paginator(bot=bot, ctx=ctx, pages=pages, content="Hello there")
+    await Paginator(bot=bot, ctx=ctx, pages=pages, content="Hello there").run()
 
 bot.run("token")
 
