@@ -21,9 +21,12 @@ async def search_from_sphinx(url, keyword, fuzzSort=True):
     if fuzzSort:
         # utilises fuzzy string matching to determine which page is most likely to be what the user wants
         rData = {}
-        data = [x.get("href") for x in soup.find_all("a") if len(x.get("href")) > 3]
+        data = [
+            x.get("href") for x in soup.find_all("a") if len(str(x.get("href"))) > 3
+        ]
 
         for val in data:
+            val = str(val)
             # remove any links to github or sphinx, we're after docs pages here
             if re.search(r"\.org*?$", val) or val.startswith("https://github.com/"):
                 continue

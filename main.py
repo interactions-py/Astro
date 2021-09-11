@@ -1,17 +1,13 @@
-import logging
-
 import discord
 import discord_slash
 from discord.ext import commands
 from discord_slash.utils import manage_commands
-
-from dinteractions_Paginator import Paginator
+from modules import page
 from modules import sphinx_parser
 from modules import sqlite_db
 from modules.get_settings import get_settings, sanity_check
 
 sanity_check()
-
 bot = commands.Bot(
     command_prefix="/",
     intents=discord.Intents.all(),
@@ -20,9 +16,7 @@ bot = commands.Bot(
 )
 slash = discord_slash.SlashCommand(bot, sync_commands=False)
 bot.db = sqlite_db.SQLiteDB("data")
-
 guild_ids = get_settings("servers")
-
 logger = logging.getLogger("discord")
 logging.basicConfig(level=logging.INFO)  # DEBUG/INFO/WARNING/ERROR/CRITICAL
 handler = logging.FileHandler(filename=f"slash.log", encoding="utf-8", mode="w")
@@ -58,13 +52,13 @@ async def _unsubscribe(ctx: discord_slash.SlashContext):
 
 @slash.slash(
     name="search",
-    guild_ids=guild_ids,
+    guild_ids=[874781880489222154],
     description="Searches the docs for the given text",
     options=[manage_commands.create_option("text", "Text to search.", 3, True)],
 )
 async def _docs(ctx: discord_slash.SlashContext, text: str):
     await ctx.defer()
-    base_url = "https://discord-py-slash-command.readthedocs.io/en/latest/"
+    base_url = "https://discord-interactions.readthedocs.io/en/latest/"
     resp = await sphinx_parser.search_from_sphinx(base_url + "genindex.html", text)
     if not resp:
         return await ctx.send("No result found.")
@@ -92,7 +86,7 @@ async def _docs(ctx: discord_slash.SlashContext, text: str):
     embed_list.append(page_embed)
     if not embed_list:
         return await ctx.send("No result found.")
-    await Paginator(bot=bot, ctx=ctx, pages=embed_list, content=":arrow_down: Look here for results", timeout=60).run()
+    await page.start_page(bot, ctx, embed_list, embed=True)
 
 
 bot.load_extension("cogs.git")
@@ -101,5 +95,4 @@ bot.load_extension("cogs.tester")
 bot.load_extension("cogs.tags")
 bot.load_extension("cogs.buttons")
 bot.load_extension("cogs.examples")
-bot.load_extension("cogs.paginator")
 bot.run(get_settings("token"))
