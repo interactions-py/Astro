@@ -55,7 +55,7 @@ async def start_page(
                 await button_ctx.edit_origin(components=None)
                 break
             elif button_ctx.custom_id == f"next{rand_num}":
-                counter += 1 if counter < top else top
+                counter += 1 if counter < top else 0
                 await button_ctx.edit_origin(
                     embed=lists[counter]
                 ) if embed else await button_ctx.edit_origin(content=lists[counter])
