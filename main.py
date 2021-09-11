@@ -1,3 +1,4 @@
+import logging
 import discord
 import discord_slash
 from discord.ext import commands
@@ -52,7 +53,7 @@ async def _unsubscribe(ctx: discord_slash.SlashContext):
 
 @slash.slash(
     name="search",
-    guild_ids=[874781880489222154],
+    guild_ids=guild_ids,
     description="Searches the docs for the given text",
     options=[manage_commands.create_option("text", "Text to search.", 3, True)],
 )
