@@ -2,7 +2,7 @@ import interactions
 import dotenv
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 TOKEN = dotenv.get_key(".env", "token")
 bot = interactions.Client(TOKEN, disable_sync=True)
@@ -19,8 +19,8 @@ async def get_user_info(ctx: interactions.CommandContext):
         title="User Information",
         description="This is the retrieved information on the user.",
         author=interactions.EmbedAuthor(
-            name=f"<@{ctx.target.user.id}>",
-            url=f"discord://-/users/{ctx.target.user.id}",
+            name=f"{ctx.target.user.username}",
+            url=f"https://discord.com/users/{ctx.target.user.id}",
             icon_url=f"https://cdn.discordapp.com/avatars/{ctx.target.user.id}/{ctx.target.avatar}.png",
         ),
         fields=[
@@ -29,13 +29,13 @@ async def get_user_info(ctx: interactions.CommandContext):
                 value=f"{ctx.target.user.username}#{ctx.target.user.discriminator}",
                 inline=True,
             ),
-            interactions.EmbedField(name="ID", value=ctx.target.user.id, inline=True),
+            interactions.EmbedField(name="ID", value=str(ctx.target.user.id), inline=True),
             interactions.EmbedField(
                 name="Timestamps",
                 value="\n".join(
                     [
-                        f"Joined: <t:{ctx.target.joined_at.utcnow()}:R>.",
-                        f"Created: <t:{ctx.target.id.timestamp.utcnow()}:R>.",
+                        f"Joined: <t:{round(ctx.target.joined_at.timestamp())}:R>.",
+                        f"Created: <t:{round(ctx.target.id.timestamp.timestamp())}:R>.",
                     ]
                 ),
                 inline=True,
@@ -46,7 +46,6 @@ async def get_user_info(ctx: interactions.CommandContext):
                 if isinstance(ctx.target, interactions.Member)
                 else "N/A",
             ),
-            interactions.EmbedField(name=""),
         ],
     )
     await ctx.send(embeds=embed, ephemeral=True)
