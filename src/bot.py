@@ -5,7 +5,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-TOKEN = "OTI2OTM3ODU0MzgxMjc3MjM0.YdC8Jg.2978XwJMa19_lrclv5qIOVOg6Qg" # dotenv.get_key(".env", "token")
+TOKEN = dotenv.get_key(".env", "token")
 EXTENSIONS = ["info", "mod", "tag", "user"]
 
 bot = interactions.Client(
