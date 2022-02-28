@@ -9,7 +9,6 @@ class Tag(interactions.Extension):
     @interactions.extension_command(
         name="tag",
         description="Handles \"tags\" aka. pre-written feeds for help.",
-        scope=789032594456576001,
         options=[
             interactions.Option(
                 type=interactions.OptionType.SUB_COMMAND,

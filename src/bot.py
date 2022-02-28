@@ -5,7 +5,7 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-TOKEN = dotenv.get_key(".env", "token")
+TOKEN = "OTI2OTM3ODU0MzgxMjc3MjM0.YdC8Jg.YPSaF3TuNe5VMdsFBKORtVpdYfc" # dotenv.get_key(".env", "token")
 EXTENSIONS = ["info", "tag", "user"]
 
 bot = interactions.Client(TOKEN, disable_sync=True)
@@ -15,16 +15,23 @@ loop = asyncio.get_event_loop()
 
 async def populate():
     return {
-        "roles": [
-            dict().update({role["name"]: int(role["id"])})
-            for role in await bot._http.get_all_roles(789032594456576001)
-        ][0],
+        "roles": {
+            "Changelog pings": 789773555792740353,
+            "한국어": 791532197281529937,
+            "Русский": 823502288726261781,
+            "Deutsch": 853004334945796149,
+            "Français": 876494510723588117,
+            "हिंदी": 876854835721429023,
+            "Italiano": 880657156213461042,
+            "Polskie": 880657302812766209,
+            "Español": 905859809662889994,
+        },
         "channels": {
             "information": 789033206769778728,
             "helpers": 820672900583522335,
             "action-logs": 789041087149899796,
-            "mod-logs": 808734093754892358
-        }
+            "mod-logs": 808734093754892358,
+        },
     }
 
 METADATA = loop.run_until_complete(populate())
@@ -41,7 +48,7 @@ async def on_ready():
 )
 async def subscribe(ctx: interactions.CommandContext):
     role: int = METADATA["roles"].get("Changelog pings")
-    
+
     if role in ctx.member.roles:
         await ctx.member.remove_role(role=role, guild_id=789032594456576001)
         await ctx.send(":heavy_check_mark: Role removed.", ephemeral=True)
@@ -53,24 +60,28 @@ async def subscribe(ctx: interactions.CommandContext):
 @bot.component("language_role")
 async def language_role_selection(ctx: interactions.ComponentContext):
     role: int
+    roles: dict = {}
+
+    for _role in METADATA["roles"]:
+        roles.update({_role["name"]: _role["id"]})
     
     match ctx.data.values[0]:
         case "KR":
-            role = METADATA["roles"].get("한국어")
+            role = roles.get("한국어")
         case "RU":
-            role = METADATA["roles"].get("Русский")
+            role = roles.get("Русский")
         case "GB":
-            role = METADATA["roles"].get("Deutsch")
+            role = roles.get("Deutsch")
         case "FR":
-            role = METADATA["roles"].get("Français")
+            role = roles.get("Français")
         case "HI":
-            role = METADATA["roles"].get("हिंदी")
+            role = roles.get("हिंदी")
         case "IT":
-            role = METADATA["roles"].get("Italiano")
+            role = roles.get("Italiano")
         case "PL":
-            role = METADATA["roles"].get("Polskie")
+            role = roles.get("Polskie")
         case "ES":
-            role = METADATA["roles"].get("Español")
+            role = roles.get("Español")
         case _:
             await ctx.send(":x: The role you selected was invalid.", ephemeral=True)
             return
