@@ -5,16 +5,26 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-TOKEN = "OTI2OTM3ODU0MzgxMjc3MjM0.YdC8Jg.YPSaF3TuNe5VMdsFBKORtVpdYfc" # dotenv.get_key(".env", "token")
-EXTENSIONS = ["info", "tag", "user"]
+TOKEN = "OTI2OTM3ODU0MzgxMjc3MjM0.YdC8Jg.2978XwJMa19_lrclv5qIOVOg6Qg" # dotenv.get_key(".env", "token")
+EXTENSIONS = ["info", "mod", "tag", "user"]
 
-bot = interactions.Client(TOKEN, disable_sync=True)
+bot = interactions.Client(
+    TOKEN,
+    disable_sync=True,
+    presence=interactions.ClientPresence(
+        activities=[
+            interactions.PresenceActivity(name="you.", type=interactions.PresenceActivityType.WATCHING),
+        ],
+        status=interactions.StatusType.IDLE,
+    ),
+)
 loop = asyncio.get_event_loop()
 
 [bot.load(f"exts.{ext}") for ext in EXTENSIONS]
 
 async def populate():
-    return {
+    global METADATA
+    METADATA = {
         "roles": {
             "Changelog pings": 789773555792740353,
             "한국어": 791532197281529937,
@@ -34,8 +44,7 @@ async def populate():
         },
     }
 
-METADATA = loop.run_until_complete(populate())
-
+loop.run_until_complete(populate())
 
 @bot.event
 async def on_ready():

@@ -5,6 +5,7 @@ class User(interactions.Extension):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reported_user = None
 
     @interactions.extension_user_command(name="Get user information")
     async def get_user_info(self, ctx: interactions.CommandContext):
@@ -43,6 +44,30 @@ class User(interactions.Extension):
             ],
         )
         await ctx.send(embeds=embed, ephemeral=True)
+
+    @interactions.extension_user_command(name="Report user")
+    async def report_user(self, ctx: interactions.CommandContext):
+        modal = interactions.Modal(
+            title="Report user",
+            custom="report_user",
+            components=[
+                interactions.TextInput(
+                    style=interactions.TextStyleType.PARAGRAPH,
+                    label="Why are you reporting this user?",
+                    custom_id="report_user_reason",
+                    min_length=30,
+                ),
+            ],
+        )
+        await ctx.popup(modal)
+        self.reported_user = ctx.target
+
+    @interactions.extension_modal("report_user")
+    async def __report_user(self, ctx: interactions.CommandContext, reason: str):
+        _channel: dict = await self.bot._http.get_channel(789041087149899796)
+        channel = interactions.Channel(**_channel, _client=self.bot._http)
+        await channel.send(f"{ctx.author.mention} reported {self.reported_user.mention} for:\n```\n{reason}\n```")
+        await ctx.send(":heavy_check_mark: User reported.", ephemeral=True)
 
 def setup(bot):
     User(bot)

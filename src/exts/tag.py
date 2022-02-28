@@ -149,7 +149,7 @@ class Tag(interactions.Extension):
             ...
             
     @interactions.extension_modal(modal="new_tag")
-    async def __new_tag(self, ctx: interactions.CommandContext):
+    async def __new_tag(self, ctx: interactions.CommandContext, name: str, description: str):
         """Creates a new tag through the modal UI."""
         # TODO: code writing to database
         # TODO: check if the tag name exists
@@ -163,7 +163,7 @@ class Tag(interactions.Extension):
             )
 
     @interactions.extension_modal(modal="edit_tag")
-    async def __edit_tag(self, ctx: interactions.CommandContext):
+    async def __edit_tag(self, ctx: interactions.CommandContext, description: str):
         """Creates a new tag through the modal UI."""
         # TODO: code writing to database
         name: str = "foo"
