@@ -7,7 +7,7 @@ class User(interactions.Extension):
         self.bot = bot
         self.reported_user = None
 
-    @interactions.extension_user_command(name="Get user information")
+    @interactions.extension_user_command(name="Get user information", scope=789032594456576001)
     async def get_user_info(self, ctx: interactions.CommandContext):
         embed = interactions.Embed(
             title="User Information",
@@ -45,7 +45,7 @@ class User(interactions.Extension):
         )
         await ctx.send(embeds=embed, ephemeral=True)
 
-    @interactions.extension_user_command(name="Report user")
+    @interactions.extension_user_command(name="Report user", scope=789032594456576001)
     async def report_user(self, ctx: interactions.CommandContext):
         modal = interactions.Modal(
             title="Report user",

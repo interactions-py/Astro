@@ -1,2 +1,2 @@
-discord-py-interactions>=4.1.0
-dotenv
+discord-py-interactions~=4.1.0
+python-dotenv~=0.19.2
