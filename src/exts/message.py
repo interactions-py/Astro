@@ -1,4 +1,5 @@
 import interactions
+import src.const
 
 class Message(interactions.Extension):
     """An extension dedicated to message context menus."""
@@ -6,15 +7,15 @@ class Message(interactions.Extension):
     def __init__(self, bot: interactions.Client):
         self.bot = bot
 
-    @interactions.extension_message_command(name="Create help thread", scope=789032594456576001)
+    @interactions.extension_message_command(name="Create help thread", scope=src.const.METADATA["guild"])
     async def create_help_thread(self, ctx: interactions.CommandContext):
         _guild: dict = await self.bot._http.get_guild(int(ctx.guild_id))
         guild = interactions.Guild(**_guild, _client=self.bot._http)
 
         # sorry EdVraz, we'll need to manually do it for now until the helper is fixed.
         _thread: dict = await self.bot._http.create_thread(
-            name=f"[AUTO] Help thread for {ctx.target.author.username}#{ctx.target.author.discriminator}.",
-            channel_id=898281873946579034,
+            name=f"[AUTO] Help thread for {ctx.target.author.username}.",
+            channel_id=src.const.METADATA["channels"]["help"],
             thread_type=interactions.ChannelType.GUILD_PUBLIC_THREAD.value
         )
         thread = interactions.Channel(**_thread, _client=self.bot._http)

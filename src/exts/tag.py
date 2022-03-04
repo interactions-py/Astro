@@ -1,6 +1,7 @@
 import interactions
 import json
 import logging
+import src.const
 
 log = logging.getLogger("astro.exts.tag")
 
@@ -14,7 +15,7 @@ class Tag(interactions.Extension):
     @interactions.extension_command(
         name="tag",
         description="Handles \"tags\" aka. pre-written feeds for help.",
-        scope=789032594456576001,
+        scope=src.const.METADATA["guild"],
         options=[
             interactions.Option(
                 type=interactions.OptionType.SUB_COMMAND,
@@ -116,6 +117,7 @@ class Tag(interactions.Extension):
                         label="What do you want the tag to include?",
                         placeholder="(Note: you can also put codeblocks in here!)",
                         custom_id="new_tag_description",
+                        max_length=2000,
                     ),
                 ],
             )
@@ -174,9 +176,9 @@ class Tag(interactions.Extension):
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
-        return bool("818861272484806656" in [str(role) for role in ctx.author.roles])
+        return bool(str(src.const.METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles])
 
-    @interactions.extension_autocomplete(command=949191547709173802, name="name")
+    @interactions.extension_autocomplete(command=949407003896332348, name="name")
     async def __parse_tag(self, ctx: interactions.CommandContext, name: str=""):
         """Parses the current choice you're making with /tag."""
         letters: list = list(name) if name != "" else []
@@ -185,7 +187,9 @@ class Tag(interactions.Extension):
         log.debug("Autocompleting tag query for choices...")
 
         if not letters:
-            await ctx.populate([interactions.Choice(name=tag, value=tag) for tag in (db[:24] if len(db) > 25 else db)])
+            await ctx.populate([interactions.Choice(name=tag[0], value=tag[0]) for tag in (
+                list(db.items())[0:24] if len(db) > 25 else db
+            )])
         else:
             choices: list = []
 
