@@ -139,6 +139,7 @@ class Tag(interactions.Extension):
                         interactions.TextInput(
                             style=interactions.TextStyleType.PARAGRAPH,
                             label="What do you want the tag to include?",
+                            value=db[name],
                             placeholder="(Note: you can also put codeblocks in here!)",
                             custom_id="new_tag_description",
                         ),
@@ -175,7 +176,7 @@ class Tag(interactions.Extension):
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
         return bool("818861272484806656" in [str(role) for role in ctx.author.roles])
 
-    @interactions.extension_autocomplete(command=949167721717829672, name="name")
+    @interactions.extension_autocomplete(command=949191547709173802, name="name")
     async def __parse_tag(self, ctx: interactions.CommandContext, name: str=""):
         """Parses the current choice you're making with /tag."""
         letters: list = list(name) if name != "" else []
@@ -184,13 +185,14 @@ class Tag(interactions.Extension):
         log.debug("Autocompleting tag query for choices...")
 
         if not letters:
-            await ctx.populate([interactions.Choice(name=tag, value=tag) for tag in db[:24]])
+            await ctx.populate([interactions.Choice(name=tag, value=tag) for tag in (db[:24] if len(db) > 25 else db)])
         else:
             choices: list = []
 
             for tag in db:
                 focus: str = "".join(letters)
-                if focus in tag and len(choices) < 26:
+
+                if focus.lower() in tag.lower() and len(choices) < 26:
                     choices.append(interactions.Choice(name=tag, value=tag))
 
             await ctx.populate(choices)
