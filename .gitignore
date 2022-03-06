@@ -5,3 +5,5 @@ venv/
 env/
 .env
 .vscode
+db/
+*.json
