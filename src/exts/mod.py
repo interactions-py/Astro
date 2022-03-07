@@ -111,8 +111,8 @@ class Mod(interactions.Extension):
                     inline=True,
                 ),
                 interactions.EmbedField(name="Moderator", value=ctx.author.mention, inline=True),
-                interactions.EmbedField(name="Reason", value=reason)
-            ]
+                interactions.EmbedField(name="Reason", value=reason),
+            ],
         )
         _guild: dict = await self.bot._http.get_guild(src.const.METADATA["guild"])
         guild = interactions.Guild(**_guild, _client=self.bot._http)
@@ -158,8 +158,8 @@ class Mod(interactions.Extension):
                     ),
                     inline=True,
                 ),
-                interactions.EmbedField(name="Reason", value=reason)
-            ]
+                interactions.EmbedField(name="Reason", value=reason),
+            ],
         )
         _channel: dict = await self.bot._http.get_channel(src.const.METADATA["channels"]["action-logs"])
         channel = interactions.Channel(**_channel, _client=self.bot._http)
@@ -192,12 +192,12 @@ class Mod(interactions.Extension):
             fields=[
                 interactions.EmbedField(
                     name="Username",
-                    value=f"{message.author.username}#{message.author.discriminator}",
+                    value=message.author.mention,
                     inline=True,
                 ),
                 interactions.EmbedField(name="ID", value=str(message.author.id), inline=True),
-                interactions.EmbedField(name="Message", value=message.content)
-            ]
+                interactions.EmbedField(name="Message", value=message.content),
+            ],
         )
         _channel: dict = await self.bot._http.get_channel(src.const.METADATA["channels"]["mod-logs"])
         channel = interactions.Channel(**_channel, _client=self.bot._http)
@@ -219,7 +219,7 @@ class Mod(interactions.Extension):
             fields=[
                 interactions.EmbedField(
                     name="Username",
-                    value=f"{member.user.username}#{member.user.discriminator}",
+                    value=member.user.mention,
                     inline=True,
                 ),
                 interactions.EmbedField(name="ID", value=str(member.user.id), inline=True),
@@ -250,7 +250,7 @@ class Mod(interactions.Extension):
             fields=[
                 interactions.EmbedField(
                     name="Username",
-                    value=f"{member.user.username}#{member.user.discriminator}",
+                    value=member.user.mention,
                     inline=True,
                 ),
                 interactions.EmbedField(name="ID", value=str(member.user.id), inline=True),

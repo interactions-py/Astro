@@ -79,9 +79,13 @@ async def add_role_menu(ctx: interactions.CommandContext):
 async def language_role_selection(ctx: interactions.ComponentContext, choice: str):
     role: int
     roles: dict = {}
-
-    for _role in METADATA["roles"]:
-        roles.update({_role: METADATA["roles"][_role]["emoji"]})
+    [
+        roles.update({role: METADATA["roles"][role]})
+        for role in METADATA["roles"]
+        if role != "Changelog pings"
+        and role != "Helper"
+        and role != "Moderator"
+    ]
 
     match choice[0]:
         case "한국어":
@@ -104,11 +108,11 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: st
             await ctx.send(":x: The role you selected was invalid.", ephemeral=True)
             return
 
-    if role in ctx.member.roles:
-        await ctx.member.remove_role(role=role, guild_id=METADATA["guild"])
+    if role["id"] in ctx.member.roles:
+        await ctx.member.remove_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role removed.", ephemeral=True)
     else:
-        await ctx.member.add_role(role=role, guild_id=METADATA["guild"])
+        await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
 
 bot.start()

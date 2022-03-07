@@ -10,16 +10,34 @@ class ActionType(enum.IntEnum):
 
 class Action(interactions.DictSerializerMixin):
     """An object representing a moderation action."""
-    __slots__ = ("id", "type", "moderator", "user", "reason")
+    __slots__ = ("_json", "id", "type", "moderator", "user", "reason")
 
+    _json: dict
     id: int
     type: ActionType
     moderator: interactions.Member
-    user: interactions.User
+    user: interactions.Member
     reason: str | None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._json.update({"moderator": self.moderator._json, "user": self.user._json})
         del self._json["moderator"]["_client"]
-        print(self._json)
+        del self._json["user"]["_client"]
+
+class Tag(interactions.DictSerializerMixin):
+    """An object representing a custom-made feed."""
+    __slots__ = ("_json", "id", "author", "name", "description")
+
+    _json: dict
+    id: int | None
+    author: interactions.Snowflake
+    name: str
+    description: str
+    created_at: int
+    last_edited_at: int | None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if isinstance(self.author, interactions.Snowflake):
+            self._json.update({"author": self.author._snowflake})
