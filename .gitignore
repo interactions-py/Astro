@@ -5,5 +5,4 @@ venv/
 env/
 .env
 .vscode
-db/
-*.json
+actions.json
