@@ -6,6 +6,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 bot = interactions.Client(
     TOKEN,
+    intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT,
     disable_sync=True,
     presence=interactions.ClientPresence(
         activities=[
