@@ -23,23 +23,11 @@ class Git(interactions.Extension):
                 response: dict = await resp.json()
                 if len(response.keys()) == 2:
                     return
-                created_at = round(datetime.fromisoformat(response['created_at'].replace('Z', '')).timestamp())
-                merged_at = "None"
-                closed_at = "None"
-                if response['closed_at']:
-                    closed_at = round(datetime.fromisoformat(response['closed_at'].replace('Z', '')).timestamp())
-                    if "pull_request" in response.keys():
-                        merged_at = response['pull_request']['merged_at'] or "None"
+                print(response.keys())
+            created_at, merged_at, closed_at = self._timestamps(response)
             body, tasks, checklist = self._create_fields(response)
+            description = self._description(response, created_at, merged_at, closed_at)
             message._client = self.bot._http
-            description = f"• Created: <t:{created_at}:R>\n"
-
-            if response['state'] == "closed":
-                if "pull_request" in response.keys():
-                    if response['pull_request']['merged_at']:
-                        description = description + f"• Merged: <t:{merged_at}:R> by {response['closed_by']['login']}"
-                description = description + f"• Closed: <t:{closed_at}:R> by {response['closed_by']['login']}"
-
             if checklist and tasks:
                 fields = [interactions.EmbedField(name="**About**",
                                                   value=body),
@@ -50,15 +38,14 @@ class Git(interactions.Extension):
                                                   value=checklist,
                                                   inline=True)]
             else:
-                about = re.sub("\[[^\s]]", "✔️", "\n".join(body.split("\n")[:7]).replace("[ ]", "❌")) + "\n**...**"
-                fields = [interactions.EmbedField(name="-",
-                                                  value=about)]
+                value = re.sub("\[[^\s]]", "✔️", "\n".join(body.split("\n")[:7]).replace("[ ]", "❌")) + "\n**...**"
+                fields = [interactions.EmbedField(name="*Description:*", value=value)]
 
             await message.reply(embeds=interactions.Embed(
                 title=response['title'],
                 url=response['html_url'],
                 description=description,
-                color=0x00b700,
+                color=self._color(response),
                 footer=interactions.EmbedFooter(
                     text=response["user"]["login"],
                     icon_url=response["user"]["avatar_url"]),
@@ -69,6 +56,8 @@ class Git(interactions.Extension):
         checklist = []
         tasks = []
         body = []
+        if len(ls) == 0:
+            return "", "", ""
         while _ < len(ls):
             if "Checklist" in ls[_]:
                 while _ < len(ls):
@@ -86,53 +75,74 @@ class Git(interactions.Extension):
             del body[0]
         if len(checklist) > 1 and "##" in checklist[0]:
             del checklist[0]
-        body = "\n".join(body)
+        body = "\n".join(body) or "No description"
         checklist = re.sub("\[[^\s]]", "✔️", "\n".join(checklist)).replace("[ ]", "❌")
         tasks = re.sub("\[[^\s]]", "✔️", "\n".join(tasks)).replace("[ ]", "❌")
         return body, checklist, tasks
 
     def _prepare_issue(self, ls: list):
         _ = 0
+        if len(ls) == 0:
+            return "", None, None
         while _ < len(ls):
             if ls[_].startswith("##") or ls[_].startswith("###"):
                 ls[_] = f"**{ls[_][3:].lstrip(' ')}**"
             _ += 1
-        body = "\n".join(ls)
+        body = "\n".join(ls) or "No description"
         tasks = None
         checklist = None
-        return body, tasks, checklist
+        return body, checklist, tasks
 
     def _create_fields(self, res: dict):
         _ = 0
-        clean = re.sub(r'```([^```]*)```', string=res['body'], repl="`[CODEBLOCK]`").replace("\r", "").split("\n")
-        dupe = False
+        clean = []
+        if res['body'] is not None:
+            clean = re.sub(r'```([^```]*)```', string=res['body'], repl="`[CODEBLOCK]`").replace("\r", "").split("\n")
+            dupe = False
 
-        while _ < len(clean) - 1:
-            if clean[_] == clean[_ + 1]:
-                del clean[_]
-                dupe = True
-            elif dupe:
-                del clean[_]
-                dupe = False
-            else:
-                _ += 1
-        for el in clean:
-            if "![image]" in el:
-                clean.remove(el)
-
+            while _ < len(clean) - 1:
+                if clean[_] == clean[_ + 1]:
+                    del clean[_]
+                    dupe = True
+                elif dupe:
+                    del clean[_]
+                    dupe = False
+                else:
+                    _ += 1
+            for el in clean:
+                if "![image]" in el:
+                    clean.remove(el)
         if "pull_request" in res.keys():
             return self._prepare_PR(clean)
         else:
             return self._prepare_issue(clean)
 
-    def _pr_color(self, response: dict):
-        if response["state"] == "open":
+    def _timestamps(self, res: dict):
+        created_at = round(datetime.fromisoformat(res['created_at'].replace('Z', '')).timestamp())
+        merged_at = "None"
+        closed_at = "None"
+        if res['closed_at']:
+            closed_at = round(datetime.fromisoformat(res['closed_at'].replace('Z', '')).timestamp())
+            if "pull_request" in res.keys():
+                merged_at = res['pull_request']['merged_at'] or "None"
+        return created_at, merged_at, closed_at
+
+    def _description(self, res: dict, cr_at, mrg_at, cls_at):
+        description = f"• Created: <t:{cr_at}:R>\n"
+        if res['state'] == "closed":
+            if "pull_request" in res.keys():
+                if res['pull_request']['merged_at']:
+                    description = description + f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}"
+            description = description + f"• Closed: <t:{cls_at}:R> by {res['closed_by']['login']}"
+        return description
+
+    def _color(self, res: dict):
+        if res["state"] == "open":
             return 0x00b700
-        if "pull_request" in response.keys():
-            if response["pull_request"]["merged_at"]:
+        if "pull_request" in res.keys():
+            if res["pull_request"]["merged_at"]:
                 return 0x9e3eff
-            return 0xc40000
-        return 0xc0c0c0
+        return 0xc40000
 
 
 def setup(bot):
