@@ -111,7 +111,7 @@ class Git(interactions.Extension):
                     _ += 1
             for el in clean:
                 if "![image]" in el:
-                    clean.remove(el)
+                    clean[clean.index(el)] = "`IMAGE`"
         if "pull_request" in res.keys():
             return self._prepare_PR(clean)
         else:
@@ -123,8 +123,8 @@ class Git(interactions.Extension):
         closed_at = "None"
         if res['closed_at']:
             closed_at = round(datetime.fromisoformat(res['closed_at'].replace('Z', '')).timestamp())
-            if "pull_request" in res.keys():
-                merged_at = res['pull_request']['merged_at'] or "None"
+            if "pull_request" in res.keys() and res['pull_request']['merged_at']:
+                merged_at = round(datetime.fromisoformat(res['pull_request']['merged_at'].replace('Z', '')).timestamp())
         return created_at, merged_at, closed_at
 
     def _description(self, res: dict, cr_at, mrg_at, cls_at):
@@ -132,7 +132,8 @@ class Git(interactions.Extension):
         if res['state'] == "closed":
             if "pull_request" in res.keys():
                 if res['pull_request']['merged_at']:
-                    description = description + f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}"
+                    description = description + f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
+                    return description
             description = description + f"• Closed: <t:{cls_at}:R> by {res['closed_by']['login']}"
         return description
 
