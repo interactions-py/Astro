@@ -15,8 +15,12 @@ class Git(interactions.Extension):
     @interactions.extension_listener(name="on_message_create")
     async def on_message_create(self, message: interactions.Message):
         tags = [tag.strip("#") for tag in message.content.split() if tag.startswith("#")]
-        if message.author.id == self.bot.me.id or message.author.bot or tags[0] == "" or not tags[0].isnumeric():
-            return
+        
+        try:
+            if message.author.id == self.bot.me.id or message.author.bot or tags[0] == "" or not tags[0].isnumeric():
+                return
+        except IndexError:
+            pass # i don't give a fuck. shut up python.
 
         async with aiohttp.ClientSession() as session:
             async with session.get(self.url + tags[0], headers=self.headers) as resp:
