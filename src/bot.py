@@ -1,29 +1,38 @@
 import interactions
 import logging
+import sys
+
+sys.path.append("..")
+
 from const import *
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
+log = logging.getLogger()
 
+presence = interactions.ClientPresence(
+    activities=[
+        interactions.PresenceActivity(
+            name="you. 👀",
+            type=interactions.PresenceActivityType.WATCHING
+        ),
+    ],
+    status=interactions.StatusType.ONLINE,
+)
 bot = interactions.Client(
     TOKEN,
-    intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT,
-    disable_sync=True,
-    presence=interactions.ClientPresence(
-        activities=[
-            interactions.PresenceActivity(
-                name="you. 👀",
-                type=interactions.PresenceActivityType.WATCHING
-            ),
-        ],
-        status=interactions.StatusType.IDLE,
+    intents=(
+        interactions.Intents.DEFAULT
+        | interactions.Intents.GUILD_MESSAGE_CONTENT
+        | interactions.Intents.GUILD_MEMBERS
     ),
+    disable_sync=True
 )
 [bot.load(f"exts.{ext}") for ext in EXTENSIONS]
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.me.name}.")
-
+    # await bot.change_presence(presence)
 
 @bot.command(
     name="subscribe",

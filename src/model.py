@@ -23,7 +23,8 @@ class Action(interactions.DictSerializerMixin):
         super().__init__(**kwargs)
         self._json.update({"moderator": self.moderator._json, "user": self.user._json})
         del self._json["moderator"]["_client"]
-        del self._json["user"]["_client"]
+        if self._json["user"].get("_client"):
+            del self._json["user"]["_client"]
 
 class Tag(interactions.DictSerializerMixin):
     """An object representing a custom-made feed."""
