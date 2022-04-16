@@ -51,25 +51,25 @@ class Git(interactions.Extension):
                     icon_url=response["user"]["avatar_url"]),
                 fields=fields))
 
-    def _prepare_PR(self, ls: list):
+    def _prepare_PR(self, clean_body: list):
         _ = 0
         checklist = []
         tasks = []
         body = []
-        if len(ls) == 0:
+        if len(clean_body) == 0:
             return "", "", ""
-        while _ < len(ls):
-            if "Checklist" in ls[_]:
-                while _ < len(ls):
-                    if "I've made this pull request" not in ls[_]:
-                        checklist.append(ls[_])
+        while _ < len(clean_body):
+            if "Checklist" in clean_body[_]:
+                while _ < len(clean_body):
+                    if "I've made this pull request" not in clean_body[_]:
+                        checklist.append(clean_body[_])
                     else:
-                        while _ < len(ls):
-                            tasks.append(ls[_])
+                        while _ < len(clean_body):
+                            tasks.append(clean_body[_])
                             _ += 1
                     _ += 1
-            if _ < len(ls):
-                body.append(ls[_])
+            if _ < len(clean_body):
+                body.append(clean_body[_])
             _ += 1
         if "##" in body[0]:
             del body[0]
@@ -80,15 +80,15 @@ class Git(interactions.Extension):
         tasks = re.sub("\[[^\s]]", "✔️", "\n".join(tasks)).replace("[ ]", "❌")
         return body, checklist, tasks
 
-    def _prepare_issue(self, ls: list):
+    def _prepare_issue(self, clean_body: list):
         _ = 0
-        if len(ls) == 0:
+        if len(clean_body) == 0:
             return "", None, None
-        while _ < len(ls):
-            if ls[_].startswith("##") or ls[_].startswith("###"):
-                ls[_] = f"**{ls[_][3:].lstrip(' ')}**"
+        while _ < len(clean_body):
+            if clean_body[_].startswith("##") or clean_body[_].startswith("###"):
+                clean_body[_] = f"**{clean_body[_][3:].lstrip(' ')}**"
             _ += 1
-        body = "\n".join(ls) or "No description"
+        body = "\n".join(clean_body) or "No description"
         tasks = None
         checklist = None
         return body, checklist, tasks
