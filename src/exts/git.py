@@ -132,9 +132,9 @@ class Git(interactions.Extension):
         if res['state'] == "closed":
             if "pull_request" in res.keys():
                 if res['pull_request']['merged_at']:
-                    description = description + f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
+                    description += f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
                     return description
-            description = description + f"• Closed: <t:{cls_at}:R> by {res['closed_by']['login']}"
+            description += f"• Closed: <t:{cls_at}:R> by {res['closed_by']['login']}"
         return description
 
     def _color(self, res: dict):
