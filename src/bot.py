@@ -118,6 +118,8 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: st
             role = roles.get("Polskie")
         case "Español":
             role = roles.get("Español")
+        case "Україна":
+            role = roles.get("Україна")
         case _:
             await ctx.send(":x: The role you selected was invalid.", ephemeral=True)
             return
