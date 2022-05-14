@@ -21,9 +21,13 @@ presence = interactions.ClientPresence(
 bot = interactions.Client(
     TOKEN,
     intents=(
-        interactions.Intents.DEFAULT
-        | interactions.Intents.GUILD_MESSAGE_CONTENT
+        interactions.Intents.GUILDS
         | interactions.Intents.GUILD_MEMBERS
+        | interactions.Intents.GUILD_BANS
+        | interactions.Intents.GUILD_MESSAGES
+        | interactions.Intents.DIRECT_MESSAGES # commands can work in DMs too.
+        | interactions.Intents.GUILD_MESSAGE_CONTENT
+        | interactions.Intents.GUILDS
     ),
     disable_sync=True
 )
