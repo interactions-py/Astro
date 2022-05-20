@@ -49,7 +49,11 @@ class Message(interactions.Extension):
 
     @interactions.extension_modal("help_thread_creation")
     async def _help_thread_modal(
-        self, ctx: interactions.CommandContext, thread_name: str, content: str
+        self,
+        ctx: interactions.CommandContext,
+        thread_name: str="",
+        content: str="",
+        extra_content: str="",
     ):
         target: interactions.Message = self.targets.pop(ctx.author.id)
         # _guild: dict = await self.bot._http.get_guild(int(ctx.guild_id))
