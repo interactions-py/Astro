@@ -89,7 +89,7 @@ class Message(interactions.Extension):
             embeds=embed,
         )
         await ctx.send(
-            f"{target.author.mention}, please redirect to {thread.mention} at this time."
+            f"Hey, {target.author.mention}! At this time, we only help with support-related questions in our help channel. Please redirect to {thread.mention} in order to receive help."
         )
         await ctx.send(":white_check_mark: Thread created.", ephemeral=True)
 
