@@ -48,7 +48,7 @@ class Message(interactions.Extension):
         await ctx.popup(modal)
 
     @interactions.extension_modal("help_thread_creation")
-    async def help_thread_creation_modal(
+    async def _help_thread_modal(
         self, ctx: interactions.CommandContext, thread_name: str, content: str
     ):
         target: interactions.Message = self.targets.pop(ctx.author.id)
