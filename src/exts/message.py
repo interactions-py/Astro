@@ -22,7 +22,7 @@ class Message(interactions.Extension):
                 interactions.TextInput(
                     style=interactions.TextStyleType.SHORT,
                     custom_id="help_thread_name",
-                    label="Help thread name:",
+                    label="What should the thread be named?",
                     value=f"[AUTO] Help thread for {ctx.target.author.username}.",
                     min_length=1,
                     max_length=100,
