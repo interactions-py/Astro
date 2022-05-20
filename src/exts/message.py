@@ -30,7 +30,7 @@ class Message(interactions.Extension):
                 interactions.TextInput(
                     style=interactions.TextStyleType.PARAGRAPH,
                     custom_id="edit_content",
-                    label="Edit the content:",
+                    label="What should the question be?",
                     value=ctx.target.content,
                     min_length=1,
                     max_length=2000,
