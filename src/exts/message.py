@@ -35,6 +35,14 @@ class Message(interactions.Extension):
                     min_length=1,
                     max_length=2000,
                 ),
+                interactions.TextInput(
+                    style=interactions.TextStyleType.PARAGRAPH,
+                    custom_id="extra_content",
+                    label="Any additional information",
+                    required=False,
+                    min_length=1,
+                    max_length=2000,
+                ),
             ],
         )
         await ctx.popup(modal)
