@@ -51,9 +51,9 @@ class Message(interactions.Extension):
     async def _help_thread_modal(
         self,
         ctx: interactions.CommandContext,
-        thread_name: str="",
-        content: str="",
-        extra_content: str="",
+        thread_name: str = "",
+        content: str = "",
+        extra_content: str = "",
     ):
         target: interactions.Message = self.targets.pop(ctx.author.id)
         # _guild: dict = await self.bot._http.get_guild(int(ctx.guild_id))
@@ -80,8 +80,10 @@ class Message(interactions.Extension):
             footer=interactions.EmbedFooter(
                 text="Please create a thread in #help to ask questions!"
             ),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=target.timestamp,
         )
+        if extra_content:
+            embed.add_field(name="Additional information", value=extra_content)
         if target.attachments:
             embed.set_image(url=target.attachments[0].url)
         await thread.send(
