@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import interactions
 import src.const
 
@@ -64,6 +65,10 @@ class Message(interactions.Extension):
             else content,
             description="\n".join(content.split("\n")[1:]),
             color=0xFEE75C,
+            footer=interactions.EmbedFooter(
+                text="Please create a thread in #help to ask questions!"
+            ),
+            timestamp=datetime.now(timezone.utc),
         )
         if target.attachments:
             embed.set_image(url=target.attachments[0].url)
