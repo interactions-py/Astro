@@ -68,6 +68,7 @@ class Message(interactions.Extension):
 
         await thread.add_member(int(ctx.author.id))
         await thread.add_member(int(target.author.id))
+
         embed = interactions.Embed(
             title=thread_name,
             color=0xFEE75C,
