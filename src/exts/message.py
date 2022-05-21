@@ -81,6 +81,11 @@ class Message(interactions.Extension):
         )
         embed.add_field(name="Author", value=target.author.mention, inline=True)
         embed.add_field(name="Helper", value=ctx.author.mention, inline=True)
+        content = (
+            content.replace("@everyone", "")
+            .replace("@here", "")
+            .replace("<@&789032594456576001>", "")
+        )
         if len(content) > 1024:
             short_content = content[:1021]
             _content = (
