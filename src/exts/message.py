@@ -23,6 +23,7 @@ class Message(interactions.Extension):
                     custom_id="help_thread_name",
                     label="What should the thread be named?",
                     value=f"[AUTO] Help thread for {ctx.target.author.username}.",
+                    required=True,
                     min_length=1,
                     max_length=100,
                 ),
@@ -31,6 +32,7 @@ class Message(interactions.Extension):
                     custom_id="edit_content",
                     label="What should the question be?",
                     value=ctx.target.content,
+                    required=True,
                     min_length=1,
                     max_length=2000,
                 ),
@@ -50,8 +52,8 @@ class Message(interactions.Extension):
     async def _help_thread_modal(
         self,
         ctx: interactions.CommandContext,
-        thread_name: str = "",
-        content: str = "",
+        thread_name: str,
+        content: str,
         extra_content: str = "",
     ):
         target: interactions.Message = self.targets.pop(ctx.author.id)
