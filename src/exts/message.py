@@ -85,6 +85,7 @@ class Message(interactions.Extension):
             embed.add_field(name="Additional information", value=extra_content, inline=False)
         if target.attachments:
             embed.set_image(url=target.attachments[0].url)
+
         await thread.send(
             "This help thread was automatically generated.",
             embeds=embed,
