@@ -70,6 +70,7 @@ class Message(interactions.Extension):
 
         await thread.add_member(int(ctx.author.id))
         await thread.add_member(int(target.author.id))
+
         embed = interactions.Embed(
             title=thread_name,
             color=0xFEE75C,
@@ -82,10 +83,12 @@ class Message(interactions.Extension):
         embed.add_field(name="Helper", value=ctx.author.mention, inline=True)
         _content = f"{content[:1021]}..." if len(content) > 1024 else content
         embed.add_field(name="Question", value=_content, inline=False)
+
         if extra_content:
             embed.add_field(name="Additional information", value=extra_content, inline=False)
         if target.attachments:
             embed.set_image(url=target.attachments[0].url)
+
         await thread.send(
             "This help thread was automatically generated.",
             embeds=embed,
