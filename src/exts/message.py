@@ -34,7 +34,7 @@ class Message(interactions.Extension):
                     value=ctx.target.content,
                     required=True,
                     min_length=1,
-                    max_length=2000,
+                    max_length=4000,
                 ),
                 interactions.TextInput(
                     style=interactions.TextStyleType.PARAGRAPH,
@@ -42,7 +42,7 @@ class Message(interactions.Extension):
                     label="Any additional information",
                     required=False,
                     min_length=1,
-                    max_length=2000,
+                    max_length=1024,
                 ),
             ],
         )
@@ -81,7 +81,30 @@ class Message(interactions.Extension):
         )
         embed.add_field(name="Author", value=target.author.mention, inline=True)
         embed.add_field(name="Helper", value=ctx.author.mention, inline=True)
-        _content = f"{content[:1021]}..." if len(content) > 1024 else content
+        content = (
+            content.replace("@everyone", "")
+            .replace("@here", "")
+            .replace("<@&789032594456576001>", "")
+        )
+        if len(content) > 1024:
+            short_content = content[:1021]
+            _content = (
+                f"{content[:1018]}...```"
+                if short_content.count("```") % 2 == 1
+                else f"{content[:1020]}...`"
+                if short_content.count("`") % 2 == 1
+                else f"{content[:1019]}**..."
+                if short_content.count("**") % 2 == 1
+                else f"{content[:1020]}*..."
+                if short_content.count("*") % 2 == 1
+                else f"{content[:1019]}__..."
+                if short_content.count("__") % 2 == 1
+                else f"{content[:1020]}_..."
+                if short_content.count("_") % 2 == 1
+                else short_content
+            )
+        else:
+            _content = content
         embed.add_field(name="Question", value=_content, inline=False)
 
         if extra_content:
