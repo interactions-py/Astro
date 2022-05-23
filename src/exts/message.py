@@ -101,7 +101,7 @@ class Message(interactions.Extension):
                 if short_content.count("__") % 2 == 1
                 else f"{content[:1020]}_..."
                 if short_content.count("_") % 2 == 1
-                else short_content
+                else f"{short_content}..."
             )
         else:
             _content = content
