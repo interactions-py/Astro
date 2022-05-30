@@ -41,7 +41,8 @@ class User(interactions.Extension):
                     value=(
                         ", ".join([f"`{role}`" for role in ctx.target.roles])
                         if isinstance(ctx.target, interactions.Member)
-                        else "N/A"
+                        and ctx.target.roles
+                        else "`N/A`"
                     ),
                 ),
             ],
