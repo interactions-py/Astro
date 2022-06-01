@@ -100,6 +100,12 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: st
         and role != "Helper"
         and role != "Moderator"
     ]
+    
+    # so many people have been complaining about the bot being "broken"
+    # when in reality it's a poor latency match between their client and
+    # the application. the deferrence is being added to ensure that 
+    # a loading state will always appear.
+    await ctx.defer(ephemeral=True)
 
     match choice[0]:
         case "한국어":
