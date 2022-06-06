@@ -39,7 +39,7 @@ class User(interactions.Extension):
                 interactions.EmbedField(
                     name="Roles",
                     value=(
-                        ", ".join([f"<@{role}>" for role in ctx.target.roles])
+                        ", ".join([f"<@&{role}>" for role in ctx.target.roles])
                         if isinstance(ctx.target, interactions.Member)
                         and ctx.target.roles
                         else "`N/A`"
