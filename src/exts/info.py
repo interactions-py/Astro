@@ -1,6 +1,7 @@
 import interactions
 import src.const
 
+
 class Info(interactions.Extension):
     """An extension dedicated to /info."""
 
@@ -47,6 +48,7 @@ class Info(interactions.Extension):
             ],
         )
         await ctx.send(embeds=embed)
-    
+
+
 def setup(bot):
     Info(bot)

@@ -1,3 +1,4 @@
+import contextlib
 import interactions
 from datetime import datetime
 import re
@@ -15,12 +16,10 @@ class Git(interactions.Extension):
     @interactions.extension_listener(name="on_message_create")
     async def on_message_create(self, message: interactions.Message):
         tags = [tag.strip("#") for tag in message.content.split() if tag.startswith("#")]
-        
-        try:
+
+        with contextlib.suppress(IndexError):
             if message.author.id == self.bot.me.id or message.author.bot or tags[0] == "" or not tags[0].isnumeric():
                 return
-        except IndexError:
-            pass # i don't give a fuck. shut up python.
 
         async with aiohttp.ClientSession() as session:
             async with session.get(self.url + tags[0], headers=self.headers) as resp:
@@ -60,7 +59,7 @@ class Git(interactions.Extension):
         checklist = []
         tasks = []
         body = []
-        if len(clean_body) == 0:
+        if not clean_body:
             return "", "", ""
         while _ < len(clean_body):
             if "Checklist" in clean_body[_]:
@@ -86,7 +85,7 @@ class Git(interactions.Extension):
 
     def _prepare_issue(self, clean_body: list):
         _ = 0
-        if len(clean_body) == 0:
+        if not clean_body:
             return "", None, None
         while _ < len(clean_body):
             if clean_body[_].startswith("##") or clean_body[_].startswith("###"):
@@ -116,7 +115,7 @@ class Git(interactions.Extension):
             for el in clean:
                 if "![image]" in el:
                     clean[clean.index(el)] = "`IMAGE`"
-        if "pull_request" in res.keys():
+        if "pull_request" in res:
             return self._prepare_PR(clean)
         else:
             return self._prepare_issue(clean)
@@ -127,26 +126,24 @@ class Git(interactions.Extension):
         closed_at = "None"
         if res['closed_at']:
             closed_at = round(datetime.fromisoformat(res['closed_at'].replace('Z', '')).timestamp())
-            if "pull_request" in res.keys() and res['pull_request']['merged_at']:
+            if "pull_request" in res and res['pull_request']['merged_at']:
                 merged_at = round(datetime.fromisoformat(res['pull_request']['merged_at'].replace('Z', '')).timestamp())
         return created_at, merged_at, closed_at
 
     def _description(self, res: dict, cr_at, mrg_at, cls_at):
         description = f"• Created: <t:{cr_at}:R>\n"
         if res['state'] == "closed":
-            if "pull_request" in res.keys():
-                if res['pull_request']['merged_at']:
-                    description += f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
-                    return description
+            if "pull_request" in res and res['pull_request']['merged_at']:
+                description += f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
+                return description
             description += f"• Closed: <t:{cls_at}:R> by {res['closed_by']['login']}"
         return description
 
     def _color(self, res: dict):
         if res["state"] == "open":
             return 0x00b700
-        if "pull_request" in res.keys():
-            if res["pull_request"]["merged_at"]:
-                return 0x9e3eff
+        if "pull_request" in res and res["pull_request"]["merged_at"]:
+            return 0x9e3eff
         return 0xc40000
 
 

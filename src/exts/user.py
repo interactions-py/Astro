@@ -1,6 +1,7 @@
 import interactions
 import src.const
 
+
 class User(interactions.Extension):
     """An extension dedicated to user context menus."""
 
@@ -72,6 +73,7 @@ class User(interactions.Extension):
         channel = interactions.Channel(**_channel, _client=self.bot._http)
         await channel.send(f"{ctx.author.mention} reported {self.reported_user.mention} for:\n```\n{reason}\n```")
         await ctx.send(":heavy_check_mark: User reported.", ephemeral=True)
+
 
 def setup(bot):
     User(bot)

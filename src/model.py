@@ -1,12 +1,14 @@
 import interactions
 import enum
 
+
 class ActionType(enum.IntEnum):
     """An enumerable object representing types of moderation actions."""
     BAN = 1
     UNBAN = 2
     KICK = 3
     WARN = 4
+
 
 class Action(interactions.DictSerializerMixin):
     """An object representing a moderation action."""
@@ -25,6 +27,7 @@ class Action(interactions.DictSerializerMixin):
         del self._json["moderator"]["_client"]
         if self._json["user"].get("_client"):
             del self._json["user"]["_client"]
+
 
 class Tag(interactions.DictSerializerMixin):
     """An object representing a custom-made feed."""

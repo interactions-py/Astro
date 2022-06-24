@@ -2,10 +2,10 @@ import interactions
 from ..const import METADATA
 
 cmd = dict(
-    name = "tag",
-    description = "Handles \"tags\" aka. pre-written feeds for help.",
-    scope = METADATA["guild"],
-    options = [
+    name="tag",
+    description="Handles \"tags\" aka. pre-written feeds for help.",
+    scope=METADATA["guild"],
+    options=[
         interactions.Option(
             type=interactions.OptionType.SUB_COMMAND,
             name="view",
