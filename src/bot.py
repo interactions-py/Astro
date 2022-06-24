@@ -157,6 +157,29 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: li
     # a loading state will always appear.
     await ctx.defer(ephemeral=True)
 
+    match choice[0]:
+        case "한국어":
+            role = roles.get("한국어")
+        case "Русский":
+            role = roles.get("Русский")
+        case "Deutsch":
+            role = roles.get("Deutsch")
+        case "Français":
+            role = roles.get("Français")
+        case "हिंदी":
+            role = roles.get("हिंदी")
+        case "Italiano":
+            role = roles.get("Italiano")
+        case "Polskie":
+            role = roles.get("Polskie")
+        case "Español":
+            role = roles.get("Español")
+        case "Україна":
+            role = roles.get("Україна")
+        case _:
+            await ctx.send(":x: The role you selected was invalid.", ephemeral=True)
+            return
+
     role: int
     if role["id"] in ctx.member.roles:
         await ctx.member.remove_role(role=role["id"], guild_id=METADATA["guild"])
