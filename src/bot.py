@@ -180,7 +180,6 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: li
             await ctx.send(":x: The role you selected was invalid.", ephemeral=True)
             return
 
-    role: int
     if role["id"] in ctx.member.roles:
         await ctx.member.remove_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role removed.", ephemeral=True)
