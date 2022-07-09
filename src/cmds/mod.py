@@ -110,7 +110,7 @@ cmd = dict(
                             type=OptionType.CHANNEL,
                             name="channel",
                             description="The channel you wish to slowmode. Defaults to current channel.",
-                            required=True,
+                            required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
