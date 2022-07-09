@@ -25,7 +25,8 @@ class Mod(interactions.Extension):
         reason: str = None,
         id: int = 0,
         channel: interactions.Channel = None,
-        length: int = 0
+        length: int = 0,
+        amount: int = 0,
     ):
         log.debug("We've detected /mod, matching...")
 
@@ -48,7 +49,7 @@ class Mod(interactions.Extension):
                         case "slowmode":
                             await self._slowmode_channel(ctx, channel, length)
                         case "purge":
-                            await self._purge_channel(ctx, channel, length, reason)
+                            await self._purge_channel(ctx, amount, channel)
                         case "lock":
                             await self._lock_channel(ctx, channel)
                         case "unlock":
@@ -226,6 +227,14 @@ class Mod(interactions.Extension):
 
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been warned.", ephemeral=True)
+
+    async def _purge_channel(self, ctx: interactions.CommandContext, amount: int, channel: interactions.Channel = None):
+        """Purges an amount of message of a channel."""
+        if not channel:
+            channel = await ctx.get_channel()
+        
+        await channel.purge(amount=amount, bulk=True)
+        await ctx.send(f":heavy_check_mark: {channel.mention} was purged.", ephemeral=True)
 
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Moderator role or not."""
