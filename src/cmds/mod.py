@@ -100,18 +100,18 @@ cmd = dict(
                     description="Applies a slowmode to a channel.",
                     options=[
                         Option(
-                            type=OptionType.CHANNEL,
-                            name="channel",
-                            description="The channel you wish to slowmode.",
-                            required=True,
-                            channel_types=[ChannelType.GUILD_TEXT],
-                        ),
-                        Option(
                             type=OptionType.INTEGER,
                             name="length",
                             description="How long you want the slowmode to be. (in seconds)",
                             required=True,
                             max_value=21600,
+                        ),
+                        Option(
+                            type=OptionType.CHANNEL,
+                            name="channel",
+                            description="The channel you wish to slowmode. Defaults to current channel.",
+                            required=True,
+                            channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
                 ),
@@ -129,7 +129,7 @@ cmd = dict(
                         Option(
                             type=OptionType.CHANNEL,
                             name="channel",
-                            description="The channel you wish to purge. Defaults to current channel",
+                            description="The channel you wish to purge. Defaults to current channel.",
                             required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
                         ),
@@ -143,8 +143,8 @@ cmd = dict(
                         Option(
                             type=OptionType.CHANNEL,
                             name="channel",
-                            description="The channel you wish to lock.",
-                            required=True,
+                            description="The channel you wish to lock. Defaults to current channel.",
+                            required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
@@ -157,8 +157,8 @@ cmd = dict(
                         Option(
                             type=OptionType.CHANNEL,
                             name="channel",
-                            description="The channel you wish to unlock.",
-                            required=True,
+                            description="The channel you wish to unlock. Defaults to current channel.",
+                            required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
