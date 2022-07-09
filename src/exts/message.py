@@ -48,6 +48,7 @@ class Message(interactions.Extension):
         )
         await ctx.popup(modal)
 
+
     @interactions.extension_modal("help_thread_creation")
     async def _help_thread_modal(
         self,

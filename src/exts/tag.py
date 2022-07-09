@@ -8,6 +8,7 @@ import src.model
 
 log = logging.getLogger("astro.exts.tag")
 
+
 class Tag(interactions.Extension):
     """An extension dedicated to /tag."""
 
@@ -186,37 +187,36 @@ class Tag(interactions.Extension):
 
         if not self.__check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
-        else:
-            if name in db:
-                modal = interactions.Modal(
-                    title="Edit tag",
-                    custom_id="edit_tag",
-                    components=[
-                        interactions.TextInput(
-                            style=interactions.TextStyleType.SHORT,
-                            label="What do you want the tag to be named?",
-                            value=name,
-                            placeholder="d.py cogs vs. i.py extensions",
-                            custom_id="new_tag_name",
-                            min_length=1,
-                            max_length=100,
-                            required=False,
-                        ),
-                        interactions.TextInput(
-                            style=interactions.TextStyleType.PARAGRAPH,
-                            label="What do you want the tag to include?",
-                            value=db[name]["description"],
-                            placeholder="(Note: you can also put codeblocks in here!)",
-                            custom_id="new_tag_description",
-                            max_length=2000,
-                        ),
-                    ],
-                )
-                self.edited_name = name
+        elif name in db:
+            modal = interactions.Modal(
+                title="Edit tag",
+                custom_id="edit_tag",
+                components=[
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.SHORT,
+                        label="What do you want the tag to be named?",
+                        value=name,
+                        placeholder="d.py cogs vs. i.py extensions",
+                        custom_id="new_tag_name",
+                        min_length=1,
+                        max_length=100,
+                        required=False,
+                    ),
+                    interactions.TextInput(
+                        style=interactions.TextStyleType.PARAGRAPH,
+                        label="What do you want the tag to include?",
+                        value=db[name]["description"],
+                        placeholder="(Note: you can also put codeblocks in here!)",
+                        custom_id="new_tag_description",
+                        max_length=2000,
+                    ),
+                ],
+            )
+            self.edited_name = name
 
-                await ctx.popup(modal)
-            else:
-                await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
+            await ctx.popup(modal)
+        else:
+            await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
 
     async def _delete_tag(self, ctx: interactions.CommandContext, name: str):
         """Deletes a tag that currently exists within the database."""
@@ -226,17 +226,16 @@ class Tag(interactions.Extension):
 
         if not self.__check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
-        else:
-            if name in db:
-                del db[name]
-                db = open("./db/tags.json", "w").write(json.dumps(db, indent=4, sort_keys=True))
+        elif name in db:
+            del db[name]
+            db = open("./db/tags.json", "w").write(json.dumps(db, indent=4, sort_keys=True))
 
-                await ctx.send(
-                    f":heavy_check_mark: Tag `{name}` has been successfully deleted.",
-                    ephemeral=True
-                )
-            else:
-                await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
+            await ctx.send(
+                f":heavy_check_mark: Tag `{name}` has been successfully deleted.",
+                ephemeral=True
+            )
+        else:
+            await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
 
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
@@ -252,15 +251,20 @@ class Tag(interactions.Extension):
         log.debug("Autocompleting tag query for choices...")
 
         if not letters:
-            await ctx.populate([interactions.Choice(name=tag[0], value=tag[0]) for tag in (
-                list(db.items())[0:24] if len(db) > 25 else list(db.items())
-            )])
+            await ctx.populate(
+                [
+                    interactions.Choice(
+                        name=tag[0], value=tag[0]
+                    ) for tag in (list(db.items())[:24] if len(db) > 25 else list(db.items()))
+                ]
+            )
+
         else:
             choices: list = []
 
-            for tag in db:
-                focus: str = "".join(letters)
+            focus: str = "".join(letters)
 
+            for tag in db:
                 if focus.lower() in tag.lower() and len(choices) < 26:
                     choices.append(interactions.Choice(name=tag, value=tag))
 
@@ -320,6 +324,7 @@ class Tag(interactions.Extension):
             ),
             ephemeral=True
         )
+
 
 def setup(bot):
     Tag(bot)

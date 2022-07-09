@@ -8,6 +8,7 @@ import src.model
 
 log = logging.getLogger("astro.exts.mod")
 
+
 class Mod(interactions.Extension):
     """An extension dedicated to /mod and other functionalities."""
 
@@ -16,15 +17,15 @@ class Mod(interactions.Extension):
 
     @interactions.extension_command(**src.cmds.mod.cmd)
     async def mod(
-            self,
-            ctx: interactions.CommandContext,
-            sub_command_group: str="",
-            sub_command: str="",
-            user: interactions.User=None,
-            reason: str=None,
-            id: int=0,
-            channel: interactions.Channel=None,
-            length: int=0
+        self,
+        ctx: interactions.CommandContext,
+        sub_command_group: str = "",
+        sub_command: str = "",
+        user: interactions.User = None,
+        reason: str = None,
+        id: int = 0,
+        channel: interactions.Channel = None,
+        length: int = 0
     ):
         log.debug("We've detected /mod, matching...")
 
@@ -53,7 +54,7 @@ class Mod(interactions.Extension):
                         case "unlock":
                             await self._unlock_channel(ctx, channel)
 
-    async def _ban_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str="N/A"):
+    async def _ban_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Bans a member from the server and logs into the database."""
         db = json.loads(open("./db/actions.json", "r").read())
         id = len(list(db.items())) + 1
@@ -97,7 +98,7 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been banned.", ephemeral=True)
 
-    async def _unban_member(self, ctx: interactions.CommandContext, id: int, reason: str="N/A"):
+    async def _unban_member(self, ctx: interactions.CommandContext, id: int, reason: str = "N/A"):
         """Unbans a user from the server and logs into the database."""
         db = json.loads(open("./db/actions.json", "r").read())
         _id = len(list(db.items())) + 1
@@ -137,7 +138,7 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {user.mention} has been unbanned.", ephemeral=True)
 
-    async def _kick_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str="N/A"):
+    async def _kick_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Bans a member from the server and logs into the database."""
         db = json.loads(open("./db/actions.json", "r").read())
         id = len(list(db.items())) + 1
@@ -182,7 +183,7 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been kicked.", ephemeral=True)
 
-    async def _warn_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str="N/A"):
+    async def _warn_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Warns a member in the server and logs into the database."""
         db = json.loads(open("./db/actions.json", "r").read())
         id = len(list(db.items())) + 1
@@ -225,7 +226,6 @@ class Mod(interactions.Extension):
 
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been warned.", ephemeral=True)
-
 
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Moderator role or not."""
@@ -315,6 +315,7 @@ class Mod(interactions.Extension):
         channel = interactions.Channel(**_channel, _client=self.bot._http)
 
         await channel.send(embeds=embed)
+
 
 def setup(bot):
     Mod(bot)
