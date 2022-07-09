@@ -29,7 +29,7 @@ bot = interactions.Client(
         | interactions.Intents.GUILD_MESSAGE_CONTENT
         | interactions.Intents.GUILDS
     ),
-    disable_sync=True
+    # disable_sync=True
 )
 
 
