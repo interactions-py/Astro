@@ -129,7 +129,7 @@ cmd = dict(
                         Option(
                             type=OptionType.CHANNEL,
                             name="channel",
-                            description="The channel you wish to slowmode.",
+                            description="The channel you wish to purge. Defaults to current channel",
                             required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
                         ),
