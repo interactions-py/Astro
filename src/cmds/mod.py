@@ -121,17 +121,17 @@ cmd = dict(
                     description="\"Purges\" or deletes messages from a channel in bulk.",
                     options=[
                         Option(
+                            type=OptionType.INTEGER,
+                            name="amount",
+                            description="How many messages you wish to purge.",
+                            required=True,
+                        ),
+                        Option(
                             type=OptionType.CHANNEL,
                             name="channel",
                             description="The channel you wish to slowmode.",
-                            required=True,
+                            required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
-                        ),
-                        Option(
-                            type=OptionType.INTEGER,
-                            name="length",
-                            description="How many messages you wish to purge.",
-                            required=True,
                         ),
                     ],
                 ),
