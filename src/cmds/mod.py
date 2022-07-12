@@ -87,6 +87,68 @@ cmd = dict(
                         ),
                     ],
                 ),
+                Option(
+                    type=OptionType.SUB_COMMAND,
+                    name="timeout",
+                    description="Timeouts a user.",
+                    options=[
+                        Option(
+                            type=OptionType.USER,
+                            name="user",
+                            description="The user you wish to timeout. Default to 1 hour.",
+                            required=True,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="days",
+                            description="Days to timeout the user for. Default to 0.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="hours",
+                            description="Hours to timeout the user for. Default to 1.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="minutes",
+                            description="Minutes to timeout the user for. Default to 0.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="seconds",
+                            description="Seconds to timeout the user for. Default to 0.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.STRING,
+                            name="reason",
+                            description="The reason behind why you want to timeout them.",
+                            required=False,
+                        ),
+                    ],
+                ),
+                Option(
+                    type=OptionType.SUB_COMMAND,
+                    name="untimeout",
+                    description="Untimeouts a user.",
+                    options=[
+                        Option(
+                            type=OptionType.USER,
+                            name="user",
+                            description="The user you wish to untimeout.",
+                            required=True,
+                        ),
+                        Option(
+                            type=OptionType.STRING,
+                            name="reason",
+                            description="The reason behind why you want to untimeout them.",
+                            required=False,
+                        ),
+                    ],
+                )
             ],
         ),
         Option(
