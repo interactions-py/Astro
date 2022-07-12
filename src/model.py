@@ -1,6 +1,8 @@
 import interactions
 import enum
 
+from interactions.api.models.attrs_utils import define, field
+
 
 class ActionType(enum.IntEnum):
     """An enumerable object representing types of moderation actions."""
@@ -10,38 +12,36 @@ class ActionType(enum.IntEnum):
     WARN = 4
 
 
+@define()
 class Action(interactions.DictSerializerMixin):
     """An object representing a moderation action."""
-    __slots__ = ("_json", "id", "type", "moderator", "user", "reason")
 
-    _json: dict
-    id: int
-    type: ActionType
-    moderator: interactions.Member
-    user: interactions.Member
-    reason: str | None
+    id: int = field()
+    type: ActionType = field(converter=ActionType)
+    moderator: interactions.Member = field(converter=interactions.Member, default=None, add_client=True)
+    user: interactions.Member = field(converter=interactions.Member, default=None, add_client=True)
+    reason: str | None = field(default=None)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._json.update({"moderator": self.moderator._json, "user": self.user._json})
-        del self._json["moderator"]["_client"]
-        if self._json["user"].get("_client"):
-            del self._json["user"]["_client"]
+    # def __init__(self, **kwargs):
+    #     super().__init__(**kwargs)
+    #     self._json.update({"moderator": self.moderator._json, "user": self.user._json})
+    #     del self._json["moderator"]["_client"]
+    #     if self._json["user"].get("_client"):
+    #         del self._json["user"]["_client"]
 
 
+@define()
 class Tag(interactions.DictSerializerMixin):
     """An object representing a custom-made feed."""
-    __slots__ = ("_json", "id", "author", "name", "description")
 
-    _json: dict
-    id: int | None
-    author: interactions.Snowflake
-    name: str
-    description: str
-    created_at: int
-    last_edited_at: int | None
+    id: int | None = field(default=None)
+    author: interactions.Snowflake = field(converter=interactions.Snowflake)
+    name: str = field()
+    description: str = field()
+    created_at: int = field()
+    last_edited_at: int | None = field(default=None)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if isinstance(self.author, interactions.Snowflake):
-            self._json.update({"author": self.author._snowflake})
+    # def __init__(self, **kwargs):
+    #     super().__init__(**kwargs)
+    #     if isinstance(self.author, interactions.Snowflake):
+    #         self._json.update({"author": self.author._snowflake})
