@@ -157,6 +157,7 @@ class Mod(interactions.Extension):
 
     async def _kick_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Bans a member from the server and logs into the database."""
+        await ctx.defer(ephemeral=True)
         db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
@@ -203,6 +204,7 @@ class Mod(interactions.Extension):
 
     async def _warn_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Warns a member in the server and logs into the database."""
+        await ctx.defer(ephemeral=True)
         db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
@@ -248,6 +250,7 @@ class Mod(interactions.Extension):
 
     async def _timeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A", hours: int = 1, **kwargs):
         """Timeouts a member in the server and logs into the database."""
+        await ctx.defer(ephemeral=True)
         db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
@@ -296,6 +299,7 @@ class Mod(interactions.Extension):
 
     async def _untimeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Untimeouts a member in the server and logs into the database."""
+        await ctx.defer(ephemeral=True)
         db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
