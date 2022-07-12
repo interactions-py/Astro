@@ -1,6 +1,9 @@
 import interactions
 import logging
 import sys
+import pymongo
+from pymongo.server_api import *
+from pymongo.database import *
 
 sys.path.append("..")
 
@@ -8,6 +11,10 @@ from const import *
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
+client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi('1'))
+db: Database = client.Astro
+tags: Collection = db.Tags
+moderation: Collection = db.Moderation
 
 presence = interactions.ClientPresence(
     activities=[
@@ -33,7 +40,8 @@ bot = interactions.Client(
 )
 
 
-[bot.load(f"exts.{ext}") for ext in EXTENSIONS]
+[bot.load(f"exts.{ext}", db=db) for ext in EXTENSIONS]
+bot.load("interactions.ext.modmail")
 
 
 @bot.event
@@ -187,4 +195,4 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: li
         await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
 
-bot.start()
+#bot.start()

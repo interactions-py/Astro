@@ -5,7 +5,7 @@ import src.const
 class Message(interactions.Extension):
     """An extension dedicated to message context menus."""
 
-    def __init__(self, bot: interactions.Client):
+    def __init__(self, bot: interactions.Client, **kwargs):
         self.bot = bot
         self.targets: dict = {}
 

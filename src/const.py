@@ -4,8 +4,14 @@ import os
 global TOKEN
 global EXTENSIONS
 global METADATA
+global MONGO_DB_URL
+global TAGS_ID
+global MOD_ID
 
+MOD_ID = "MODERATION"
+TAGS_ID = "TAGS"
 TOKEN = dotenv.get_key("../.env", "token")
+MONGO_DB_URL = dotenv.get_key("../.env", "MONGO_DB_URL")
 EXTENSIONS = [file.replace(".py", "") for file in os.listdir("exts") if not file.startswith("_")]
 METADATA = {
     "guild": 789032594456576001,

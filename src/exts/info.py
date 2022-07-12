@@ -5,7 +5,7 @@ import src.const
 class Info(interactions.Extension):
     """An extension dedicated to /info."""
 
-    def __init__(self, bot):
+    def __init__(self, bot, **kwargs):
         self.bot = bot
 
     @interactions.extension_command(

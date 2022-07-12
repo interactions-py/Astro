@@ -8,7 +8,7 @@ import aiohttp
 class Git(interactions.Extension):
     """An extension dedicated to linking PRs/issues."""
 
-    def __init__(self, bot):
+    def __init__(self, bot, **kwargs):
         self.bot: interactions.Client = bot
         self.url = "https://api.github.com/repos/interactions-py/library/issues/"
         self.headers = {"accept": "application/vnd.github.v3+json"}

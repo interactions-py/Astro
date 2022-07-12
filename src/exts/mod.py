@@ -12,7 +12,7 @@ log = logging.getLogger("astro.exts.mod")
 class Mod(interactions.Extension):
     """An extension dedicated to /mod and other functionalities."""
 
-    def __init__(self, bot):
+    def __init__(self, bot, **kwargs):
         self.bot = bot
 
     @interactions.extension_command(**src.cmds.mod.cmd)

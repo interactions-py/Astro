@@ -5,6 +5,8 @@ import logging
 import src.cmds.tag
 import src.const
 import src.model
+from ..const import *
+from pymongo.database import *
 
 log = logging.getLogger("astro.exts.tag")
 
@@ -12,9 +14,15 @@ log = logging.getLogger("astro.exts.tag")
 class Tag(interactions.Extension):
     """An extension dedicated to /tag."""
 
-    def __init__(self, bot):
+    def __init__(self, bot, **kwargs):
         self.bot = bot
         self.edited_name = None
+        self.db: Database = kwargs.get("db")
+        self.tags: Collection = self.db.Tags
+        self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
+
+    async def get_tags(self) -> None:
+        self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
 
     @interactions.extension_command(**src.cmds.tag.cmd)
     async def tag(
@@ -38,7 +46,7 @@ class Tag(interactions.Extension):
 
     async def _view_tag(self, ctx: interactions.CommandContext, name: str):
         """Views a tag that currently exists within the database."""
-        db = json.loads(open("./db/tags.json", "r").read())
+        db = self._tags
 
         log.debug("Matched for view. Returning result...")
 
@@ -273,19 +281,20 @@ class Tag(interactions.Extension):
     @interactions.extension_modal(modal="new_tag")
     async def __new_tag(self, ctx: interactions.CommandContext, name: str, description: str):
         """Creates a new tag through the modal UI."""
-        db = json.loads(open("./db/tags.json", "r").read())
-
+        await ctx.defer(ephemeral=True)
+        db = self._tags
         if name not in db:
-            id = len(list(db.items())) + 1
+            _id = len(list(db.items())) + 1
             tag = src.model.Tag(
-                id=id,
+                id=_id,
                 author=ctx.author.id,
                 name=name,
                 description=description,
                 created_at=datetime.datetime.now().timestamp()
             )
             db.update({name: tag._json})
-            db = open("./db/tags.json", "w").write(json.dumps(db, indent=4, sort_keys=True))
+            self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
+            await self.get_tags()
 
             await ctx.send(
                 f":heavy_check_mark: `{name}` now exists. In order to view it, please use `/tag view`.",
@@ -300,7 +309,8 @@ class Tag(interactions.Extension):
     @interactions.extension_modal(modal="edit_tag")
     async def __edit_tag(self, ctx: interactions.CommandContext, name: str, description: str):
         """Creates a new tag through the modal UI."""
-        db = json.loads(open("./db/tags.json", "r").read())
+        await ctx.defer(ephemeral=True)
+        db = self._tags
         tag = src.model.Tag(
             id=db[self.edited_name]["id"],
             author=ctx.author.id,
@@ -314,7 +324,8 @@ class Tag(interactions.Extension):
             del db[self.edited_name]
 
         db.update({name: tag._json})
-        db = open("./db/tags.json", "w").write(json.dumps(db, indent=4, sort_keys=True))
+        self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
+        await self.get_tags()
 
         await ctx.send(
             (
