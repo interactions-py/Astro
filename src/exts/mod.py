@@ -243,20 +243,18 @@ class Mod(interactions.Extension):
 
     @interactions.extension_listener()
     async def on_message_delete(self, message: interactions.Message):
-        # TODO: Improve the message retrieval once cache has better aggregation for events.
-        _message: interactions.Message = self.bot._http.cache.messages.get(str(message.id))
         embed = interactions.Embed(
             title="Message deleted",
             color=0xED4245,
             author=interactions.EmbedAuthor(
-                name=f"{_message.author.username}#{_message.author.discriminator}",
-                icon_url=_message.author.avatar_url
+                name=f"{message.author.username}#{message.author.discriminator}",
+                icon_url=message.author.avatar_url
             ),
             fields=[
-                interactions.EmbedField(name="ID", value=str(_message.author.id), inline=True),
+                interactions.EmbedField(name="ID", value=str(message.author.id), inline=True),
                 interactions.EmbedField(
                     name="Message",
-                    value=_message.content if _message.content else "**Message could not be retrieved.**"
+                    value=message.content if message.content else "**Message could not be retrieved.**"
                 ),
             ],
         )
@@ -266,9 +264,30 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
 
     @interactions.extension_listener()
-    async def on_message_update(self, message: interactions.Message):
-        ...
-        # TODO: get back to this once we work more on aggregating cached data for a before/after.
+    async def on_message_update(self, before: interactions.Message, after: interactions.Message):
+        embed = interactions.Embed(
+            title="Message updated",
+            color=0xED4245,
+            author=interactions.EmbedAuthor(
+                name=f"{before.author.username}#{before.author.discriminator}",
+                icon_url=before.author.avatar_url
+            ),
+            fields=[
+                interactions.EmbedField(name="ID", value=str(before.author.id), inline=True),
+                interactions.EmbedField(
+                    name="Before:",
+                    value=before.content if before.content else "**Message could not be retrieved.**"
+                ),
+                interactions.EmbedField(
+                    name="After:",
+                    value=after.content if after.content else "**Message could not be retrieved.**"
+                )
+            ],
+        )
+        _channel: dict = await self.bot._http.get_channel(src.const.METADATA["channels"]["mod-logs"])
+        channel = interactions.Channel(**_channel, _client=self.bot._http)
+
+        await channel.send(embeds=embed)
 
     @interactions.extension_listener()
     async def on_guild_member_add(self, member: interactions.GuildMember):
