@@ -195,4 +195,4 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: li
         await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
 
-#bot.start()
+bot.start()
