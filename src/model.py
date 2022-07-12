@@ -22,12 +22,11 @@ class Action(interactions.DictSerializerMixin):
     user: interactions.Member = field(converter=interactions.Member, default=None, add_client=True)
     reason: str | None = field(default=None)
 
-    # def __init__(self, **kwargs):
-    #     super().__init__(**kwargs)
-    #     self._json.update({"moderator": self.moderator._json, "user": self.user._json})
-    #     del self._json["moderator"]["_client"]
-    #     if self._json["user"].get("_client"):
-    #         del self._json["user"]["_client"]
+    def __attrs_post_init__(self):
+        self._json.update({"moderator": self.moderator._json, "user": self.user._json})
+        del self._json["moderator"]["_client"]
+        if self._json["user"].get("_client"):
+            del self._json["user"]["_client"]
 
 
 @define()
@@ -41,7 +40,6 @@ class Tag(interactions.DictSerializerMixin):
     created_at: int = field()
     last_edited_at: int | None = field(default=None)
 
-    # def __init__(self, **kwargs):
-    #     super().__init__(**kwargs)
-    #     if isinstance(self.author, interactions.Snowflake):
-    #         self._json.update({"author": self.author._snowflake})
+    def __attrs_post_init__(self):
+        if isinstance(self.author, interactions.Snowflake):
+            self._json.update({"author": self.author._snowflake})
