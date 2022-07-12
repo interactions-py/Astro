@@ -5,7 +5,7 @@ import src.const
 class User(interactions.Extension):
     """An extension dedicated to user context menus."""
 
-    def __init__(self, bot):
+    def __init__(self, bot, **kwargs):
         self.bot = bot
         self.reported_user = None
 
@@ -75,5 +75,5 @@ class User(interactions.Extension):
         await ctx.send(":heavy_check_mark: User reported.", ephemeral=True)
 
 
-def setup(bot):
-    User(bot)
+def setup(bot, **kwargs):
+    User(bot, **kwargs)

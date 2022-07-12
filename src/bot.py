@@ -1,6 +1,9 @@
 import interactions
 import logging
 import sys
+import pymongo
+from pymongo.server_api import *
+from pymongo.database import *
 
 sys.path.append("..")
 
@@ -8,6 +11,10 @@ from const import *
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
+client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi('1'))
+db: Database = client.Astro
+tags: Collection = db.Tags
+moderation: Collection = db.Moderation
 
 presence = interactions.ClientPresence(
     activities=[
@@ -33,7 +40,8 @@ bot = interactions.Client(
 )
 
 
-[bot.load(f"exts.{ext}") for ext in EXTENSIONS]
+[bot.load(f"exts.{ext}", db=db) for ext in EXTENSIONS]
+bot.load("interactions.ext.modmail")
 
 
 @bot.event

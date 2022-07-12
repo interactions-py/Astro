@@ -5,7 +5,7 @@ import src.const
 class Message(interactions.Extension):
     """An extension dedicated to message context menus."""
 
-    def __init__(self, bot: interactions.Client):
+    def __init__(self, bot: interactions.Client, **kwargs):
         self.bot = bot
         self.targets: dict = {}
 
@@ -126,5 +126,5 @@ class Message(interactions.Extension):
         await ctx.send(":white_check_mark: Thread created.", ephemeral=True)
 
 
-def setup(bot):
-    Message(bot)
+def setup(bot, **kwargs):
+    Message(bot, **kwargs)
