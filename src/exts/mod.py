@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import interactions
 import json
 import logging
@@ -25,7 +25,9 @@ class Mod(interactions.Extension):
         reason: str = None,
         id: int = 0,
         channel: interactions.Channel = None,
-        length: int = 0
+        length: int = 0,
+        amount: int = 0,
+        **kwargs
     ):
         log.debug("We've detected /mod, matching...")
 
@@ -43,12 +45,16 @@ class Mod(interactions.Extension):
                             await self._kick_member(ctx, user, reason)
                         case "warn":
                             await self._warn_member(ctx, user, reason)
+                        case "timeout":
+                            await self._timeout_member(ctx, user, reason, **kwargs)
+                        case "untimeout":
+                            await self._untimeout_member(ctx, user, reason)
                 case "channel":
                     match sub_command:
                         case "slowmode":
-                            await self._slowmode_channel(ctx, channel, length)
+                            await self._slowmode_channel(ctx, length, channel)
                         case "purge":
-                            await self._purge_channel(ctx, channel, length, reason)
+                            await self._purge_channel(ctx, amount, channel)
                         case "lock":
                             await self._lock_channel(ctx, channel)
                         case "unlock":
@@ -226,6 +232,109 @@ class Mod(interactions.Extension):
 
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been warned.", ephemeral=True)
+
+    async def _timeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A", hours: int = 1, **kwargs):
+        """Timeouts a member in the server and logs into the database."""
+        db = json.loads(open("./db/actions.json", "r").read())
+        id = len(list(db.items())) + 1
+        action = src.model.Action(
+            id=id,
+            type=src.model.ActionType.TIMEOUT,
+            moderator=ctx.author,
+            user=member.user,
+            reason=reason
+        )
+        db.update({str(id): action._json})
+        db = open("./db/actions.json", "w").write(json.dumps(db))
+        embed = interactions.Embed(
+            title="User timed out",
+            color=0xFEE75C,
+            author=interactions.EmbedAuthor(
+                name=f"{member.user.username}#{member.user.discriminator}",
+                icon_url=member.user.avatar_url,
+            ),
+            fields=[
+                interactions.EmbedField(
+                    name="Moderator",
+                    value=f"{ctx.author.mention} ({ctx.author.user.username}#{ctx.author.user.discriminator})",
+                    inline=True,
+                ),
+                interactions.EmbedField(
+                    name="Timestamps",
+                    value="\n".join(
+                        [
+                            f"Joined: <t:{round(member.joined_at.timestamp())}:R>.",
+                            f"Created: <t:{round(member.id.timestamp.timestamp())}:R>.",
+                        ]
+                    ),
+                ),
+                interactions.EmbedField(name="Reason", value="N/A" if reason is None else reason),
+            ]
+        )
+        _channel: dict = await self.bot._http.get_channel(src.const.METADATA["channels"]["action-logs"])
+        channel = interactions.Channel(**_channel, _client=self.bot._http)
+
+        time = datetime.utcnow()
+        time += timedelta(hours=hours, **kwargs)
+        await member.modify(guild_id=ctx.guild_id, communication_disabled_until=time.isoformat())
+        await channel.send(embeds=embed)
+        await ctx.send(f":heavy_check_mark: {member.mention} has been timed out until <t:{round(time.timestamp())}:F> (<t:{round(time.timestamp())}:R>).", ephemeral=True)
+
+    async def _untimeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
+        """Untimeouts a member in the server and logs into the database."""
+        db = json.loads(open("./db/actions.json", "r").read())
+        id = len(list(db.items())) + 1
+        action = src.model.Action(
+            id=id,
+            type=src.model.ActionType.TIMEOUT,
+            moderator=ctx.author,
+            user=member.user,
+            reason=reason
+        )
+        db.update({str(id): action._json})
+        db = open("./db/actions.json", "w").write(json.dumps(db))
+        embed = interactions.Embed(
+            title="User untimed out",
+            color=0xFEE75C,
+            author=interactions.EmbedAuthor(
+                name=f"{member.user.username}#{member.user.discriminator}",
+                icon_url=member.user.avatar_url,
+            ),
+            fields=[
+                interactions.EmbedField(
+                    name="Moderator",
+                    value=f"{ctx.author.mention} ({ctx.author.user.username}#{ctx.author.user.discriminator})",
+                    inline=True,
+                ),
+                interactions.EmbedField(
+                    name="Timestamps",
+                    value="\n".join(
+                        [
+                            f"Joined: <t:{round(member.joined_at.timestamp())}:R>.",
+                            f"Created: <t:{round(member.id.timestamp.timestamp())}:R>.",
+                        ]
+                    ),
+                ),
+                interactions.EmbedField(name="Reason", value="N/A" if reason is None else reason),
+            ]
+        )
+        _channel: dict = await self.bot._http.get_channel(src.const.METADATA["channels"]["action-logs"])
+        channel = interactions.Channel(**_channel, _client=self.bot._http)
+
+        if member.communication_disabled_until is None:
+            return await ctx.send(f":x: {member.mention} is not timed out.", ephemeral=True)
+
+        await member.modify(guild_id=ctx.guild_id, communication_disabled_until=None)
+        await channel.send(embeds=embed)
+        await ctx.send(f":heavy_check_mark: {member.mention} has been untimed out.", ephemeral=True)
+
+    async def _purge_channel(self, ctx: interactions.CommandContext, amount: int, channel: interactions.Channel = None):
+        """Purges an amount of message of a channel."""
+        if not channel:
+            channel = await ctx.get_channel()
+        
+        await channel.purge(amount=amount, bulk=True)
+        await ctx.send(f":heavy_check_mark: {channel.mention} was purged.", ephemeral=True)
 
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Moderator role or not."""

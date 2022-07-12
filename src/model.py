@@ -8,6 +8,7 @@ class ActionType(enum.IntEnum):
     UNBAN = 2
     KICK = 3
     WARN = 4
+    TIMEOUT = 5
 
 
 class Action(interactions.DictSerializerMixin):

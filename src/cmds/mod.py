@@ -87,6 +87,68 @@ cmd = dict(
                         ),
                     ],
                 ),
+                Option(
+                    type=OptionType.SUB_COMMAND,
+                    name="timeout",
+                    description="Timeouts a user.",
+                    options=[
+                        Option(
+                            type=OptionType.USER,
+                            name="user",
+                            description="The user you wish to timeout. Default to 1 hour.",
+                            required=True,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="days",
+                            description="Days to timeout the user for. Default to 0.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="hours",
+                            description="Hours to timeout the user for. Default to 1.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="minutes",
+                            description="Minutes to timeout the user for. Default to 0.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.INTEGER,
+                            name="seconds",
+                            description="Seconds to timeout the user for. Default to 0.",
+                            required=False,
+                        ),
+                        Option(
+                            type=OptionType.STRING,
+                            name="reason",
+                            description="The reason behind why you want to timeout them.",
+                            required=False,
+                        ),
+                    ],
+                ),
+                Option(
+                    type=OptionType.SUB_COMMAND,
+                    name="untimeout",
+                    description="Untimeouts a user.",
+                    options=[
+                        Option(
+                            type=OptionType.USER,
+                            name="user",
+                            description="The user you wish to untimeout.",
+                            required=True,
+                        ),
+                        Option(
+                            type=OptionType.STRING,
+                            name="reason",
+                            description="The reason behind why you want to untimeout them.",
+                            required=False,
+                        ),
+                    ],
+                )
             ],
         ),
         Option(
@@ -100,18 +162,18 @@ cmd = dict(
                     description="Applies a slowmode to a channel.",
                     options=[
                         Option(
-                            type=OptionType.CHANNEL,
-                            name="channel",
-                            description="The channel you wish to slowmode.",
-                            required=True,
-                            channel_types=[ChannelType.GUILD_TEXT],
-                        ),
-                        Option(
                             type=OptionType.INTEGER,
                             name="length",
                             description="How long you want the slowmode to be. (in seconds)",
                             required=True,
                             max_value=21600,
+                        ),
+                        Option(
+                            type=OptionType.CHANNEL,
+                            name="channel",
+                            description="The channel you wish to slowmode. Defaults to current channel.",
+                            required=False,
+                            channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
                 ),
@@ -121,17 +183,17 @@ cmd = dict(
                     description="\"Purges\" or deletes messages from a channel in bulk.",
                     options=[
                         Option(
-                            type=OptionType.CHANNEL,
-                            name="channel",
-                            description="The channel you wish to slowmode.",
-                            required=True,
-                            channel_types=[ChannelType.GUILD_TEXT],
-                        ),
-                        Option(
                             type=OptionType.INTEGER,
-                            name="length",
+                            name="amount",
                             description="How many messages you wish to purge.",
                             required=True,
+                        ),
+                        Option(
+                            type=OptionType.CHANNEL,
+                            name="channel",
+                            description="The channel you wish to purge. Defaults to current channel.",
+                            required=False,
+                            channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
                 ),
@@ -143,8 +205,8 @@ cmd = dict(
                         Option(
                             type=OptionType.CHANNEL,
                             name="channel",
-                            description="The channel you wish to lock.",
-                            required=True,
+                            description="The channel you wish to lock. Defaults to current channel.",
+                            required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
@@ -157,8 +219,8 @@ cmd = dict(
                         Option(
                             type=OptionType.CHANNEL,
                             name="channel",
-                            description="The channel you wish to unlock.",
-                            required=True,
+                            description="The channel you wish to unlock. Defaults to current channel.",
+                            required=False,
                             channel_types=[ChannelType.GUILD_TEXT],
                         ),
                     ],
