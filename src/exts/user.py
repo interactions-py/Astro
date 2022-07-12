@@ -75,5 +75,5 @@ class User(interactions.Extension):
         await ctx.send(":heavy_check_mark: User reported.", ephemeral=True)
 
 
-def setup(bot):
-    User(bot)
+def setup(bot, **kwargs):
+    User(bot, **kwargs)

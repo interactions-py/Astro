@@ -50,5 +50,5 @@ class Info(interactions.Extension):
         await ctx.send(embeds=embed)
 
 
-def setup(bot):
-    Info(bot)
+def setup(bot, **kwargs):
+    Info(bot, **kwargs)

@@ -4,7 +4,7 @@ import logging
 import src.cmds.tag
 import src.const
 import src.model
-from ..const import *
+from src.const import *
 from pymongo.database import *
 
 log = logging.getLogger("astro.exts.tag")
@@ -338,5 +338,5 @@ class Tag(interactions.Extension):
         )
 
 
-def setup(bot):
-    Tag(bot)
+def setup(bot, **kwargs):
+    Tag(bot, **kwargs)

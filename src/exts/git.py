@@ -147,5 +147,5 @@ class Git(interactions.Extension):
         return 0xc40000
 
 
-def setup(bot):
-    Git(bot)
+def setup(bot, **kwargs):
+    Git(bot, **kwargs)

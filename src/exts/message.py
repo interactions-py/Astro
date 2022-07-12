@@ -126,5 +126,5 @@ class Message(interactions.Extension):
         await ctx.send(":white_check_mark: Thread created.", ephemeral=True)
 
 
-def setup(bot):
-    Message(bot)
+def setup(bot, **kwargs):
+    Message(bot, **kwargs)

@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 import interactions
-import json
 import logging
 import src.cmds.mod
 import src.const
 import src.model
+from src.const import *
+from pymongo.database import *
 
 log = logging.getLogger("astro.exts.mod")
 
@@ -14,6 +15,12 @@ class Mod(interactions.Extension):
 
     def __init__(self, bot, **kwargs):
         self.bot = bot
+        self.db: Database = kwargs.get("db")
+        self.actions: Collection = self.db.Moderation
+        self._actions = self.actions.find({"id": MOD_ID}).next()["actions"]
+
+    async def get_actions(self) -> None:
+        self._actions = self.actions.find({"id": TAGS_ID}).next()["actions"]
 
     @interactions.extension_command(**src.cmds.mod.cmd)
     async def mod(
@@ -62,7 +69,8 @@ class Mod(interactions.Extension):
 
     async def _ban_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Bans a member from the server and logs into the database."""
-        db = json.loads(open("./db/actions.json", "r").read())
+        await ctx.defer(ephemeral=True)
+        db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
             id=id,
@@ -72,7 +80,8 @@ class Mod(interactions.Extension):
             reason=reason
         )
         db.update({str(id): action._json})
-        db = open("./db/actions.json", "w").write(json.dumps(db))
+        self.actions.find_one_and_update({"id": MOD_ID}, {"$set": {"actions": db}})
+        await self.get_actions()
         embed = interactions.Embed(
             title="User banned",
             color=0xED4245,
@@ -106,7 +115,8 @@ class Mod(interactions.Extension):
 
     async def _unban_member(self, ctx: interactions.CommandContext, id: int, reason: str = "N/A"):
         """Unbans a user from the server and logs into the database."""
-        db = json.loads(open("./db/actions.json", "r").read())
+        await ctx.defer(ephemeral=True)
+        db = self._actions
         _id = len(list(db.items())) + 1
         _user: dict = await self.bot._http.get_user(id=id)
         user = interactions.User(**_user)
@@ -118,7 +128,8 @@ class Mod(interactions.Extension):
             reason=reason
         )
         db.update({str(_id): action._json})
-        db = open("./db/actions.json", "w").write(json.dumps(db))
+        self.actions.find_one_and_update({"id": MOD_ID}, {"$set": {"actions": db}})
+        await self.get_actions()
         embed = interactions.Embed(
             title="User unbanned",
             color=0x57F287,
@@ -146,7 +157,7 @@ class Mod(interactions.Extension):
 
     async def _kick_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Bans a member from the server and logs into the database."""
-        db = json.loads(open("./db/actions.json", "r").read())
+        db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
             id=id,
@@ -156,7 +167,8 @@ class Mod(interactions.Extension):
             reason=reason
         )
         db.update({str(id): action._json})
-        db = open("./db/actions.json", "w").write(json.dumps(db))
+        self.actions.find_one_and_update({"id": MOD_ID}, {"$set": {"actions": db}})
+        await self.get_actions()
         embed = interactions.Embed(
             title="User kicked",
             color=0xED4245,
@@ -191,7 +203,7 @@ class Mod(interactions.Extension):
 
     async def _warn_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Warns a member in the server and logs into the database."""
-        db = json.loads(open("./db/actions.json", "r").read())
+        db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
             id=id,
@@ -201,7 +213,8 @@ class Mod(interactions.Extension):
             reason=reason
         )
         db.update({str(id): action._json})
-        db = open("./db/actions.json", "w").write(json.dumps(db))
+        self.actions.find_one_and_update({"id": MOD_ID}, {"$set": {"actions": db}})
+        await self.get_actions()
         embed = interactions.Embed(
             title="User warned",
             color=0xFEE75C,
@@ -235,7 +248,7 @@ class Mod(interactions.Extension):
 
     async def _timeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A", hours: int = 1, **kwargs):
         """Timeouts a member in the server and logs into the database."""
-        db = json.loads(open("./db/actions.json", "r").read())
+        db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
             id=id,
@@ -245,7 +258,8 @@ class Mod(interactions.Extension):
             reason=reason
         )
         db.update({str(id): action._json})
-        db = open("./db/actions.json", "w").write(json.dumps(db))
+        self.actions.find_one_and_update({"id": MOD_ID}, {"$set": {"actions": db}})
+        await self.get_actions()
         embed = interactions.Embed(
             title="User timed out",
             color=0xFEE75C,
@@ -282,7 +296,7 @@ class Mod(interactions.Extension):
 
     async def _untimeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Untimeouts a member in the server and logs into the database."""
-        db = json.loads(open("./db/actions.json", "r").read())
+        db = self._actions
         id = len(list(db.items())) + 1
         action = src.model.Action(
             id=id,
@@ -292,7 +306,8 @@ class Mod(interactions.Extension):
             reason=reason
         )
         db.update({str(id): action._json})
-        db = open("./db/actions.json", "w").write(json.dumps(db))
+        self.actions.find_one_and_update({"id": MOD_ID}, {"$set": {"actions": db}})
+        await self.get_actions()
         embed = interactions.Embed(
             title="User untimed out",
             color=0xFEE75C,
@@ -426,5 +441,5 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
 
 
-def setup(bot):
-    Mod(bot)
+def setup(bot, **kwargs):
+    Mod(bot, **kwargs)
