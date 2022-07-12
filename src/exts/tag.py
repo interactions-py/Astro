@@ -1,6 +1,5 @@
 import datetime
 import interactions
-import json
 import logging
 import src.cmds.tag
 import src.const
@@ -57,7 +56,7 @@ class Tag(interactions.Extension):
 
     async def _info_tag(self, ctx: interactions.CommandContext, name: str):
         """Gathers information about a tag that currently exists within the database."""
-        db = json.loads(open("./db/tags.json", "r").read())
+        db = self._tags
 
         log.debug("Matched for info. Returning result...")
 
@@ -101,7 +100,7 @@ class Tag(interactions.Extension):
 
     async def _list_tag(self, ctx: interactions.CommandContext):
         """Lists all the tags existing in the database."""
-        db = json.loads(open("./db/tags.json", "r").read())
+        db = self._tags
 
         log.debug("Matched for list. Returning result...")
 
@@ -189,7 +188,7 @@ class Tag(interactions.Extension):
 
     async def _edit_tag(self, ctx: interactions.CommandContext, name: str):
         """Edits a tag that currently exists within the database."""
-        db = json.loads(open("./db/tags.json", "r").read())
+        db = self._tags
 
         log.debug("Matched for edit. Returning result...")
 
@@ -228,7 +227,8 @@ class Tag(interactions.Extension):
 
     async def _delete_tag(self, ctx: interactions.CommandContext, name: str):
         """Deletes a tag that currently exists within the database."""
-        db = json.loads(open("./db/tags.json", "r").read())
+        await ctx.defer()
+        db = self._tags
 
         log.debug("Matched for delete. Returning result...")
 
@@ -236,7 +236,8 @@ class Tag(interactions.Extension):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
         elif name in db:
             del db[name]
-            db = open("./db/tags.json", "w").write(json.dumps(db, indent=4, sort_keys=True))
+            self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
+            await self.get_tags()
 
             await ctx.send(
                 f":heavy_check_mark: Tag `{name}` has been successfully deleted.",
@@ -254,7 +255,7 @@ class Tag(interactions.Extension):
     async def __parse_tag(self, ctx: interactions.CommandContext, name: str=""):
         """Parses the current choice you're making with /tag."""
         letters: list = list(name) if name != "" else []
-        db = json.loads(open("./db/tags.json", "r").read())
+        db = self._tags
 
         log.debug("Autocompleting tag query for choices...")
 
