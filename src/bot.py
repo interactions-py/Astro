@@ -15,6 +15,7 @@ client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi('1'))
 db: Database = client.Astro
 tags: Collection = db.Tags
 moderation: Collection = db.Moderation
+modmail: Collection = db.Modmail
 
 presence = interactions.ClientPresence(
     activities=[
@@ -41,7 +42,7 @@ bot = interactions.Client(
 
 
 [bot.load(f"exts.{ext}", db=db) for ext in EXTENSIONS]
-bot.load("interactions.ext.modmail")
+bot.load("interactions.ext.modmail", guild_id=789032594456576001, mongo_db_collection=modmail)
 
 
 @bot.event
