@@ -59,7 +59,7 @@ class Mod(interactions.Extension):
                 case "channel":
                     match sub_command:
                         case "slowmode":
-                            await self._slowmode_channel(ctx, length, channel)
+                            await self._slowmode_channel(ctx, length, channel)  # TODO do this
                         case "purge":
                             await self._purge_channel(ctx, amount, channel)
                         case "lock":
