@@ -21,38 +21,38 @@ class Git(interactions.Extension):
             if message.author.id == self.bot.me.id or message.author.bot or tags[0] == "" or not tags[0].isnumeric():
                 return
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.url + tags[0], headers=self.headers) as resp:
-                response: dict = await resp.json()
-                if len(response.keys()) == 2:
-                    return
-                print(response.keys())
-            created_at, merged_at, closed_at = self._timestamps(response)
-            body, tasks, checklist = self._create_fields(response)
-            description = self._description(response, created_at, merged_at, closed_at)
-            message._client = self.bot._http
-            if checklist and tasks:
-                fields = [interactions.EmbedField(name="**About**",
-                                                  value=body),
-                          interactions.EmbedField(name="**Tasks**",
-                                                  value=tasks,
-                                                  inline=True),
-                          interactions.EmbedField(name="**Checklist**",
-                                                  value=checklist,
-                                                  inline=True)]
-            else:
-                value = re.sub("\[[^\s]]", "✔️", "\n".join(body.split("\n")[:7]).replace("[ ]", "❌")) + "\n**...**"
-                fields = [interactions.EmbedField(name="*Description:*", value=value)]
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.url + tags[0], headers=self.headers) as resp:
+                    response: dict = await resp.json()
+                    if len(response.keys()) == 2:
+                        return
+                    print(response.keys())
+                created_at, merged_at, closed_at = self._timestamps(response)
+                body, tasks, checklist = self._create_fields(response)
+                description = self._description(response, created_at, merged_at, closed_at)
+                message._client = self.bot._http
+                if checklist and tasks:
+                    fields = [interactions.EmbedField(name="**About**",
+                                                      value=body),
+                              interactions.EmbedField(name="**Tasks**",
+                                                      value=tasks,
+                                                      inline=True),
+                              interactions.EmbedField(name="**Checklist**",
+                                                      value=checklist,
+                                                      inline=True)]
+                else:
+                    value = re.sub("\[[^\s]]", "✔️", "\n".join(body.split("\n")[:7]).replace("[ ]", "❌")) + "\n**...**"
+                    fields = [interactions.EmbedField(name="*Description:*", value=value)]
 
-            await message.reply(embeds=interactions.Embed(
-                title=response['title'],
-                url=response['html_url'],
-                description=description,
-                color=self._color(response),
-                footer=interactions.EmbedFooter(
-                    text=response["user"]["login"],
-                    icon_url=response["user"]["avatar_url"]),
-                fields=fields))
+                await message.reply(embeds=interactions.Embed(
+                    title=response['title'],
+                    url=response['html_url'],
+                    description=description,
+                    color=self._color(response),
+                    footer=interactions.EmbedFooter(
+                        text=response["user"]["login"],
+                        icon_url=response["user"]["avatar_url"]),
+                    fields=fields))
 
     def _prepare_PR(self, clean_body: list):
         _ = 0
