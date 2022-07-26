@@ -1,6 +1,5 @@
-discord-py-interactions~=4.2.1
+git+https://github.com/interactions-py/library@4.3.0-rc.1
 python-dotenv==0.20.0
 aiohttp~=3.8.1
-interactions-modmail
 pymongo[srv]
 pytz

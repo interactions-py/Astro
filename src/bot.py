@@ -4,6 +4,7 @@ import sys
 import pymongo
 from pymongo.server_api import *
 from pymongo.database import *
+from forums import monkeypatch
 
 sys.path.append("..")
 
@@ -22,7 +23,7 @@ presence = interactions.ClientPresence(
         interactions.PresenceActivity(
             name="you. 👀",
             type=interactions.PresenceActivityType.WATCHING
-        ),
+        )._json,
     ],
     status=interactions.StatusType.ONLINE,
 )
@@ -37,18 +38,20 @@ bot = interactions.Client(
         | interactions.Intents.GUILD_MESSAGE_CONTENT
         | interactions.Intents.GUILDS
     ),
-    # disable_sync=True
+    presence=presence,
+    disable_sync=True
 )
+monkeypatch(bot)
 
 
 [bot.load(f"exts.{ext}", db=db) for ext in EXTENSIONS]
-bot.load("interactions.ext.modmail", guild_id=789032594456576001, mongo_db_collection=modmail)
 
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.me.name}.")
-    # await bot.change_presence(presence)
+
+
 @bot.command(
     name="subscribe",
     description="Adds the changelog and/or external pings role, \"subscribing\" to you to release news.",
