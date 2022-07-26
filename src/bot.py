@@ -4,7 +4,7 @@ import sys
 import pymongo
 from pymongo.server_api import *
 from pymongo.database import *
-from forums import monkeypatch, Client
+from forums import monkeypatch
 
 sys.path.append("..")
 
@@ -27,7 +27,7 @@ presence = interactions.ClientPresence(
     ],
     status=interactions.StatusType.ONLINE,
 )
-bot = Client(
+bot = interactions.Client(
     TOKEN,
     intents=(
         interactions.Intents.GUILDS

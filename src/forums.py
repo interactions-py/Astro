@@ -1,51 +1,10 @@
-from interactions import MISSING, File, Route, WebSocketClient, Client as _Client, InteractionType
-from typing import List, Optional, Dict, Tuple, Any
+from interactions import MISSING, File, Route
+from typing import List, Optional
 from aiohttp import MultipartWriter
 
 
 def monkeypatch(client):
     setattr(client._http, "create_forum_thread", create_thread_in_forum)
-
-
-class Client(_Client):
-    def __init__(self, token, **kwargs):
-        super().__init__(token, **kwargs)
-        self._websocket: WebSocketClient = ModalSelectWebSocketClient(token=token, intents=self._intents)
-
-
-class ModalSelectWebSocketClient(WebSocketClient):
-
-    def _dispatch_event(self, event: str, data: dict) -> None:
-        # sourcery skip: extract-method, merge-nested-ifs
-        if (event == "INTERACTION_CREATE" and data.get("type") and data["type"] != InteractionType.MODAL_SUBMIT) or event != "INTERACTION_CREATE":
-            super()._dispatch_event(event, data)
-        elif data.get("type"):
-            self._dispatch.dispatch("raw_socket_create", data)
-            path: str = "interactions"
-            path += ".models" if event == "INTERACTION_CREATE" else ".api.models"
-            _context = self._WebSocketClient__contextualize(data)
-            _name: str = ""
-            __args: list = [_context]
-            __kwargs: dict = {}
-
-            _name = f"modal_{_context.data.custom_id}"
-
-            if _context.data._json.get("components"):
-                for component in _context.data.components:
-                    if component.get("components"):
-                        for _value in component["components"]:
-                            if _value.get("value"):
-                                __args.append(_value["value"])
-                            if _value.get("values"):
-                                __args.append(_value["values"])
-                    else:
-                        __args.append([_value.value for _value in component.components][0])
-
-            self._dispatch.dispatch("on_modal", _context)
-
-            self._dispatch.dispatch(_name, *__args, **__kwargs)
-            self._dispatch.dispatch("on_interaction", _context)
-            self._dispatch.dispatch("on_interaction_create", _context)
 
 
 async def create_thread_in_forum(
