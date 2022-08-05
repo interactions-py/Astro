@@ -264,9 +264,7 @@ class Mod(interactions.Extension):
     @member.subcommand()
     @interactions.option("The user you wish to timeout")
     @interactions.option("The reason behind why you want to timeout them.")
-    @interactions.option(
-        "How long the user should be timeouted in days."
-    )
+    @interactions.option("How long the user should be timeouted in days.")
     @interactions.option(
         "How long the user should be timeouted in hours.",
     )

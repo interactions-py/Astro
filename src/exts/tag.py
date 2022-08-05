@@ -23,10 +23,7 @@ class Tag(interactions.Extension):
         self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
 
     @interactions.extension_command(scope=METADATA["guild"])
-    async def tag(
-        self,
-        *args, **kwargs
-    ):
+    async def tag(self, *args, **kwargs):
         ...
 
     @tag.subcommand()

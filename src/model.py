@@ -41,7 +41,6 @@ class Action(interactions.DictSerializerMixin):
         self._json.update({"moderator": self.moderator._json, "user": self.user._json})
 
 
-
 @define()
 class Tag(interactions.DictSerializerMixin):
     """An object representing a custom-made feed."""
