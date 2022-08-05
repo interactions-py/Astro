@@ -144,10 +144,14 @@ class Message(interactions.Extension):
         close_button = interactions.Button(
             style=interactions.ButtonStyle.DANGER,
             label="Close this thread",
-            custom_id="close thread"
+            custom_id="close thread",
         )
 
-        _ars = [interactions.ActionRow.new(button), interactions.ActionRow.new(select), interactions.ActionRow.new(close_button)]
+        _ars = [
+            interactions.ActionRow.new(button),
+            interactions.ActionRow.new(select),
+            interactions.ActionRow.new(close_button),
+        ]
 
         msg = await thread.send(
             "This help thread was automatically generated. Read the message above for more information.",
@@ -171,20 +175,30 @@ class Message(interactions.Extension):
     @interactions.extension_listener
     async def on_thread_create(self, thread: interactions.Thread):
 
-        if thread._extras.get("applied_tags") and thread.parent_id == 996211499364262039 and thread._extras.get("newly_created") and "AUTO" not in thread.name:
-            msg = await thread.send("Hey! If your issue is solved, press the button below to close this thread!", components=[interactions.Button(
-            style=interactions.ButtonStyle.DANGER,
-            label="Close this thread",
-            custom_id="close thread"
-        )])
+        if (
+            thread._extras.get("applied_tags")
+            and thread.parent_id == 996211499364262039
+            and thread._extras.get("newly_created")
+            and "AUTO" not in thread.name
+        ):
+            msg = await thread.send(
+                "Hey! If your issue is solved, press the button below to close this thread!",
+                components=[
+                    interactions.Button(
+                        style=interactions.ButtonStyle.DANGER,
+                        label="Close this thread",
+                        custom_id="close thread",
+                    )
+                ],
+            )
             await msg.pin()
-
 
     @interactions.extension_component("close thread")
     async def _close_thread(self, ctx: interactions.ComponentContext):
         await ctx.get_channel()
         await ctx.send("Closing! Thank you for using our help system!")
         await ctx.channel.modify(archived=True, locked=True)
+
 
 def setup(bot, **kwargs):
     Message(bot, **kwargs)
