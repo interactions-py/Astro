@@ -6,6 +6,7 @@ from interactions.api.models.attrs_utils import define, field
 
 class ActionType(enum.IntEnum):
     """An enumerable object representing types of moderation actions."""
+
     BAN = 1
     UNBAN = 2
     KICK = 3
@@ -19,8 +20,12 @@ class Action(interactions.DictSerializerMixin):
 
     id: int = field()
     type: ActionType = field(converter=ActionType)
-    moderator: interactions.Member = field(converter=interactions.Member, default=None, add_client=True)
-    user: interactions.Member = field(converter=interactions.Member, default=None, add_client=True)
+    moderator: interactions.Member = field(
+        converter=interactions.Member, default=None, add_client=True
+    )
+    user: interactions.Member = field(
+        converter=interactions.Member, default=None, add_client=True
+    )
     reason: str | None = field(default=None)
 
     def __attrs_post_init__(self):

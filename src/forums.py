@@ -30,7 +30,9 @@ async def create_thread_in_forum(
     :param reason: An optional reason for the audit log
     :return: Returns a Thread in a Forum object with a starting Message.
     """
-    query = {"has_message": "True"}  # TODO: Switch query after new feature breaking release.
+    query = {
+        "has_message": "True"
+    }  # TODO: Switch query after new feature breaking release.
 
     payload = {"name": name, "auto_archive_duration": auto_archive_duration}
     if rate_limit_per_user:
@@ -65,4 +67,3 @@ async def create_thread_in_forum(
         params=query,
         reason=reason,
     )
-

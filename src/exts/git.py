@@ -15,44 +15,69 @@ class Git(interactions.Extension):
 
     @interactions.extension_listener(name="on_message_create")
     async def on_message_create(self, message: interactions.Message):
-        tags = [tag.strip("#") for tag in message.content.split() if tag.startswith("#")]
+        tags = [
+            tag.strip("#").strip(".").strip("?").strip("!") for tag in message.content.split() if tag.startswith("#")
+        ]
 
         with contextlib.suppress(IndexError):
-            if message.author.id == self.bot.me.id or message.author.bot or tags[0] == "" or not tags[0].isnumeric():
+            if (
+                message.author.id == self.bot.me.id
+                or message.author.bot
+                or tags[0] == ""
+                or not tags[0].isnumeric()
+            ):
                 return
 
             async with aiohttp.ClientSession() as session:
-                async with session.get(self.url + tags[0], headers=self.headers) as resp:
+                async with session.get(
+                    self.url + tags[0], headers=self.headers
+                ) as resp:
                     response: dict = await resp.json()
                     if len(response.keys()) == 2:
                         return
                     print(response.keys())
                 created_at, merged_at, closed_at = self._timestamps(response)
                 body, tasks, checklist = self._create_fields(response)
-                description = self._description(response, created_at, merged_at, closed_at)
+                description = self._description(
+                    response, created_at, merged_at, closed_at
+                )
                 message._client = self.bot._http
                 if checklist and tasks:
-                    fields = [interactions.EmbedField(name="**About**",
-                                                      value=body),
-                              interactions.EmbedField(name="**Tasks**",
-                                                      value=tasks,
-                                                      inline=True),
-                              interactions.EmbedField(name="**Checklist**",
-                                                      value=checklist,
-                                                      inline=True)]
+                    fields = [
+                        interactions.EmbedField(name="**About**", value=body),
+                        interactions.EmbedField(
+                            name="**Tasks**", value=tasks, inline=True
+                        ),
+                        interactions.EmbedField(
+                            name="**Checklist**", value=checklist, inline=True
+                        ),
+                    ]
                 else:
-                    value = re.sub("\[[^\s]]", "✔️", "\n".join(body.split("\n")[:7]).replace("[ ]", "❌")) + "\n**...**"
-                    fields = [interactions.EmbedField(name="*Description:*", value=value)]
+                    value = (
+                        re.sub(
+                            "\[[^\s]]",
+                            "✔️",
+                            "\n".join(body.split("\n")[:7]).replace("[ ]", "❌"),
+                        )
+                        + "\n**...**"
+                    )
+                    fields = [
+                        interactions.EmbedField(name="*Description:*", value=value)
+                    ]
 
-                await message.reply(embeds=interactions.Embed(
-                    title=response['title'],
-                    url=response['html_url'],
-                    description=description,
-                    color=self._color(response),
-                    footer=interactions.EmbedFooter(
-                        text=response["user"]["login"],
-                        icon_url=response["user"]["avatar_url"]),
-                    fields=fields))
+                await message.reply(
+                    embeds=interactions.Embed(
+                        title=response["title"],
+                        url=response["html_url"],
+                        description=description,
+                        color=self._color(response),
+                        footer=interactions.EmbedFooter(
+                            text=response["user"]["login"],
+                            icon_url=response["user"]["avatar_url"],
+                        ),
+                        fields=fields,
+                    )
+                )
 
     def _prepare_PR(self, clean_body: list):
         _ = 0
@@ -99,8 +124,12 @@ class Git(interactions.Extension):
     def _create_fields(self, res: dict):
         _ = 0
         clean = []
-        if res['body'] is not None:
-            clean = re.sub(r'```([^```]*)```', string=res['body'], repl="`[CODEBLOCK]`").replace("\r", "").split("\n")
+        if res["body"] is not None:
+            clean = (
+                re.sub(r"```([^```]*)```", string=res["body"], repl="`[CODEBLOCK]`")
+                .replace("\r", "")
+                .split("\n")
+            )
             dupe = False
 
             while _ < len(clean) - 1:
@@ -121,30 +150,40 @@ class Git(interactions.Extension):
             return self._prepare_issue(clean)
 
     def _timestamps(self, res: dict):
-        created_at = round(datetime.fromisoformat(res['created_at'].replace('Z', '')).timestamp())
+        created_at = round(
+            datetime.fromisoformat(res["created_at"].replace("Z", "")).timestamp()
+        )
         merged_at = "None"
         closed_at = "None"
-        if res['closed_at']:
-            closed_at = round(datetime.fromisoformat(res['closed_at'].replace('Z', '')).timestamp())
-            if "pull_request" in res and res['pull_request']['merged_at']:
-                merged_at = round(datetime.fromisoformat(res['pull_request']['merged_at'].replace('Z', '')).timestamp())
+        if res["closed_at"]:
+            closed_at = round(
+                datetime.fromisoformat(res["closed_at"].replace("Z", "")).timestamp()
+            )
+            if "pull_request" in res and res["pull_request"]["merged_at"]:
+                merged_at = round(
+                    datetime.fromisoformat(
+                        res["pull_request"]["merged_at"].replace("Z", "")
+                    ).timestamp()
+                )
         return created_at, merged_at, closed_at
 
     def _description(self, res: dict, cr_at, mrg_at, cls_at):
         description = f"• Created: <t:{cr_at}:R>\n"
-        if res['state'] == "closed":
-            if "pull_request" in res and res['pull_request']['merged_at']:
-                description += f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
+        if res["state"] == "closed":
+            if "pull_request" in res and res["pull_request"]["merged_at"]:
+                description += (
+                    f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
+                )
                 return description
             description += f"• Closed: <t:{cls_at}:R> by {res['closed_by']['login']}"
         return description
 
     def _color(self, res: dict):
         if res["state"] == "open":
-            return 0x00b700
+            return 0x00B700
         if "pull_request" in res and res["pull_request"]["merged_at"]:
-            return 0x9e3eff
-        return 0xc40000
+            return 0x9E3EFF
+        return 0xC40000
 
 
 def setup(bot, **kwargs):

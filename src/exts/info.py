@@ -11,7 +11,7 @@ class Info(interactions.Extension):
     @interactions.extension_command(
         name="info",
         description="Get information about the bot.",
-        scope=src.const.METADATA["guild"]
+        scope=src.const.METADATA["guild"],
     )
     async def info(self, ctx: interactions.CommandContext):
         embed = interactions.Embed(

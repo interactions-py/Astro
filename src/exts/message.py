@@ -50,10 +50,17 @@ class Message(interactions.Extension):
         await ctx.popup(modal)
 
     @interactions.extension_component("TAG_SELECTION")
-    async def _help_thread_select(self, ctx: interactions.ComponentContext, _selected: list[str]):
-        if src.const.METADATA["roles"]["Helper"] not in ctx.author.roles and src.const.METADATA["roles"]["Moderator"] not in ctx.author.roles:
+    async def _help_thread_select(
+        self, ctx: interactions.ComponentContext, _selected: list[str]
+    ):
+        if (
+            src.const.METADATA["roles"]["Helper"] not in ctx.author.roles
+            and src.const.METADATA["roles"]["Moderator"] not in ctx.author.roles
+        ):
             return await ctx.send("missing permissions!", ephemeral=True)
-        await self.bot._http.modify_channel(channel_id=int(ctx.channel_id), payload={"applied_tags": _selected})
+        await self.bot._http.modify_channel(
+            channel_id=int(ctx.channel_id), payload={"applied_tags": _selected}
+        )
         await ctx.send("Done", ephemeral=True)
 
     @interactions.extension_modal("help_thread_creation")
@@ -80,10 +87,14 @@ class Message(interactions.Extension):
             channel_id=src.const.METADATA["channels"]["help"],
             applied_tags=["996215708595794071"],
             message_payload=target._json,
-            reason="Auto help thread creation"
+            reason="Auto help thread creation",
         )
 
-        ch = await interactions.get(self.bot, interactions.Channel, object_id=src.const.METADATA["channels"]["help"])
+        ch = await interactions.get(
+            self.bot,
+            interactions.Channel,
+            object_id=src.const.METADATA["channels"]["help"],
+        )
         _tags = ch._extras["available_tags"]
         _options: list[interactions.SelectOption] = [
             interactions.SelectOption(
@@ -91,8 +102,11 @@ class Message(interactions.Extension):
                 value=tag["id"],
                 emoji=interactions.Emoji(
                     name=tag["emoji_name"],
-                ) if tag["emoji_name"] else None
-            ) for tag in _tags
+                )
+                if tag["emoji_name"]
+                else None,
+            )
+            for tag in _tags
         ]
 
         select = interactions.SelectMenu(
@@ -115,12 +129,14 @@ class Message(interactions.Extension):
                 title="Additional Information:",
                 color=0xFEE75C,
                 timestamp=target.timestamp,
-                description=extra_content
+                description=extra_content,
             )
             embed.set_footer(text="Please create a thread in #help to ask questions!")
 
         button = interactions.Button(
-            style=interactions.ButtonStyle.LINK, label="Original message", url=target.url
+            style=interactions.ButtonStyle.LINK,
+            label="Original message",
+            url=target.url,
         )
 
         _ars = [interactions.ActionRow.new(button), interactions.ActionRow.new(select)]
@@ -128,7 +144,7 @@ class Message(interactions.Extension):
         await thread.send(
             "This help thread was automatically generated. Read the message above for more information.",
             embeds=embed,
-            components=_ars
+            components=_ars,
         )
 
         if attachments:
