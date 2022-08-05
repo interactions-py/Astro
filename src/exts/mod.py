@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 import interactions
 import logging
-import src.cmds.mod
 import src.const
 import src.model
 from src.const import *
 from pymongo.database import *
+from time import perf_counter
+from asyncio import sleep
 
 log = logging.getLogger("astro.exts.mod")
 
@@ -22,52 +23,26 @@ class Mod(interactions.Extension):
     async def get_actions(self) -> None:
         self._actions = self.actions.find({"id": TAGS_ID}).next()["actions"]
 
-    @interactions.extension_command(**src.cmds.mod.cmd)
+    @interactions.extension_command()
     async def mod(
-        self,
-        ctx: interactions.CommandContext,
-        sub_command_group: str = "",
-        sub_command: str = "",
-        user: interactions.User = None,
-        reason: str = None,
-        id: int = 0,
-        channel: interactions.Channel = None,
-        length: int = 0,
-        amount: int = 0,
-        **kwargs
+            self,
+            ctx: interactions.CommandContext,
+            **kwargs
     ):
-        log.debug("We've detected /mod, matching...")
+        """Handles all moderation aspects."""
 
         if not self.__check_role(ctx):
             await ctx.send(":x: You are not a moderator.", ephemeral=True)
-        else:
-            match sub_command_group:
-                case "member":
-                    match sub_command:
-                        case "ban":
-                            await self._ban_member(ctx, user, reason)
-                        case "unban":
-                            await self._unban_member(ctx, id, reason)
-                        case "kick":
-                            await self._kick_member(ctx, user, reason)
-                        case "warn":
-                            await self._warn_member(ctx, user, reason)
-                        case "timeout":
-                            await self._timeout_member(ctx, user, reason, **kwargs)
-                        case "untimeout":
-                            await self._untimeout_member(ctx, user, reason)
-                case "channel":
-                    match sub_command:
-                        case "slowmode":
-                            await self._slowmode_channel(ctx, length, channel)  # TODO do this
-                        case "purge":
-                            await self._purge_channel(ctx, amount, channel)
-                        case "lock":
-                            await self._lock_channel(ctx, channel)
-                        case "unlock":
-                            await self._unlock_channel(ctx, channel)
+            return interactions.StopCommand()
 
-    async def _ban_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
+    @mod.group()
+    async def member(self, *args, **kwargs):
+        ...
+
+    @member.subcommand()
+    @interactions.option("The user you wish to ban")
+    @interactions.option("The reason behind why you want to ban them.")
+    async def ban(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Bans a member from the server and logs into the database."""
         await ctx.defer(ephemeral=True)
         db = self._actions
@@ -113,7 +88,10 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been banned.", ephemeral=True)
 
-    async def _unban_member(self, ctx: interactions.CommandContext, id: int, reason: str = "N/A"):
+    @member.subcommand()
+    @interactions.option("The ID of the user you wish to unban.")
+    @interactions.option("The reason behind why you want to unban them.")
+    async def unban(self, ctx: interactions.CommandContext, id: str, reason: str = "N/A"):
         """Unbans a user from the server and logs into the database."""
         await ctx.defer(ephemeral=True)
         db = self._actions
@@ -155,8 +133,11 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {user.mention} has been unbanned.", ephemeral=True)
 
-    async def _kick_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
-        """Bans a member from the server and logs into the database."""
+    @member.subcommand()
+    @interactions.option("The user you wish to kick")
+    @interactions.option("The reason behind why you want to kick them.")
+    async def kick(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
+        """Kicks a member from the server and logs into the database."""
         await ctx.defer(ephemeral=True)
         db = self._actions
         id = len(list(db.items())) + 1
@@ -202,7 +183,10 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been kicked.", ephemeral=True)
 
-    async def _warn_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
+    @member.subcommand()
+    @interactions.option("The user you wish to warn")
+    @interactions.option("The reason behind why you want to warn them.")
+    async def warn(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Warns a member in the server and logs into the database."""
         await ctx.defer(ephemeral=True)
         db = self._actions
@@ -248,8 +232,18 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been warned.", ephemeral=True)
 
-    async def _timeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A", hours: int = 1, **kwargs):
+    @member.subcommand()
+    @interactions.option("The user you wish to timeout")
+    @interactions.option("The reason behind why you want to timeout them.")
+    @interactions.option("How long the user should be timeouted in days.", name="days", required=False)
+    @interactions.option("How long the user should be timeouted in hours.", name="hours", required=False)
+    @interactions.option("How long the user should be timeouted in minutes.", name="minutes", required=False)
+    @interactions.option("How long the user should be timeouted in seconds.", name="seconds", required=False)
+    async def timeout(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A",
+                      **kwargs):
         """Timeouts a member in the server and logs into the database."""
+        if not kwargs:
+            return await ctx.send(":x: missing any indicator of timeout length!", ephemeral=True)
         await ctx.defer(ephemeral=True)
         db = self._actions
         id = len(list(db.items())) + 1
@@ -292,12 +286,17 @@ class Mod(interactions.Extension):
         channel = interactions.Channel(**_channel, _client=self.bot._http)
 
         time = datetime.utcnow()
-        time += timedelta(hours=hours, **kwargs)
+        time += timedelta(**kwargs)
         await member.modify(guild_id=ctx.guild_id, communication_disabled_until=time.isoformat())
         await channel.send(embeds=embed)
-        await ctx.send(f":heavy_check_mark: {member.mention} has been timed out until <t:{round(time.timestamp())}:F> (<t:{round(time.timestamp())}:R>).", ephemeral=True)
+        await ctx.send(
+            f":heavy_check_mark: {member.mention} has been timed out until <t:{round(time.timestamp())}:F> (<t:{round(time.timestamp())}:R>).",
+            ephemeral=True)
 
-    async def _untimeout_member(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
+    @member.subcommand()
+    @interactions.option("The user you wish to untimeout")
+    @interactions.option("The reason behind why you want to untimeout them.")
+    async def untimeout(self, ctx: interactions.CommandContext, member: interactions.Member, reason: str = "N/A"):
         """Untimeouts a member in the server and logs into the database."""
         await ctx.defer(ephemeral=True)
         db = self._actions
@@ -347,17 +346,90 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
         await ctx.send(f":heavy_check_mark: {member.mention} has been untimed out.", ephemeral=True)
 
-    async def _purge_channel(self, ctx: interactions.CommandContext, amount: int, channel: interactions.Channel = None):
+    @mod.group()
+    async def channel(self, *args, **kwargs):
+        ...
+
+    @channel.subcommand()
+    @interactions.option("The amount of messages you want to delete")
+    @interactions.option("Whether bulk delete should be used, default True")
+    @interactions.option("The reason behind why you want purge.")
+    @interactions.option("The channel that should be purged", channel_types=[interactions.ChannelType.GUILD_TEXT])
+    @interactions.autodefer(ephemeral=True)
+    async def purge(self, ctx: interactions.CommandContext, amount: int, bulk: bool = True, reason: str = "N/A",
+                    channel: interactions.Channel = None):
         """Purges an amount of message of a channel."""
         if not channel:
             channel = await ctx.get_channel()
-        
-        await channel.purge(amount=amount, bulk=True)
-        await ctx.send(f":heavy_check_mark: {channel.mention} was purged.", ephemeral=True)
+
+        begin = perf_counter()
+        await channel.purge(amount=amount, bulk=bulk, reason=reason)
+        end = perf_counter()
+
+        if end - begin >= 900:  # more than 15m
+            time = datetime.utcnow() + timedelta(seconds=60)
+            msg = await channel.send(f":heavy_check_mark: {channel.mention} was purged. {ctx.author.mention} \n"
+                                     f"**I will self-destruct in <t:{time.timestamp()}:R>**!")
+            await sleep(60)
+            await msg.delete()
+
+        else:
+            await ctx.send(f":heavy_check_mark: {channel.mention} was purged. ", ephemeral=True)
+
+    @channel.subcommand()
+    @interactions.option("The amount of time to be set as slowmode.")
+    @interactions.option("The reason behind why you want to add slow-mode.")
+    @interactions.option("The channel that should be slowmoded", channel_types=[interactions.ChannelType.GUILD_TEXT])
+    @interactions.autodefer(ephemeral=True)
+    async def slowmode(self, ctx: interactions.CommandContext, time: int, reason: str = "N/A",
+                       channel: interactions.Channel = None):
+        """Sets the slowmode in a channel."""
+        if not channel:
+            channel = await ctx.get_channel()
+
+        await channel.modify(rate_limit_per_user=time, reason=reason)
+        await ctx.send(f":heavy_check_mark: {channel.mention}'s slowmode was set!", ephemeral=True)
+
+    @channel.subcommand()
+    @interactions.option("The reason of the lock.")
+    async def lock(self, ctx: interactions.CommandContext, reason: str = "N/A"):
+        """Locks the current channel."""
+        await ctx.get_channel()
+
+        overwrites = ctx.channel.permission_overwrites
+
+        for overwrite in overwrites:
+            if int(overwrite.id) == int(ctx.guild_id):
+                overwrite.deny |= interactions.Permissions.SEND_MESSAGES
+                break
+        else:
+            overwrites.append(
+                interactions.Overwrite(id=str(ctx.guild_id), deny=interactions.Permissions.SEND_MESSAGES, type=0))
+
+        await ctx.channel.modify(reason=reason, permission_overwrites=overwrites)
+
+    @channel.subcommand()
+    @interactions.option("The reason of the unlock")
+    async def unlock(self, ctx: interactions.CommandContext, reason: str = "N/A"):
+        await ctx.get_channel()
+
+        overwrites = ctx.channel.permission_overwrites
+
+        for overwrite in overwrites:
+            if int(overwrite.id) == int(ctx.guild_id):
+                overwrite.deny &= ~interactions.Permissions.SEND_MESSAGES
+                overwrite.allow |= interactions.Permissions.SEND_MESSAGES
+                break
+        else:
+            overwrites.append(
+                interactions.Overwrite(id=str(ctx.guild_id), allow=interactions.Permissions.SEND_MESSAGES, type=0))
+
+        await ctx.channel.modify(reason=reason, permission_overwrites=overwrites)
 
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Moderator role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
+        # no bc perm system not good for this
         return bool(str(src.const.METADATA["roles"]["Moderator"]) in [str(role) for role in ctx.author.roles])
 
     @interactions.extension_listener()
