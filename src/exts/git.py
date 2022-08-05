@@ -16,7 +16,9 @@ class Git(interactions.Extension):
     @interactions.extension_listener(name="on_message_create")
     async def on_message_create(self, message: interactions.Message):
         tags = [
-            tag.strip("#").strip(".").strip("?").strip("!") for tag in message.content.split() if tag.startswith("#")
+            tag.strip("#").strip(".").strip("?").strip("!")
+            for tag in message.content.split()
+            if tag.startswith("#")
         ]
 
         with contextlib.suppress(IndexError):
