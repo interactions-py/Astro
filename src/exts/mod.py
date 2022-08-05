@@ -21,9 +21,9 @@ class Mod(interactions.Extension):
         self._actions = self.actions.find({"id": MOD_ID}).next()["actions"]
 
     async def get_actions(self) -> None:
-        self._actions = self.actions.find({"id": TAGS_ID}).next()["actions"]
+        self._actions = self.actions.find({"id": MOD_ID}).next()["actions"]
 
-    @interactions.extension_command()
+    @interactions.extension_command(scope=METADATA["guild"])
     async def mod(self, ctx: interactions.CommandContext, **kwargs):
         """Handles all moderation aspects."""
 
@@ -265,30 +265,29 @@ class Mod(interactions.Extension):
     @interactions.option("The user you wish to timeout")
     @interactions.option("The reason behind why you want to timeout them.")
     @interactions.option(
-        "How long the user should be timeouted in days.", name="days", required=False
+        "How long the user should be timeouted in days."
     )
     @interactions.option(
-        "How long the user should be timeouted in hours.", name="hours", required=False
+        "How long the user should be timeouted in hours.",
     )
     @interactions.option(
         "How long the user should be timeouted in minutes.",
-        name="minutes",
-        required=False,
     )
     @interactions.option(
         "How long the user should be timeouted in seconds.",
-        name="seconds",
-        required=False,
     )
     async def timeout(
         self,
         ctx: interactions.CommandContext,
         member: interactions.Member,
         reason: str = "N/A",
-        **kwargs,
+        days: int = 0,
+        hours: int = 0,
+        minutes: int = 0,
+        seconds: int = 0,
     ):
         """Timeouts a member in the server and logs into the database."""
-        if not kwargs:
+        if not days and not hours and not minutes and not seconds:
             return await ctx.send(
                 ":x: missing any indicator of timeout length!", ephemeral=True
             )
@@ -337,8 +336,8 @@ class Mod(interactions.Extension):
         )
         channel = interactions.Channel(**_channel, _client=self.bot._http)
 
-        time = datetime.utcnow()
-        time += timedelta(**kwargs)
+        time = datetime.now()
+        time += timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
         await member.modify(
             guild_id=ctx.guild_id, communication_disabled_until=time.isoformat()
         )
@@ -444,7 +443,7 @@ class Mod(interactions.Extension):
         end = perf_counter()
 
         if end - begin >= 900:  # more than 15m
-            time = datetime.utcnow() + timedelta(seconds=60)
+            time = datetime.now() + timedelta(seconds=60)
             msg = await channel.send(
                 f":heavy_check_mark: {channel.mention} was purged. {ctx.author.mention} \n"
                 f"**I will self-destruct in <t:{time.timestamp()}:R>**!"

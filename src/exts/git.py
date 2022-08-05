@@ -37,7 +37,7 @@ class Git(interactions.Extension):
                     response: dict = await resp.json()
                     if len(response.keys()) == 2:
                         return
-                    print(response.keys())
+
                 created_at, merged_at, closed_at = self._timestamps(response)
                 body, tasks, checklist = self._create_fields(response)
                 description = self._description(

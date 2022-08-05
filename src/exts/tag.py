@@ -1,7 +1,6 @@
 import datetime
 import interactions
 import logging
-import src.cmds.tag
 import src.const
 import src.model
 from src.const import *
@@ -23,30 +22,16 @@ class Tag(interactions.Extension):
     async def get_tags(self) -> None:
         self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
 
-    @interactions.extension_command(**src.cmds.tag.cmd)
+    @interactions.extension_command(scope=METADATA["guild"])
     async def tag(
         self,
-        ctx: interactions.CommandContext,
-        sub_command: str = None,
-        name: str = None,
+        *args, **kwargs
     ):
-        log.debug("We've detected /tag, matching...")
+        ...
 
-        match ctx.data.options[0].name:
-            case "view":
-                await self._view_tag(ctx, name)
-            case "info":
-                await self._info_tag(ctx, name)
-            case "list":
-                await self._list_tag(ctx)
-            case "create":
-                await self._create_tag(ctx)
-            case "edit":
-                await self._edit_tag(ctx, name)
-            case "delete":
-                await self._delete_tag(ctx, name)
-
-    async def _view_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("the name of the tag", autocomplete=True)
+    async def view(self, ctx: interactions.CommandContext, name: str):
         """Views a tag that currently exists within the database."""
         db = self._tags
 
@@ -57,7 +42,9 @@ class Tag(interactions.Extension):
         else:
             await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
 
-    async def _info_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("The name of the tag", autocomplete=True)
+    async def info(self, ctx: interactions.CommandContext, name: str):
         """Gathers information about a tag that currently exists within the database."""
         db = self._tags
 
@@ -110,7 +97,8 @@ class Tag(interactions.Extension):
             )
             await ctx.send(embeds=embed)
 
-    async def _list_tag(self, ctx: interactions.CommandContext):
+    @tag.subcommand()
+    async def list(self, ctx: interactions.CommandContext):
         """Lists all the tags existing in the database."""
         db = self._tags
 
@@ -168,7 +156,8 @@ class Tag(interactions.Extension):
 
         await ctx.send(embeds=embed, components=paginator)
 
-    async def _create_tag(self, ctx: interactions.CommandContext):
+    @tag.subcommand()
+    async def create(self, ctx: interactions.CommandContext):
         """Creates a tag and adds it into the database."""
         log.debug("Matched for create. Returning result...")
 
@@ -198,7 +187,9 @@ class Tag(interactions.Extension):
 
             await ctx.popup(modal)
 
-    async def _edit_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("The name of the tag", autocomplete=True)
+    async def edit(self, ctx: interactions.CommandContext, name: str):
         """Edits a tag that currently exists within the database."""
         db = self._tags
 
@@ -237,7 +228,9 @@ class Tag(interactions.Extension):
         else:
             await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
 
-    async def _delete_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("The name of the option", autocomplete=True)
+    async def delete(self, ctx: interactions.CommandContext, name: str):
         """Deletes a tag that currently exists within the database."""
         await ctx.defer()
         db = self._tags
@@ -266,7 +259,7 @@ class Tag(interactions.Extension):
             in [str(role) for role in ctx.author.roles]
         )
 
-    @interactions.extension_autocomplete(command=962150400729960559, name="name")
+    @interactions.extension_autocomplete(command="tag", name="name")
     async def __parse_tag(self, ctx: interactions.CommandContext, name: str = ""):
         """Parses the current choice you're making with /tag."""
         letters: list = list(name) if name != "" else []
