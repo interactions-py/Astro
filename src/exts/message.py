@@ -50,10 +50,17 @@ class Message(interactions.Extension):
         await ctx.popup(modal)
 
     @interactions.extension_component("TAG_SELECTION")
-    async def _help_thread_select(self, ctx: interactions.ComponentContext, _selected: list[str]):
-        if src.const.METADATA["roles"]["Helper"] not in ctx.author.roles and src.const.METADATA["roles"]["Moderator"] not in ctx.author.roles:
+    async def _help_thread_select(
+        self, ctx: interactions.ComponentContext, _selected: list[str]
+    ):
+        if (
+            src.const.METADATA["roles"]["Helper"] not in ctx.author.roles
+            and src.const.METADATA["roles"]["Moderator"] not in ctx.author.roles
+        ):
             return await ctx.send("missing permissions!", ephemeral=True)
-        await self.bot._http.modify_channel(channel_id=int(ctx.channel_id), payload={"applied_tags": _selected})
+        await self.bot._http.modify_channel(
+            channel_id=int(ctx.channel_id), payload={"applied_tags": _selected}
+        )
         await ctx.send("Done", ephemeral=True)
 
     @interactions.extension_modal("help_thread_creation")
@@ -73,6 +80,9 @@ class Message(interactions.Extension):
             del target._json["attachments"]
             attachments = True
 
+        if not "AUTO" in thread_name:
+            thread_name = f"[AUTO] {thread_name}"
+
         _thread: dict = await self.bot._http.create_forum_thread(
             self=self.bot._http,
             auto_archive_duration=1440,
@@ -80,10 +90,14 @@ class Message(interactions.Extension):
             channel_id=src.const.METADATA["channels"]["help"],
             applied_tags=["996215708595794071"],
             message_payload=target._json,
-            reason="Auto help thread creation"
+            reason="Auto help thread creation",
         )
 
-        ch = await interactions.get(self.bot, interactions.Channel, object_id=src.const.METADATA["channels"]["help"])
+        ch = await interactions.get(
+            self.bot,
+            interactions.Channel,
+            object_id=src.const.METADATA["channels"]["help"],
+        )
         _tags = ch._extras["available_tags"]
         _options: list[interactions.SelectOption] = [
             interactions.SelectOption(
@@ -91,8 +105,11 @@ class Message(interactions.Extension):
                 value=tag["id"],
                 emoji=interactions.Emoji(
                     name=tag["emoji_name"],
-                ) if tag["emoji_name"] else None
-            ) for tag in _tags
+                )
+                if tag["emoji_name"]
+                else None,
+            )
+            for tag in _tags
         ]
 
         select = interactions.SelectMenu(
@@ -115,21 +132,33 @@ class Message(interactions.Extension):
                 title="Additional Information:",
                 color=0xFEE75C,
                 timestamp=target.timestamp,
-                description=extra_content
+                description=extra_content,
             )
             embed.set_footer(text="Please create a thread in #help to ask questions!")
 
         button = interactions.Button(
-            style=interactions.ButtonStyle.LINK, label="Original message", url=target.url
+            style=interactions.ButtonStyle.LINK,
+            label="Original message",
+            url=target.url,
+        )
+        close_button = interactions.Button(
+            style=interactions.ButtonStyle.DANGER,
+            label="Close this thread",
+            custom_id="close thread",
         )
 
-        _ars = [interactions.ActionRow.new(button), interactions.ActionRow.new(select)]
+        _ars = [
+            interactions.ActionRow.new(button),
+            interactions.ActionRow.new(select),
+            interactions.ActionRow.new(close_button),
+        ]
 
-        await thread.send(
+        msg = await thread.send(
             "This help thread was automatically generated. Read the message above for more information.",
             embeds=embed,
-            components=_ars
+            components=_ars,
         )
+        await msg.pin()
 
         if attachments:
             await thread.send(
@@ -142,6 +171,33 @@ class Message(interactions.Extension):
             f"channel. Please redirect to {thread.mention} in order to receive help."
         )
         await ctx.send(":white_check_mark: Thread created.", ephemeral=True)
+
+    @interactions.extension_listener
+    async def on_thread_create(self, thread: interactions.Thread):
+
+        if (
+            thread._extras.get("applied_tags")
+            and thread.parent_id == 996211499364262039
+            and thread._extras.get("newly_created")
+            and "AUTO" not in thread.name
+        ):
+            msg = await thread.send(
+                "Hey! If your issue is solved, press the button below to close this thread!",
+                components=[
+                    interactions.Button(
+                        style=interactions.ButtonStyle.DANGER,
+                        label="Close this thread",
+                        custom_id="close thread",
+                    )
+                ],
+            )
+            await msg.pin()
+
+    @interactions.extension_component("close thread")
+    async def _close_thread(self, ctx: interactions.ComponentContext):
+        await ctx.get_channel()
+        await ctx.send("Closing! Thank you for using our help system!")
+        await ctx.channel.modify(archived=True, locked=True)
 
 
 def setup(bot, **kwargs):

@@ -6,6 +6,7 @@ from interactions.api.models.attrs_utils import define, field
 
 class ActionType(enum.IntEnum):
     """An enumerable object representing types of moderation actions."""
+
     BAN = 1
     UNBAN = 2
     KICK = 3
@@ -19,15 +20,25 @@ class Action(interactions.DictSerializerMixin):
 
     id: int = field()
     type: ActionType = field(converter=ActionType)
-    moderator: interactions.Member = field(converter=interactions.Member, default=None, add_client=True)
-    user: interactions.Member = field(converter=interactions.Member, default=None, add_client=True)
+    moderator: interactions.Member = field(
+        converter=interactions.Member, default=None, add_client=False
+    )
+    user: interactions.User = field(
+        converter=interactions.User, default=None, add_client=False
+    )
     reason: str | None = field(default=None)
 
     def __attrs_post_init__(self):
-        self._json.update({"moderator": self.moderator._json, "user": self.user._json})
-        del self._json["moderator"]["_client"]
+        if self._json["moderator"].get("_client"):
+            del self._json["moderator"]["_client"]
+        if self._json["moderator"].get("user").get("_client"):
+            del self._json["moderator"]["user"]["_client"]
         if self._json["user"].get("_client"):
             del self._json["user"]["_client"]
+        del self.moderator._client
+        del self.moderator.user._client
+        del self.user._client
+        self._json.update({"moderator": self.moderator._json, "user": self.user._json})
 
 
 @define()

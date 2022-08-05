@@ -1,7 +1,6 @@
 import datetime
 import interactions
 import logging
-import src.cmds.tag
 import src.const
 import src.model
 from src.const import *
@@ -23,27 +22,13 @@ class Tag(interactions.Extension):
     async def get_tags(self) -> None:
         self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
 
-    @interactions.extension_command(**src.cmds.tag.cmd)
-    async def tag(
-        self, ctx: interactions.CommandContext, sub_command: str=None, name: str=None
-    ):
-        log.debug("We've detected /tag, matching...")
+    @interactions.extension_command(scope=METADATA["guild"])
+    async def tag(self, *args, **kwargs):
+        ...
 
-        match ctx.data.options[0].name:
-            case "view":
-                await self._view_tag(ctx, name)
-            case "info":
-                await self._info_tag(ctx, name)
-            case "list":
-                await self._list_tag(ctx)
-            case "create":
-                await self._create_tag(ctx)
-            case "edit":
-                await self._edit_tag(ctx, name)
-            case "delete":
-                await self._delete_tag(ctx, name)
-
-    async def _view_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("the name of the tag", autocomplete=True)
+    async def view(self, ctx: interactions.CommandContext, name: str):
         """Views a tag that currently exists within the database."""
         db = self._tags
 
@@ -54,7 +39,9 @@ class Tag(interactions.Extension):
         else:
             await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
 
-    async def _info_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("The name of the tag", autocomplete=True)
+    async def info(self, ctx: interactions.CommandContext, name: str):
         """Gathers information about a tag that currently exists within the database."""
         db = self._tags
 
@@ -64,12 +51,16 @@ class Tag(interactions.Extension):
             _author: dict = await self.bot._http.get_user(db[name]["author"])
             author = interactions.User(**_author)
             embed = interactions.Embed(
-                title="\"" + name + "\"" if "\"" not in name else name,
+                title='"' + name + '"' if '"' not in name else name,
                 color=0x5865F2,
-                footer=interactions.EmbedFooter(text=" ".join([
-                    "Tags are made and maintained by the Helpers here in the support server.",
-                    "Please contact one if you believe one is incorrect."
-                ])),
+                footer=interactions.EmbedFooter(
+                    text=" ".join(
+                        [
+                            "Tags are made and maintained by the Helpers here in the support server.",
+                            "Please contact one if you believe one is incorrect.",
+                        ]
+                    )
+                ),
                 fields=[
                     interactions.EmbedField(
                         name="Author",
@@ -83,22 +74,28 @@ class Tag(interactions.Extension):
                     ),
                     interactions.EmbedField(
                         name="Timestamps",
-                        value="\n".join([
-                            f"Created: <t:{round(db[name]['created_at'])}:R>.",
-                            "Last edited: " + (
-                                f"<t:{round(db[name]['last_edited_at'])}:R>."
-                                if db[name].get("last_edited_at")
-                                else "N/A"
-                            )
-                        ]),
-                        inline=True
+                        value="\n".join(
+                            [
+                                f"Created: <t:{round(db[name]['created_at'])}:R>.",
+                                "Last edited: "
+                                + (
+                                    f"<t:{round(db[name]['last_edited_at'])}:R>."
+                                    if db[name].get("last_edited_at")
+                                    else "N/A"
+                                ),
+                            ]
+                        ),
+                        inline=True,
                     ),
-                    interactions.EmbedField(name="Content", value="Please use `/tag view`."),
+                    interactions.EmbedField(
+                        name="Content", value="Please use `/tag view`."
+                    ),
                 ],
             )
             await ctx.send(embeds=embed)
 
-    async def _list_tag(self, ctx: interactions.CommandContext):
+    @tag.subcommand()
+    async def list(self, ctx: interactions.CommandContext):
         """Lists all the tags existing in the database."""
         db = self._tags
 
@@ -132,7 +129,7 @@ class Tag(interactions.Extension):
 
             _last_name = tag
             _id += 1
-        
+
         if _id < len(db):
             ...
 
@@ -156,7 +153,8 @@ class Tag(interactions.Extension):
 
         await ctx.send(embeds=embed, components=paginator)
 
-    async def _create_tag(self, ctx: interactions.CommandContext):
+    @tag.subcommand()
+    async def create(self, ctx: interactions.CommandContext):
         """Creates a tag and adds it into the database."""
         log.debug("Matched for create. Returning result...")
 
@@ -186,7 +184,9 @@ class Tag(interactions.Extension):
 
             await ctx.popup(modal)
 
-    async def _edit_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("The name of the tag", autocomplete=True)
+    async def edit(self, ctx: interactions.CommandContext, name: str):
         """Edits a tag that currently exists within the database."""
         db = self._tags
 
@@ -225,7 +225,9 @@ class Tag(interactions.Extension):
         else:
             await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
 
-    async def _delete_tag(self, ctx: interactions.CommandContext, name: str):
+    @tag.subcommand()
+    @interactions.option("The name of the option", autocomplete=True)
+    async def delete(self, ctx: interactions.CommandContext, name: str):
         """Deletes a tag that currently exists within the database."""
         await ctx.defer()
         db = self._tags
@@ -241,7 +243,7 @@ class Tag(interactions.Extension):
 
             await ctx.send(
                 f":heavy_check_mark: Tag `{name}` has been successfully deleted.",
-                ephemeral=True
+                ephemeral=True,
             )
         else:
             await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
@@ -249,10 +251,13 @@ class Tag(interactions.Extension):
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
-        return bool(str(src.const.METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles])
+        return bool(
+            str(src.const.METADATA["roles"]["Helper"])
+            in [str(role) for role in ctx.author.roles]
+        )
 
-    @interactions.extension_autocomplete(command=962150400729960559, name="name")
-    async def __parse_tag(self, ctx: interactions.CommandContext, name: str=""):
+    @interactions.extension_autocomplete(command="tag", name="name")
+    async def __parse_tag(self, ctx: interactions.CommandContext, name: str = ""):
         """Parses the current choice you're making with /tag."""
         letters: list = list(name) if name != "" else []
         db = self._tags
@@ -262,9 +267,10 @@ class Tag(interactions.Extension):
         if not letters:
             await ctx.populate(
                 [
-                    interactions.Choice(
-                        name=tag[0], value=tag[0]
-                    ) for tag in (list(db.items())[:24] if len(db) > 25 else list(db.items()))
+                    interactions.Choice(name=tag[0], value=tag[0])
+                    for tag in (
+                        list(db.items())[:24] if len(db) > 25 else list(db.items())
+                    )
                 ]
             )
 
@@ -280,7 +286,9 @@ class Tag(interactions.Extension):
             await ctx.populate(choices)
 
     @interactions.extension_modal(modal="new_tag")
-    async def __new_tag(self, ctx: interactions.CommandContext, name: str, description: str):
+    async def __new_tag(
+        self, ctx: interactions.CommandContext, name: str, description: str
+    ):
         """Creates a new tag through the modal UI."""
         await ctx.defer(ephemeral=True)
         db = self._tags
@@ -291,7 +299,7 @@ class Tag(interactions.Extension):
                 author=ctx.author.id,
                 name=name,
                 description=description,
-                created_at=datetime.datetime.now().timestamp()
+                created_at=datetime.datetime.now().timestamp(),
             )
             db.update({name: tag._json})
             self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
@@ -299,16 +307,18 @@ class Tag(interactions.Extension):
 
             await ctx.send(
                 f":heavy_check_mark: `{name}` now exists. In order to view it, please use `/tag view`.",
-                ephemeral=True
+                ephemeral=True,
             )
         else:
             await ctx.send(
                 ":x: Tag `{name}` already exists.\n(Did you mean to use `/tag edit`?)",
-                ephemeral=True
+                ephemeral=True,
             )
 
     @interactions.extension_modal(modal="edit_tag")
-    async def __edit_tag(self, ctx: interactions.CommandContext, name: str, description: str):
+    async def __edit_tag(
+        self, ctx: interactions.CommandContext, name: str, description: str
+    ):
         """Creates a new tag through the modal UI."""
         await ctx.defer(ephemeral=True)
         db = self._tags
@@ -318,9 +328,9 @@ class Tag(interactions.Extension):
             name=self.edited_name,
             description=description,
             created_at=db[self.edited_name]["created_at"],
-            last_edited_at=datetime.datetime.now().timestamp()
+            last_edited_at=datetime.datetime.now().timestamp(),
         )
-        
+
         if name != self.edited_name:
             del db[self.edited_name]
 
@@ -334,7 +344,7 @@ class Tag(interactions.Extension):
                 if name == self.edited_name
                 else f":heavy_check_mark: Tag `{self.edited_name}` has been edited and re-named to `{name}`."
             ),
-            ephemeral=True
+            ephemeral=True,
         )
 
 

@@ -12,7 +12,7 @@ from const import *
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
-client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi('1'))
+client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi("1"))
 db: Database = client.Astro
 tags: Collection = db.Tags
 moderation: Collection = db.Moderation
@@ -21,8 +21,7 @@ modmail: Collection = db.Modmail
 presence = interactions.ClientPresence(
     activities=[
         interactions.PresenceActivity(
-            name="you. 👀",
-            type=interactions.PresenceActivityType.WATCHING
+            name="you. 👀", type=interactions.PresenceActivityType.WATCHING
         )._json,
     ],
     status=interactions.StatusType.ONLINE,
@@ -39,7 +38,7 @@ bot = interactions.Client(
         | interactions.Intents.GUILDS
     ),
     presence=presence,
-    disable_sync=True
+    disable_sync=False,
 )
 monkeypatch(bot)
 
@@ -54,7 +53,7 @@ async def on_ready():
 
 @bot.command(
     name="subscribe",
-    description="Adds the changelog and/or external pings role, \"subscribing\" to you to release news.",
+    description='Adds the changelog and/or external pings role, "subscribing" to you to release news.',
     scope=METADATA["guild"],
     options=[
         interactions.Option(
@@ -64,12 +63,13 @@ async def on_ready():
             type=interactions.OptionType.STRING,
             choices=[
                 interactions.Choice(name="Only Main Library Changelogs", value="main"),
-                interactions.Choice(name="Only External Library Changelogs", value="external"),
+                interactions.Choice(
+                    name="Only External Library Changelogs", value="external"
+                ),
                 interactions.Choice(name="Both Changelogs", value="both"),
-
-            ]
+            ],
         )
-    ]
+    ],
 )
 async def subscribe(ctx: interactions.CommandContext, changelog: str = "main"):
 
@@ -117,17 +117,21 @@ async def subscribe(ctx: interactions.CommandContext, changelog: str = "main"):
         return await ctx.send(resp, ephemeral=True)
 
 
-@bot.command(
-    name="add-role-menu",
-    description="N/A.",
-    scope=METADATA["guild"]
-)
+@bot.command(name="add-role-menu", description="N/A.", scope=METADATA["guild"])
 async def add_role_menu(ctx: interactions.CommandContext):
     if str(ctx.author.id) == "242351388137488384":
-        _channel: dict = await bot._http.get_channel(METADATA["channels"]["information"])
+        _channel: dict = await bot._http.get_channel(
+            METADATA["channels"]["information"]
+        )
         _roles: list[str] = [
-            role for role in METADATA["roles"] if role not in [
-                "Changelog pings", "Helper", "Moderator", "External Changelog pings"
+            role
+            for role in METADATA["roles"]
+            if role
+            not in [
+                "Changelog pings",
+                "Helper",
+                "Moderator",
+                "External Changelog pings",
             ]
         ]
 
@@ -141,26 +145,29 @@ async def add_role_menu(ctx: interactions.CommandContext):
                         id=None,
                         name=METADATA["roles"][lang]["emoji"],
                         animated=False,
-                    )
+                    ),
                 )
                 for lang in _roles
             ],
             placeholder="Choose a language.",
             custom_id="language_role",
-            max_values=1
+            max_values=1,
         )
         await channel.send(components=role_menu)
         await ctx.send(":heavy_check_mark:", ephemeral=True)
 
 
 @bot.component("language_role")
-async def language_role_selection(ctx: interactions.ComponentContext, choice: list[str]):
+async def language_role_selection(
+    ctx: interactions.ComponentContext, choice: list[str]
+):
     role: int
     roles: dict = {}
     [
-        roles.update({role: METADATA["roles"][role]}) for role in METADATA["roles"] if role not in [
-            "Changelog pings", "Helper", "Moderator", "External Changelog pings"
-        ]
+        roles.update({role: METADATA["roles"][role]})
+        for role in METADATA["roles"]
+        if role
+        not in ["Changelog pings", "Helper", "Moderator", "External Changelog pings"]
     ]
 
     # so many people have been complaining about the bot being "broken"
@@ -198,5 +205,6 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: li
     else:
         await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
+
 
 bot.start()

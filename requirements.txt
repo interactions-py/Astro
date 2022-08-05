@@ -1,4 +1,4 @@
-git+https://github.com/interactions-py/library@4.3.0-rc.1
+discord-py-interactions >= 4.3.0
 python-dotenv==0.20.0
 aiohttp~=3.8.1
 pymongo[srv]
