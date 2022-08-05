@@ -80,6 +80,9 @@ class Message(interactions.Extension):
             del target._json["attachments"]
             attachments = True
 
+        if not "AUTO" in thread_name:
+            thread_name = f"[AUTO] {thread_name}"
+
         _thread: dict = await self.bot._http.create_forum_thread(
             self=self.bot._http,
             auto_archive_duration=1440,
@@ -138,14 +141,20 @@ class Message(interactions.Extension):
             label="Original message",
             url=target.url,
         )
+        close_button = interactions.Button(
+            style=interactions.ButtonStyle.DANGER,
+            label="Close this thread",
+            custom_id="close thread"
+        )
 
-        _ars = [interactions.ActionRow.new(button), interactions.ActionRow.new(select)]
+        _ars = [interactions.ActionRow.new(button), interactions.ActionRow.new(select), interactions.ActionRow.new(close_button)]
 
-        await thread.send(
+        msg = await thread.send(
             "This help thread was automatically generated. Read the message above for more information.",
             embeds=embed,
             components=_ars,
         )
+        await msg.pin()
 
         if attachments:
             await thread.send(
@@ -159,6 +168,23 @@ class Message(interactions.Extension):
         )
         await ctx.send(":white_check_mark: Thread created.", ephemeral=True)
 
+    @interactions.extension_listener
+    async def on_thread_create(self, thread: interactions.Thread):
+
+        if thread._extras.get("applied_tags") and thread.parent_id == 996211499364262039 and thread._extras.get("newly_created") and "AUTO" not in thread.name:
+            msg = await thread.send("Hey! If your issue is solved, press the button below to close this thread!", components=[interactions.Button(
+            style=interactions.ButtonStyle.DANGER,
+            label="Close this thread",
+            custom_id="close thread"
+        )])
+            await msg.pin()
+
+
+    @interactions.extension_component("close thread")
+    async def _close_thread(self, ctx: interactions.ComponentContext):
+        await ctx.get_channel()
+        await ctx.send("Closing! Thank you for using our help system!")
+        await ctx.channel.modify(archived=True, locked=True)
 
 def setup(bot, **kwargs):
     Message(bot, **kwargs)
