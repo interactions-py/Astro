@@ -16,7 +16,7 @@ class DiscordTokenChecker(ipy.Extension):
             "Accept": "application/vnd.github.v3+json",
             "Authorization": f"token {GITHUB_GIST_API_TOKEN}",
         }
-        self._token_regex = (
+        self._token_regex = re.compile(
             r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}"
         )
         self._api_url = "https://api.github.com/gists"
@@ -26,7 +26,7 @@ class DiscordTokenChecker(ipy.Extension):
         if not message.author.bot:
             possible_tokens: list[str] = [
                 token
-                for token in re.compile(self._token_regex).findall(message.content)
+                for token in self._token_regex.findall(message.content)
             ]
             tokens: list[str] = ["test"]
 
