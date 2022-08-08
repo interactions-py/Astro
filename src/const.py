@@ -1,5 +1,5 @@
-import dotenv
 import os
+import pathlib
 
 global TOKEN
 global EXTENSIONS
@@ -10,13 +10,19 @@ global MOD_ID
 
 MOD_ID = "MODERATION"
 TAGS_ID = "TAGS"
-TOKEN = dotenv.get_key("../.env", "token")
-MONGO_DB_URL = dotenv.get_key("../.env", "MONGO_DB_URL")
+
+TOKEN = os.environ["token"]
+MONGO_DB_URL = os.environ["MONGO_DB_URL"]
+
+# we want to be absolutely sure this path is correct, so we
+# do a bit of complicated path logic to get the src folder
+src_path = pathlib.Path(__file__).parent.absolute().as_posix()
 EXTENSIONS = [
     file.replace(".py", "")
-    for file in os.listdir("exts")
+    for file in os.listdir(f"{src_path}/exts")
     if not file.startswith("_") and not file.startswith("modmail")
 ]
+
 METADATA = {
     "guild": 789032594456576001,
     "roles": {
