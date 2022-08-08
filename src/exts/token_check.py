@@ -61,7 +61,7 @@ class DiscordTokenChecker(ipy.Extension):
                 "description": "Posted Discord Bot Token(s)",
                 "public": True,
                 "files": {
-                    "TOKENS.md": {
+                    "tokens.txt": {
                         "content": content,
                     },
                 },
