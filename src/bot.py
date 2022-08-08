@@ -1,6 +1,5 @@
 import interactions
 import logging
-import sys
 import pymongo
 from pymongo.server_api import *
 from pymongo.database import *
