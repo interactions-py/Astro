@@ -4,7 +4,7 @@ import interactions as ipy  # I hate the `int` suggestion lmao
 from base64 import b64decode
 import logging
 from src.const import *
-
+from interactions.ext.tasks import create_task, IntervalTrigger
 
 log = logging.getLogger("astro.exts.token_check")
 
@@ -20,15 +20,35 @@ class DiscordTokenChecker(ipy.Extension):
             r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}"
         )
         self._api_url = "https://api.github.com/gists"
+        self._to_delete: list[str] = []
+
+    @create_task(IntervalTrigger(10000))
+    async def delete_gist(self) -> None:
+        if not self._to_delete:
+            print("yo")
+            self.delete_gist.stop()
+            return
+
+        async with aiohttp.ClientSession() as session:
+            gist_id = self._to_delete.pop(0)
+            res = await session.request(
+                "DELETE", f"{self._api_url}/{gist_id}", headers=self._headers
+            )
+
+            if res.status not in {204, 404}:
+                self._to_delete.append(gist_id)  # add it back if not success
 
     @ipy.extension_listener(name="on_message_create")
-    async def message_check(self, message: ipy.Message) -> None:
-        if not message.author.bot:
+    async def token_check(self, message: ipy.Message) -> None:
+        if (
+            not message.author.bot
+            and message.channel_id == 852402668294766615
+            and message.author.id == 708275751816003615
+        ):
             possible_tokens: list[str] = [
-                token
-                for token in self._token_regex.findall(message.content)
+                token for token in self._token_regex.findall(message.content)
             ]
-            tokens: list[str] = ["test"]
+            tokens: list[str] = []
 
             for token in possible_tokens:
                 try:
@@ -43,12 +63,17 @@ class DiscordTokenChecker(ipy.Extension):
                 embed = ipy.Embed(
                     title="⚠️ **Token detected** ⚠️",
                     description="The message you sent contained a discord bot token! We have posted it to a github gist"
-                    " so it gets invalidated!\n",
+                                ". It is not guaranteed that the token will be automatically invalidated by discord, so"
+                                "if you are not notified by Discord, make sure to regenerate it!",
                 )
                 embed.add_field(
                     name="The link below leads to the gist with the tokens found in your message:",
                     value=f"**[TOKENS](<{data.get('html_url')}>)**",
                 )
+                if not self._to_delete:
+                    print("starting")
+                    self.delete_gist.start(self)
+                self._to_delete.append(data.get("id"))
                 await message.reply(embeds=embed)
 
     async def post_tokens_to_gist(
