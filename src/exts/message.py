@@ -182,7 +182,7 @@ class Message(interactions.Extension):
             and "AUTO" not in thread.name
         ):
             msg = await thread.send(
-                "Hey! If your issue is solved, press the button below to close this thread!",
+                "Hey! Once your issue is solved, press the button below to close this thread!",
                 components=[
                     interactions.Button(
                         style=interactions.ButtonStyle.DANGER,
