@@ -40,7 +40,7 @@ bot = interactions.Client(
 monkeypatch(bot)
 
 
-[bot.load(f"exts.{ext}", db=db) for ext in EXTENSIONS]
+[bot.load(f"src.exts.{ext}", db=db) for ext in EXTENSIONS]
 
 
 @bot.event
