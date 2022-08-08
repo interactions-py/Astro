@@ -25,7 +25,6 @@ class DiscordTokenChecker(ipy.Extension):
     @create_task(IntervalTrigger(10000))
     async def delete_gist(self) -> None:
         if not self._to_delete:
-            print("yo")
             self.delete_gist.stop()
             return
 
@@ -40,11 +39,7 @@ class DiscordTokenChecker(ipy.Extension):
 
     @ipy.extension_listener(name="on_message_create")
     async def token_check(self, message: ipy.Message) -> None:
-        if (
-            not message.author.bot
-            and message.channel_id == 852402668294766615
-            and message.author.id == 708275751816003615
-        ):
+        if not message.author.bot:
             possible_tokens: list[str] = [
                 token for token in self._token_regex.findall(message.content)
             ]
@@ -71,7 +66,6 @@ class DiscordTokenChecker(ipy.Extension):
                     value=f"**[TOKENS](<{data.get('html_url')}>)**",
                 )
                 if not self._to_delete:
-                    print("starting")
                     self.delete_gist.start(self)
                 self._to_delete.append(data.get("id"))
                 await message.reply(embeds=embed)
