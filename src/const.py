@@ -7,11 +7,13 @@ global METADATA
 global MONGO_DB_URL
 global TAGS_ID
 global MOD_ID
+global GITHUB_GIST_API_TOKEN
 
 MOD_ID = "MODERATION"
 TAGS_ID = "TAGS"
 TOKEN = dotenv.get_key("../.env", "token")
 MONGO_DB_URL = dotenv.get_key("../.env", "MONGO_DB_URL")
+GITHUB_GIST_API_TOKEN = dotenv.get_key("../.env", "github_gist_api_token")
 EXTENSIONS = [
     file.replace(".py", "")
     for file in os.listdir("exts")
