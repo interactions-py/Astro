@@ -4,6 +4,7 @@ import pymongo
 from pymongo.server_api import *
 from pymongo.database import *
 from .forums import monkeypatch
+from interactions.ext.wait_for import setup
 
 from .const import *
 
@@ -19,9 +20,9 @@ presence = interactions.ClientPresence(
     activities=[
         interactions.PresenceActivity(
             name="you. 👀", type=interactions.PresenceActivityType.WATCHING
-        )._json,
+        ),
     ],
-    status=interactions.StatusType.ONLINE,
+    status=interactions.StatusType.DND,
 )
 bot = interactions.Client(
     TOKEN,
@@ -35,8 +36,9 @@ bot = interactions.Client(
         | interactions.Intents.GUILDS
     ),
     presence=presence,
-    disable_sync=False,
+    disable_sync=True,
 )
+setup(bot)
 monkeypatch(bot)
 
 
