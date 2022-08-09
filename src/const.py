@@ -1,13 +1,6 @@
 import os
 import pathlib
 
-global TOKEN
-global EXTENSIONS
-global METADATA
-global MONGO_DB_URL
-global TAGS_ID
-global MOD_ID
-
 MOD_ID = "MODERATION"
 TAGS_ID = "TAGS"
 
