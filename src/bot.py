@@ -1,14 +1,11 @@
 import interactions
 import logging
-import sys
 import pymongo
 from pymongo.server_api import *
 from pymongo.database import *
-from forums import monkeypatch
+from .forums import monkeypatch
 
-sys.path.append("..")
-
-from const import *
+from .const import *
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
@@ -43,7 +40,7 @@ bot = interactions.Client(
 monkeypatch(bot)
 
 
-[bot.load(f"exts.{ext}", db=db) for ext in EXTENSIONS]
+[bot.load(f"src.exts.{ext}", db=db) for ext in EXTENSIONS]
 
 
 @bot.event
@@ -205,6 +202,3 @@ async def language_role_selection(
     else:
         await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
-
-
-bot.start()
