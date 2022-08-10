@@ -7,6 +7,8 @@ from src.const import *
 from pymongo.database import *
 from time import perf_counter
 from asyncio import sleep
+from interactions.ext.wait_for import wait_for_component
+import asyncio
 
 log = logging.getLogger("astro.exts.mod")
 
@@ -15,7 +17,7 @@ class Mod(interactions.Extension):
     """An extension dedicated to /mod and other functionalities."""
 
     def __init__(self, bot, **kwargs):
-        self.bot = bot
+        self.bot: interactions.Client = bot
         self.db: Database = kwargs.get("db")
         self.actions: Collection = self.db.Moderation
         self._actions = self.actions.find({"id": MOD_ID}).next()["actions"]
@@ -597,8 +599,124 @@ class Mod(interactions.Extension):
 
         await channel.send(embeds=embed)
 
+    async def ban_from_member_add(
+        self, member: interactions.GuildMember, guild_id: int
+    ):
+        db = self._actions
+        id = len(list(db.items())) + 1
+        mod = await interactions.get(
+            self.bot,
+            interactions.Member,
+            object_id=int(self.bot.me.id),
+            parent_id=guild_id,
+        )
+        action = src.model.Action(
+            id=id,
+            type=src.model.ActionType.BAN,
+            moderator=mod,
+            user=member.user,
+            reason="banned alt of gg cola",
+        )
+        db.update({str(id): action._json})
+        self.actions.find_one_and_update({"id": MOD_ID}, {"$set": {"actions": db}})
+        await self.get_actions()
+        embed = interactions.Embed(
+            title="User banned",
+            color=0xED4245,
+            author=interactions.EmbedAuthor(
+                name=f"{member.user.username}#{member.user.discriminator}",
+                icon_url=member.user.avatar_url,
+            ),
+            fields=[
+                interactions.EmbedField(
+                    name="Moderator",
+                    value=f"{mod.mention} ({mod.user.username}#{mod.user.discriminator})",
+                    inline=True,
+                ),
+                interactions.EmbedField(
+                    name="Timestamps",
+                    value="\n".join(
+                        [
+                            f"Joined: <t:{round(member.joined_at.timestamp())}:R>.",
+                            f"Created: <t:{round(member.id.timestamp.timestamp())}:R>.",
+                        ]
+                    ),
+                ),
+                interactions.EmbedField(name="Reason", value="banned alt of gg cola"),
+            ],
+        )
+        _channel: dict = await self.bot._http.get_channel(
+            src.const.METADATA["channels"]["action-logs"]
+        )
+        channel = interactions.Channel(**_channel, _client=self.bot._http)
+        await member.ban(reason="banned alt of gg cola")
+        await channel.send(embeds=embed)
+
+    @staticmethod
+    def gg_cola_check(user: interactions.User) -> bool:
+        gg_cola_identification_strings: set[str] = {"gg_", "goodgame_", "good_game_"}
+
+        if any(
+            user.username.lower().startswith(string)
+            for string in gg_cola_identification_strings
+        ):
+            return True
+
     @interactions.extension_listener()
     async def on_guild_member_add(self, member: interactions.GuildMember):
+
+        if self.gg_cola_check(member.user):
+            staff = await interactions.get(
+                self.bot, interactions.Channel, object_id=850982027079319572
+            )
+
+            insta_ban = interactions.Button(
+                label="Ban immediately",
+                custom_id="bye",
+                style=interactions.ButtonStyle.SUCCESS,
+            )
+            cancel = interactions.Button(
+                label="Cancel Ban",
+                custom_id="stop",
+                style=interactions.ButtonStyle.DANGER,
+            )
+
+            time = datetime.now() + timedelta(seconds=35)
+            components = [insta_ban, cancel]
+
+            await staff.send(
+                "@here\n\n⚠️ Attention⚠️\nI've detected a possible `GG`-guy-alt account:\n"
+                f"{member.mention}\n\n"
+                f"I will proceed the account automatically in <t:{round(time.timestamp())}:R>"
+                "If you don't cancel the ban.\n",
+                components=components,
+            )
+
+            try:
+                data: interactions.ComponentContext = await wait_for_component(
+                    self.bot, components=components, timeout=35
+                )
+
+                if data.custom_id == "bye":
+                    raise asyncio.TimeoutError()
+
+            except asyncio.TimeoutError:
+                await self.ban_from_member_add(member, int(member.guild_id))
+                await staff.send("User banned!")
+
+            else:
+                insta_ban.disabled = True
+                cancel.disabled = True
+
+                await data.defer(edit_origin=True)
+                content = data.message.content
+                await data.edit(
+                    f"{content}\n\nBanning has been cancelled!",
+                    components=[insta_ban, cancel],
+                )
+
+            return
+
         embed = interactions.Embed(
             title="User joined",
             color=0x57F287,
