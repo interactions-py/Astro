@@ -28,30 +28,30 @@ class Tag(interactions.Extension):
 
     @tag.subcommand()
     @interactions.option("the name of the tag", autocomplete=True)
-    async def view(self, ctx: interactions.CommandContext, name: str):
+    async def view(self, ctx: interactions.CommandContext, tag_name: str):
         """Views a tag that currently exists within the database."""
         db = self._tags
 
         log.debug("Matched for view. Returning result...")
 
-        if db.get(name):
-            await ctx.send(db[name]["description"])
+        if db.get(tag_name):
+            await ctx.send(db[tag_name]["description"])
         else:
-            await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
+            await ctx.send(f":x: Tag `{tag_name}` does not exist.", ephemeral=True)
 
     @tag.subcommand()
     @interactions.option("The name of the tag", autocomplete=True)
-    async def info(self, ctx: interactions.CommandContext, name: str):
+    async def info(self, ctx: interactions.CommandContext, tag_name: str):
         """Gathers information about a tag that currently exists within the database."""
         db = self._tags
 
         log.debug("Matched for info. Returning result...")
 
-        if db.get(name):
-            _author: dict = await self.bot._http.get_user(db[name]["author"])
+        if db.get(tag_name):
+            _author: dict = await self.bot._http.get_user(db[tag_name]["author"])
             author = interactions.User(**_author)
             embed = interactions.Embed(
-                title='"' + name + '"' if '"' not in name else name,
+                title='"' + tag_name + '"' if '"' not in tag_name else tag_name,
                 color=0x5865F2,
                 footer=interactions.EmbedFooter(
                     text=" ".join(
@@ -69,18 +69,18 @@ class Tag(interactions.Extension):
                     ),
                     interactions.EmbedField(
                         name="ID",
-                        value=db[name]["id"],
+                        value=db[tag_name]["id"],
                         inline=True,
                     ),
                     interactions.EmbedField(
                         name="Timestamps",
                         value="\n".join(
                             [
-                                f"Created: <t:{round(db[name]['created_at'])}:R>.",
+                                f"Created: <t:{round(db[tag_name]['created_at'])}:R>.",
                                 "Last edited: "
                                 + (
-                                    f"<t:{round(db[name]['last_edited_at'])}:R>."
-                                    if db[name].get("last_edited_at")
+                                    f"<t:{round(db[tag_name]['last_edited_at'])}:R>."
+                                    if db[tag_name].get("last_edited_at")
                                     else "N/A"
                                 ),
                             ]
@@ -186,7 +186,7 @@ class Tag(interactions.Extension):
 
     @tag.subcommand()
     @interactions.option("The name of the tag", autocomplete=True)
-    async def edit(self, ctx: interactions.CommandContext, name: str):
+    async def edit(self, ctx: interactions.CommandContext, tag_name: str):
         """Edits a tag that currently exists within the database."""
         db = self._tags
 
@@ -194,7 +194,7 @@ class Tag(interactions.Extension):
 
         if not self.__check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
-        elif name in db:
+        elif tag_name in db:
             modal = interactions.Modal(
                 title="Edit tag",
                 custom_id="edit_tag",
@@ -202,7 +202,7 @@ class Tag(interactions.Extension):
                     interactions.TextInput(
                         style=interactions.TextStyleType.SHORT,
                         label="What do you want the tag to be named?",
-                        value=name,
+                        value=tag_name,
                         placeholder="d.py cogs vs. i.py extensions",
                         custom_id="new_tag_name",
                         min_length=1,
@@ -212,22 +212,22 @@ class Tag(interactions.Extension):
                     interactions.TextInput(
                         style=interactions.TextStyleType.PARAGRAPH,
                         label="What do you want the tag to include?",
-                        value=db[name]["description"],
+                        value=db[tag_name]["description"],
                         placeholder="(Note: you can also put codeblocks in here!)",
                         custom_id="new_tag_description",
                         max_length=2000,
                     ),
                 ],
             )
-            self.edited_name = name
+            self.edited_name = tag_name
 
             await ctx.popup(modal)
         else:
-            await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
+            await ctx.send(f":x: Tag `{tag_name}` does not exist.", ephemeral=True)
 
     @tag.subcommand()
     @interactions.option("The name of the option", autocomplete=True)
-    async def delete(self, ctx: interactions.CommandContext, name: str):
+    async def delete(self, ctx: interactions.CommandContext, tag_name: str):
         """Deletes a tag that currently exists within the database."""
         await ctx.defer()
         db = self._tags
@@ -236,17 +236,17 @@ class Tag(interactions.Extension):
 
         if not self.__check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
-        elif name in db:
-            del db[name]
+        elif tag_name in db:
+            del db[tag_name]
             self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
             await self.get_tags()
 
             await ctx.send(
-                f":heavy_check_mark: Tag `{name}` has been successfully deleted.",
+                f":heavy_check_mark: Tag `{tag_name}` has been successfully deleted.",
                 ephemeral=True,
             )
         else:
-            await ctx.send(f":x: Tag `{name}` does not exist.", ephemeral=True)
+            await ctx.send(f":x: Tag `{tag_name}` does not exist.", ephemeral=True)
 
     def __check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
@@ -256,10 +256,10 @@ class Tag(interactions.Extension):
             in [str(role) for role in ctx.author.roles]
         )
 
-    @interactions.extension_autocomplete(command="tag", name="name")
-    async def __parse_tag(self, ctx: interactions.CommandContext, name: str = ""):
+    @interactions.extension_autocomplete(command="tag", name="tag_name")
+    async def __parse_tag(self, ctx: interactions.CommandContext, tag_name: str = ""):
         """Parses the current choice you're making with /tag."""
-        letters: list = list(name) if name != "" else []
+        letters: list = list(tag_name) if tag_name != "" else []
         db = self._tags
 
         log.debug("Autocompleting tag query for choices...")
@@ -287,26 +287,26 @@ class Tag(interactions.Extension):
 
     @interactions.extension_modal(modal="new_tag")
     async def __new_tag(
-        self, ctx: interactions.CommandContext, name: str, description: str
+        self, ctx: interactions.CommandContext, tag_name: str, description: str
     ):
         """Creates a new tag through the modal UI."""
         await ctx.defer(ephemeral=True)
         db = self._tags
-        if name not in db:
+        if tag_name not in db:
             _id = len(list(db.items())) + 1
             tag = src.model.Tag(
                 id=_id,
                 author=ctx.author.id,
-                name=name,
+                name=tag_name,
                 description=description,
                 created_at=datetime.datetime.now().timestamp(),
             )
-            db.update({name: tag._json})
+            db.update({tag_name: tag._json})
             self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
             await self.get_tags()
 
             await ctx.send(
-                f":heavy_check_mark: `{name}` now exists. In order to view it, please use `/tag view`.",
+                f":heavy_check_mark: `{tag_name}` now exists. In order to view it, please use `/tag view`.",
                 ephemeral=True,
             )
         else:
@@ -317,7 +317,7 @@ class Tag(interactions.Extension):
 
     @interactions.extension_modal(modal="edit_tag")
     async def __edit_tag(
-        self, ctx: interactions.CommandContext, name: str, description: str
+        self, ctx: interactions.CommandContext, tag_name: str, description: str
     ):
         """Creates a new tag through the modal UI."""
         await ctx.defer(ephemeral=True)
@@ -331,18 +331,18 @@ class Tag(interactions.Extension):
             last_edited_at=datetime.datetime.now().timestamp(),
         )
 
-        if name != self.edited_name:
+        if tag_name != self.edited_name:
             del db[self.edited_name]
 
-        db.update({name: tag._json})
+        db.update({tag_name: tag._json})
         self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
         await self.get_tags()
 
         await ctx.send(
             (
                 f":heavy_check_mark: Tag `{self.edited_name}` has been edited."
-                if name == self.edited_name
-                else f":heavy_check_mark: Tag `{self.edited_name}` has been edited and re-named to `{name}`."
+                if tag_name == self.edited_name
+                else f":heavy_check_mark: Tag `{self.edited_name}` has been edited and re-named to `{tag_name}`."
             ),
             ephemeral=True,
         )
