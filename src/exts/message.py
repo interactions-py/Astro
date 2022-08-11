@@ -1,5 +1,7 @@
 import interactions
 import src.const
+import aiohttp
+from io import BytesIO
 
 
 class Message(interactions.Extension):
@@ -75,10 +77,17 @@ class Message(interactions.Extension):
         target: interactions.Message = self.targets.pop(int(ctx.author.id))
 
         target._json["content"] = content
-        attachments = False
+        files: list[interactions.File] = []
         if target._json["attachments"]:
             del target._json["attachments"]
-            attachments = True
+
+            async with aiohttp.ClientSession() as session:
+                for attachment in target.attachments:
+                    async with session.get(attachment.url) as request:
+                        _bytes: bytes = await request.content.read()
+                        files.append(interactions.File(attachment.filename, fp=BytesIO(_bytes)))
+
+            target._json["attachments"] = [file._json_payload(_id) for _id, file in enumerate(files)]
 
         if not "AUTO" in thread_name:
             thread_name = f"[AUTO] {thread_name}"
@@ -90,6 +99,7 @@ class Message(interactions.Extension):
             channel_id=src.const.METADATA["channels"]["help"],
             applied_tags=["996215708595794071"],
             message_payload=target._json,
+            files=files,
             reason="Auto help thread creation",
         )
 
@@ -159,12 +169,6 @@ class Message(interactions.Extension):
             components=_ars,
         )
         await msg.pin()
-
-        if attachments:
-            await thread.send(
-                f"Hey {target.author.mention}! We detected an attachment on your message! Due to discord being buggy, "
-                f"we could not automatically transfer it to this thread. Please re-upload it here!"
-            )
 
         await ctx.send(
             f"Hey, {target.author.mention}! At this time, we only help with support-related questions in our help "
