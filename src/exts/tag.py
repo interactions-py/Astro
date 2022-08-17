@@ -348,5 +348,17 @@ class Tag(interactions.Extension):
         )
 
 
+    @interactions.extension_command(scope=METADATA["guild"])
+    async def archive(self, ctx: interactions.CommandContext):
+        """Archives this thread"""
+
+        if not self.__check_role(ctx):
+            return await ctx.send(":x: You are not a helper.", ephemeral=True)
+        
+        await ctx.send("archiving...")
+        await ctx.get_channel()
+        await ctx.channel.modify(archived=True, locked=True)
+
+
 def setup(bot, **kwargs):
     Tag(bot, **kwargs)
