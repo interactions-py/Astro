@@ -52,9 +52,7 @@ class Message(interactions.Extension):
         await ctx.popup(modal)
 
     @interactions.extension_component("TAG_SELECTION")
-    async def _help_thread_select(
-        self, ctx: interactions.ComponentContext, _selected: list[str]
-    ):
+    async def _help_thread_select(self, ctx: interactions.ComponentContext, _selected: list[str]):
         if (
             src.const.METADATA["roles"]["Helper"] not in ctx.author.roles
             and src.const.METADATA["roles"]["Moderator"] not in ctx.author.roles
@@ -87,7 +85,9 @@ class Message(interactions.Extension):
                         _bytes: bytes = await request.content.read()
                         files.append(interactions.File(attachment.filename, fp=BytesIO(_bytes)))
 
-            target._json["attachments"] = [file._json_payload(_id) for _id, file in enumerate(files)]
+            target._json["attachments"] = [
+                file._json_payload(_id) for _id, file in enumerate(files)
+            ]
 
         if not "AUTO" in thread_name:
             thread_name = f"[AUTO] {thread_name}"
@@ -189,8 +189,8 @@ class Message(interactions.Extension):
                 "Hey! Once your issue is solved, press the button below to close this thread!",
                 components=[
                     interactions.Button(
-                        style=interactions.ButtonStyle.DANGER,
-                        label="Close this thread",
+                        style=interactions.ButtonStyle.SUCCESS,
+                        label="Mark as solved",
                         custom_id="close thread",
                     )
                 ],
@@ -199,9 +199,36 @@ class Message(interactions.Extension):
 
     @interactions.extension_component("close thread")
     async def _close_thread(self, ctx: interactions.ComponentContext):
+        components = ctx.message.components
+        for row in components:
+            for component in row.components:
+                component.disabled = True
+        await ctx.edit(components=components)
         await ctx.get_channel()
-        await ctx.send("Closing! Thank you for using our help system!")
+        await ctx.channel.send(
+            "Marking as solved! Thank you for using our help system!\n"
+            "If you wish to reopen this thread, please click the button below.",
+            components=[
+                interactions.Button(
+                    style=interactions.ButtonStyle.SUCCESS,
+                    label="Reopen thread",
+                    custom_id="open thread",
+                )
+            ],
+        )
         await ctx.channel.modify(archived=True, locked=True)
+
+    @interactions.extension_component("open thread")
+    async def _open_thread(self, ctx: interactions.ComponentContext):
+        await ctx.get_channel()
+        message: interactions.Message = (await ctx.channel.get_pinned_messages())[0]
+        components = message.components
+        for row in components:
+            for component in row.components:
+                component.disabled = False
+        await message.edit(components=components)
+        await ctx.channel.modify(archived=False, locked=False)
+        await ctx.edit("Reopened the thread!", components=None)
 
 
 def setup(bot, **kwargs):
