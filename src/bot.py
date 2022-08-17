@@ -36,7 +36,7 @@ bot = interactions.Client(
         | interactions.Intents.GUILDS
     ),
     presence=presence,
-    disable_sync=True,
+    disable_sync=False,
 )
 setup(bot)
 monkeypatch(bot)
