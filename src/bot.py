@@ -208,7 +208,7 @@ async def language_role_selection(
 
 @bot.command(scope=METADATA["guild"])
 @interactions.option("the thing to look for") 
-async def lmgtfy(ctx: interactions.CommandContext, param: str):
+async def letmegooglethat(ctx: interactions.CommandContext, param: str):
     if not str(src.const.METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles]:
         return await ctx.send(":x: You are not a helper.", ephemeral=True)
     
