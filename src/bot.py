@@ -220,4 +220,4 @@ async def letmegooglethat(ctx: interactions.CommandContext, param: str):
 @bot.command(scope=METADATA["guild"]) 
 @interactions.option()
 async def docs_search(ctx: interactions.CommandContext, query: str):
-    await ctx.send(f"https://interactionspy.readthedocs.io/en/latest/search.html?q={'+'.join(word for word in query.split(' ')}&check_keywords=yes&area=default")
+    await ctx.send(f"https://interactionspy.readthedocs.io/en/latest/search.html?q={'+'.join(word for word in query.split(' '))}&check_keywords=yes&area=default")
