@@ -5,6 +5,7 @@ from pymongo.server_api import *
 from pymongo.database import *
 from .forums import monkeypatch
 from interactions.ext.wait_for import setup
+from base64 import b64decode
 
 from .const import *
 
@@ -204,3 +205,14 @@ async def language_role_selection(
     else:
         await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
+
+@bot.command(scope=METADATA["guild"])
+@interactions.option("the thing to look for", name="def", converter="param") 
+async def lmgtfy(ctx: interactions.CommandContext, param: str):
+    if not str(src.const.METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles]:
+        return await ctx.send(":x: You are not a helper.", ephemeral=True)
+    
+    params = param.split(" ") 
+    q: str = "+".join(word for word in params)
+    await ctx.send(b64decode(b'cGVvcGxlIHNob3VsZCBsZXJuIHRvIGdvb2dsZSwgbXkgZ29k'), ephemeral=True) 
+    await (await ctx.get_channel()).send(f"{b64decode(b'aHR0cHM6Ly9sZXRtZWdvb2dsZXRoYXQuY29tLz9xPQ==').decode('utf-8')}{q}") 
