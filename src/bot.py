@@ -206,8 +206,8 @@ async def language_role_selection(
         await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
 
-@bot.command(scope=METADATA["guild"])
-@interactions.option("the thing to look for", name="def", converter="param") 
+#bot.command(scope=METADATA["guild"])
+@interactions.option("the thing to look for") 
 async def lmgtfy(ctx: interactions.CommandContext, param: str):
     if not str(src.const.METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles]:
         return await ctx.send(":x: You are not a helper.", ephemeral=True)
