@@ -126,8 +126,8 @@ class Message(interactions.Extension):
             custom_id="TAG_SELECTION",
             placeholder="Select the tags you want",
             options=_options,
-            min_values=0,
-            max_values=len(_options),
+            min_values=1,
+            max_values=5,
         )
 
         thread = interactions.Channel(**_thread, _client=self.bot._http)
