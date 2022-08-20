@@ -213,7 +213,7 @@ async def letmegooglethat(ctx: interactions.CommandContext, param: str):
         return await ctx.send(":x: You are not a helper.", ephemeral=True)
     
     params = param.split(" ") 
-    q: str = "+".join(word for word in param.split(" ") 
+    q: str = "+".join(word for word in param.split(" "))
     await ctx.send("collecting Google things..."), ephemeral=True) 
     await (await ctx.get_channel()).send(f"https://letmegooglethat.com/?q={q}")
 
