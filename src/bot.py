@@ -214,7 +214,7 @@ async def letmegooglethat(ctx: interactions.CommandContext, param: str):
     
     params = param.split(" ") 
     q: str = "+".join(word for word in param.split(" "))
-    await ctx.send("collecting Google things..."), ephemeral=True) 
+    await ctx.send("collecting Google things...", ephemeral=True) 
     await (await ctx.get_channel()).send(f"https://letmegooglethat.com/?q={q}")
 
 @bot.command(scope=METADATA["guild"] 
