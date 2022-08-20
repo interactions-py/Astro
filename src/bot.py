@@ -214,5 +214,8 @@ async def lmgtfy(ctx: interactions.CommandContext, param: str):
     
     params = param.split(" ") 
     q: str = "+".join(word for word in params)
-    await ctx.send(b64decode(b'cGVvcGxlIHNob3VsZCBsZXJuIHRvIGdvb2dsZSwgbXkgZ29k'), ephemeral=True) 
-    await (await ctx.get_channel()).send(f"{b64decode(b'aHR0cHM6Ly9sZXRtZWdvb2dsZXRoYXQuY29tLz9xPQ==').decode('utf-8')}{q}") 
+    try:
+        await ctx.send(b64decode(b'cGVvcGxlIHNob3VsZCBsZXJuIHRvIGdvb2dsZSwgbXkgZ29k'), ephemeral=True) 
+        await (await ctx.get_channel()).send(f"{b64decode(b'aHR0cHM6Ly9sZXRtZWdvb2dsZXRoYXQuY29tLz9xPQ==').decode('utf-8')}{q}")
+    except Exception as e:
+        await ctx.send(e)
