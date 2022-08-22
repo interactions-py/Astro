@@ -9,6 +9,10 @@ from time import perf_counter
 from asyncio import sleep
 from interactions.ext.wait_for import wait_for_component
 import asyncio
+from pytz import UTC
+from typing import Union
+from gg_protector import GGProtector
+from src.exts.gg_protector import GGProtector
 
 log = logging.getLogger("astro.exts.mod")
 
@@ -21,6 +25,7 @@ class Mod(interactions.Extension):
         self.db: Database = kwargs.get("db")
         self.actions: Collection = self.db.Moderation
         self._actions = self.actions.find({"id": MOD_ID}).next()["actions"]
+        self.gg_protectors: Dict[int, GGProtector] = {}
 
     async def get_actions(self) -> None:
         self._actions = self.actions.find({"id": MOD_ID}).next()["actions"]
@@ -662,6 +667,46 @@ class Mod(interactions.Extension):
         ):
             return True
 
+    async def account_age_check(
+        self, member: Union[interactions.Member, interactions.GuildMember]
+    ) -> Union[GGProtector, bool]:
+
+        now = datetime.utcnow()
+        min_account_age_before_join: dict = {"days": 2}
+        timeout_time: dict = {"days": 1}
+
+        if UTC.localize(member.joined_at) < UTC.localize(
+            member.id.timestamp
+        ) + timedelta(**min_account_age_before_join):
+            await member.modify(
+                communication_disabled_until=(
+                    now + timedelta(**timeout_time)
+                ).isoformat()
+            )
+
+            await member.send(
+                "Hi!\n"
+                "We, the interactions.py server, are currently suffering because of a person who is "
+                "constantly ban-evading and rejoining our server with alt accounts.\n"
+                "Since your account age is less than two days, you have been muted for "
+                f"{list(min_account_age_before_join.values())[0]} {list(min_account_age_before_join.keys())[0]}\n"
+                "Unfortunately we have been forced to take such extreme measures, since this user leaves us no other"
+                "choice.\n\n"
+                "The server staff has been "
+                "notified of your arrival and will remove your timeout as soon as possible if you are not an "
+                "alternative account of that particular person.\n\n"
+                "We apologize for any inconvenience\n"
+                "The interactions.py-team. "
+            )
+
+            gg_prot = GGProtector(self, member)
+            self.gg_protectors[int(member.id)] = gg_prot
+
+            return gg_prot
+
+        else:
+            return False
+
     @interactions.extension_listener()
     async def on_guild_member_add(self, member: interactions.GuildMember):
 
@@ -704,8 +749,11 @@ class Mod(interactions.Extension):
             except asyncio.TimeoutError:
                 insta_ban.disabled = True
                 cancel.disabled = True
-                await ctx.message.edit(f"{msg.content}\n\nbanned.... <:blobpain:893296401415561246>", components=[insta_ban, cancel])
-                await self.ban_from_member_add(member, int(member.guild_id)) 
+                await msg.edit(
+                    f"{msg.content}\n\nbanned.... <:blobpain:893296401415561246>",
+                    components=[insta_ban, cancel],
+                )
+                await self.ban_from_member_add(member, int(member.guild_id))
                 await staff.send("User banned!")
 
             else:
@@ -720,6 +768,35 @@ class Mod(interactions.Extension):
                 )
 
             return
+
+        elif await self.account_age_check(member):
+            staff = await interactions.get(
+                self.bot, interactions.Channel, object_id=850982027079319572
+            )
+
+            ban_vote_add = interactions.Button(
+                label="Add ban vote",
+                custom_id="vote_ban_add",
+                style=interactions.ButtonStyle.DANGER,
+            )
+            timeout_remove_vote_add = interactions.Button(
+                label="Add timeout removal vote",
+                custom_id="add_vote_timeout",
+                style=interactions.ButtonStyle.DANGER,
+            )
+
+            components = [ban_vote_add, timeout_remove_vote_add]
+
+            msg = await staff.send(
+                "@here <@&818861272484806656> <@&789041109208793139>"
+                "\n\n⚠️ Attention⚠️\n"
+                "I've detected a possible `GG`-guy-alt account by account age:\n"
+                f"{member.mention}\n\n",
+                components=components,
+                embeds=interactions.Embed(
+                    title="UserID dumb save hack xd", description=str(member.id)
+                ),
+            )
 
         embed = interactions.Embed(
             title="User joined",
@@ -747,6 +824,39 @@ class Mod(interactions.Extension):
         channel = interactions.Channel(**_channel, _client=self.bot._http)
 
         await channel.send(embeds=embed)
+
+    async def check_protector(
+        self, ctx: interactions.ComponentContext
+    ) -> Union[GGProtector, bool]:
+        _id = int(ctx.message.embeds[0].description)
+        if protector := self.gg_protectors.get(_id):
+            return protector
+        else:
+            await ctx.send("Threat already resolved!", ephemeral=True)
+            components = ctx.message.components
+
+            for _components in components:
+                for component in _components.components:
+                    component.disabled = True
+
+            await ctx.message.edit(components=components)
+            return False
+
+    @interactions.extension_component("vote_ban_add")
+    async def _ban_add(self, ctx: interactions.ComponentContext):
+        if protector := await self.check_protector(ctx):
+            if not await protector.increase_ban_votes(ctx.author):
+                await ctx.send("already voted, removing your vote", ephemeral=True)
+                return await protector.decrease_ban_votes(ctx.author)
+            return await ctx.send("vote added!", ephemeral=True)
+
+    @interactions.extension_component("add_vote_timeout")
+    async def _timeout_remove_add(self, ctx: interactions.ComponentContext):
+        if protector := await self.check_protector(ctx):
+            if not await protector.increase_timeout_votes(ctx.author):
+                await ctx.send("already voted, removing your vote", ephemeral=True)
+                return await protector.decrease_timeout_votes(ctx.author)
+            return await ctx.send("vote added!", ephemeral=True)
 
     @interactions.extension_listener()
     async def on_guild_member_remove(self, member: interactions.GuildMember):

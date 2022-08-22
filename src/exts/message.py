@@ -61,7 +61,10 @@ class Message(interactions.Extension):
         ):
             return await ctx.send("missing permissions!", ephemeral=True)
         await self.bot._http.modify_channel(
-            channel_id=int(ctx.channel_id), payload={"applied_tags": _selected if "remove_all_tags" not in _selected else []}
+            channel_id=int(ctx.channel_id),
+            payload={
+                "applied_tags": _selected if "remove_all_tags" not in _selected else []
+            },
         )
         await ctx.send("Done", ephemeral=True)
 
@@ -85,9 +88,13 @@ class Message(interactions.Extension):
                 for attachment in target.attachments:
                     async with session.get(attachment.url) as request:
                         _bytes: bytes = await request.content.read()
-                        files.append(interactions.File(attachment.filename, fp=BytesIO(_bytes)))
+                        files.append(
+                            interactions.File(attachment.filename, fp=BytesIO(_bytes))
+                        )
 
-            target._json["attachments"] = [file._json_payload(_id) for _id, file in enumerate(files)]
+            target._json["attachments"] = [
+                file._json_payload(_id) for _id, file in enumerate(files)
+            ]
 
         if not "AUTO" in thread_name:
             thread_name = f"[AUTO] {thread_name}"
