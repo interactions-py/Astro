@@ -11,7 +11,6 @@ from interactions.ext.wait_for import wait_for_component
 import asyncio
 from pytz import UTC
 from typing import Union
-from .gg_protector import GGProtector
 from src.exts.gg_protector import GGProtector
 
 log = logging.getLogger("astro.exts.mod")
