@@ -5,6 +5,7 @@ from pymongo.server_api import *
 from pymongo.database import *
 from .forums import monkeypatch
 from interactions.ext.wait_for import setup
+from base64 import b64decode
 
 from .const import *
 
@@ -36,7 +37,7 @@ bot = interactions.Client(
         | interactions.Intents.GUILDS
     ),
     presence=presence,
-    disable_sync=True,
+    disable_sync=False,
 )
 setup(bot)
 monkeypatch(bot)
@@ -204,3 +205,19 @@ async def language_role_selection(
     else:
         await ctx.member.add_role(role=role["id"], guild_id=METADATA["guild"])
         await ctx.send(":heavy_check_mark: Role added.", ephemeral=True)
+
+@bot.command(scope=METADATA["guild"])
+@interactions.option("the thing to look for") 
+async def letmegooglethat(ctx: interactions.CommandContext, param: str):
+    if not str(METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles]:
+        return await ctx.send(":x: You are not a helper.", ephemeral=True)
+    
+    params = param.split(" ") 
+    q: str = "+".join(word for word in param.split(" "))
+    await ctx.send("collecting Google things...", ephemeral=True) 
+    await (await ctx.get_channel()).send(f"<https://letmegooglethat.com/?q={q}>")
+
+@bot.command(scope=METADATA["guild"]) 
+@interactions.option()
+async def docs_search(ctx: interactions.CommandContext, query: str):
+    await ctx.send(f"https://interactionspy.readthedocs.io/en/latest/search.html?q={'+'.join(word for word in query.split(' '))}&check_keywords=yes&area=default")

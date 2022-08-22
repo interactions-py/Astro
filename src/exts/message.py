@@ -61,7 +61,7 @@ class Message(interactions.Extension):
         ):
             return await ctx.send("missing permissions!", ephemeral=True)
         await self.bot._http.modify_channel(
-            channel_id=int(ctx.channel_id), payload={"applied_tags": _selected}
+            channel_id=int(ctx.channel_id), payload={"applied_tags": _selected if "remove_all_tags" not in _selected else []}
         )
         await ctx.send("Done", ephemeral=True)
 
@@ -121,13 +121,22 @@ class Message(interactions.Extension):
             )
             for tag in _tags
         ]
+        _options.append(
+            interactions.SelectOption(
+                label="remove all tags",
+                value="remove_all_tags",
+                emoji=interactions.Emoji(
+                    name="🗑",
+                ),
+            ),
+        )
 
         select = interactions.SelectMenu(
             custom_id="TAG_SELECTION",
             placeholder="Select the tags you want",
             options=_options,
-            min_values=0,
-            max_values=len(_options),
+            min_values=1,
+            max_values=5,
         )
 
         thread = interactions.Channel(**_thread, _client=self.bot._http)

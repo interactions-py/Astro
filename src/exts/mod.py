@@ -681,10 +681,10 @@ class Mod(interactions.Extension):
                 style=interactions.ButtonStyle.DANGER,
             )
 
-            time = datetime.now() + timedelta(seconds=35)
+            time = datetime.now() + timedelta(seconds=60)
             components = [insta_ban, cancel]
 
-            await staff.send(
+            msg = await staff.send(
                 "@here\n\n⚠️ Attention⚠️\nI've detected a possible `GG`-guy-alt account:\n"
                 f"{member.mention}\n\n"
                 f"I will proceed the account automatically in <t:{round(time.timestamp())}:R>"
@@ -694,14 +694,18 @@ class Mod(interactions.Extension):
 
             try:
                 data: interactions.ComponentContext = await wait_for_component(
-                    self.bot, components=components, timeout=35
+                    self.bot, components=components, timeout=60
                 )
 
                 if data.custom_id == "bye":
+                    await data.send("<:blobpain:893296401415561246>", ephemeral=True)
                     raise asyncio.TimeoutError()
 
             except asyncio.TimeoutError:
-                await self.ban_from_member_add(member, int(member.guild_id))
+                insta_ban.disabled = True
+                cancel.disabled = True
+                await ctx.message.edit(f"{msg.content}\n\nbanned.... <:blobpain:893296401415561246>", components=[insta_ban, cancel])
+                await self.ban_from_member_add(member, int(member.guild_id)) 
                 await staff.send("User banned!")
 
             else:
