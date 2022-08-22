@@ -13,7 +13,7 @@ src_path = pathlib.Path(__file__).parent.absolute().as_posix()
 EXTENSIONS = [
     file.replace(".py", "")
     for file in os.listdir(f"{src_path}/exts")
-    if not file.startswith("_") and not file.startswith("modmail")
+    if not file.startswith("_") and not file.startswith("gg")
 ]
 
 METADATA = {
