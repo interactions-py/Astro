@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class GGProtector:
     def __init__(
         self,
-        mod: Mod,
+        mod: "Mod",
         member: interactions.Member,
         guild_id: int = METADATA["guild"],
         min_votes: int = 2,
