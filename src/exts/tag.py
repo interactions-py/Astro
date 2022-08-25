@@ -119,13 +119,13 @@ class Tag(interactions.Extension):
         for _v in _divide(_value.split("\n")):
             _contents.append(_v)
 
-        for _c in _contents:
+        for content in _contents:
             new_embed = interactions.Embed(
                 title="Tag list",
                 description="This is the list of currently existing tags.",
                 color=0x5865F2,
             )
-            new_embed.add_field(name="Names", value="\n".join(_c))
+            new_embed.add_field(name="Names", value="\n".join(content))
             _embeds.append(new_embed)
 
         await Paginator(
