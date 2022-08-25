@@ -128,9 +128,11 @@ class Tag(interactions.Extension):
             new_embed.add_field(name="Names", value="\n".join(content))
             _embeds.append(new_embed)
 
-        await Paginator(
-            client=self.client, ctx=ctx, pages=[Page(embeds=embed) for embed in _embeds]
-        ).run()
+        paginator = Paginator(
+            client=self.client, ctx=ctx, pages=[Page(embeds=embed) for embed in _embeds], timeout=600,
+        )
+
+        await paginator.run()
 
     @tag.subcommand()
     async def create(self, ctx: interactions.CommandContext):
