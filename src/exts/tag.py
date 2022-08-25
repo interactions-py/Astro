@@ -3,6 +3,7 @@ import interactions
 import logging
 import src.const
 import src.model
+from interactions.ext.paginator import Page, Paginator
 from src.const import *
 from pymongo.database import *
 
@@ -101,57 +102,35 @@ class Tag(interactions.Extension):
 
         log.debug("Matched for list. Returning result...")
 
-        embed = interactions.Embed(
-            title="Tags list",
-            description="This is the current list of existing tags.",
-            color=0x5865F2,
-            fields=[
-                interactions.EmbedField(
-                    name="Names",
-                    value=" ",
-                    inline=True,
-                ),
-                interactions.EmbedField(
-                    name="(cont.)",
-                    value=" ",
-                    inline=True,
-                ),
-            ],
-        )
-        _last_name: str = ""
         _id: int = 0
+        _pages: list = []
+        _contents: list = []
+        _embeds: list = []
+        _value: str = ""
+
+        def _divide(_list):
+            for i in range(0, len(_list), 5):
+                yield _list[i : i + 5]
 
         for tag in db:
-            if (len(tag) + len(embed.fields[0].value)) < 900:
-                embed.fields[0].value += f"` {_id} ` {tag}"
-            else:
-                break
-
-            _last_name = tag
+            _value += f"` {_id} ` {tag}\n"
             _id += 1
 
-        if _id < len(db):
-            ...
+        for _v in _divide(_value.split("\n")):
+            _contents.append(_v)
 
-        paginator = interactions.ActionRow(
-            components=[
-                interactions.Button(
-                    style=interactions.ButtonStyle.PRIMARY,
-                    label="Previous",
-                    emoji=interactions.Emoji(id=None, name="⬅️", animated=False),
-                    custom_id="list_navigate_left",
-                ),
-                interactions.Button(
-                    style=interactions.ButtonStyle.PRIMARY,
-                    label="Next",
-                    emoji=interactions.Emoji(id=None, name="➡️", animated=False),
-                    custom_id="list_navigate_right",
-                    disabled=True if len(embed.fields[0].value) <= 900 else False,
-                ),
-            ]
-        )
+        for _c in _contents:
+            new_embed = interactions.Embed(
+                title="Tag list",
+                description="This is the list of currently existing tags.",
+                color=0x5865F2,
+            )
+            new_embed.add_field(name="Names", value="\n".join(_c))
+            _embeds.append(new_embed)
 
-        await ctx.send(embeds=embed, components=paginator)
+        await Paginator(
+            client=self.client, ctx=ctx, pages=[Page(embeds=embed) for embed in _embeds]
+        ).run()
 
     @tag.subcommand()
     async def create(self, ctx: interactions.CommandContext):
