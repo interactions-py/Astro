@@ -158,7 +158,7 @@ class Tag(interactions.Extension):
         """Creates a tag and adds it into the database."""
         log.debug("Matched for create. Returning result...")
 
-        if not self.__check_role(ctx):
+        if not self._check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
         else:
             modal = interactions.Modal(
@@ -192,7 +192,7 @@ class Tag(interactions.Extension):
 
         log.debug("Matched for edit. Returning result...")
 
-        if not self.__check_role(ctx):
+        if not self._check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
         elif tag_name in db:
             modal = interactions.Modal(
@@ -234,7 +234,7 @@ class Tag(interactions.Extension):
 
         log.debug("Matched for delete. Returning result...")
 
-        if not self.__check_role(ctx):
+        if not self._check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
         elif tag_name in db:
             del db[tag_name]
@@ -248,7 +248,7 @@ class Tag(interactions.Extension):
         else:
             await ctx.send(f":x: Tag `{tag_name}` does not exist.", ephemeral=True)
 
-    def __check_role(self, ctx: interactions.CommandContext) -> bool:
+    def _check_role(self, ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
         return bool(
@@ -351,7 +351,7 @@ class Tag(interactions.Extension):
     async def archive(self, ctx: interactions.CommandContext):
         """Archives this thread"""
 
-        if not self.__check_role(ctx):
+        if not self._check_role(ctx):
             return await ctx.send(":x: You are not a helper.", ephemeral=True)
 
         await ctx.send("archiving...")
