@@ -108,7 +108,7 @@ class Tag(interactions.Extension):
         _embeds: list = []
         _value: str = ""
 
-        def _divide(_list):
+        def _divide(_list: list) -> list:
             for i in range(0, len(_list), 5):
                 yield _list[i : i + 5]
 
