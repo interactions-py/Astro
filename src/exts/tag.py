@@ -123,7 +123,7 @@ class Tag(interactions.Extension):
             new_embed = interactions.Embed(
                 title="Tag list",
                 description="This is the list of currently existing tags.",
-                color=0x5865F2,
+                color=0x1208af,
             )
             new_embed.add_field(name="Names", value="\n".join(content))
             _embeds.append(new_embed)
