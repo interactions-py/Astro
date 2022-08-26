@@ -217,6 +217,8 @@ class Message(interactions.Extension):
     async def _close_thread(self, ctx: interactions.ComponentContext):
         await ctx.get_channel()
         from src.exts.tag import Tag
+        await ctx.send(str(Tag._check_role(ctx)))
+        await ctx.send(str(ctx.author.id != ctx.channel.owner_id))
         if not Tag._check_role(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await ctx.send(":x: You are not a helper.", ephemeral=True)
         await ctx.send("Closing! Thank you for using our help system!")
