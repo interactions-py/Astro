@@ -129,7 +129,7 @@ class Tag(interactions.Extension):
             _embeds.append(new_embed)
 
         paginator = Paginator(
-            client=self.client, ctx=ctx, pages=[Page(embeds=embed) for embed in _embeds], timeout=600,
+            client=self.client, ctx=ctx, pages=[Page(embeds=embed) for embed in _embeds], timeout=300,
         )
 
         await paginator.run()
