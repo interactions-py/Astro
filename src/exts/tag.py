@@ -117,7 +117,7 @@ class Tag(interactions.Extension):
             _id += 1
 
         for tag_group in _divide(_value.split("\n")):
-            _contents.append(_v)
+            _contents.append(tag_group)
 
         for content in _contents:
             new_embed = interactions.Embed(
