@@ -116,7 +116,7 @@ class Tag(interactions.Extension):
             _value += f"` {_id} ` {tag}\n"
             _id += 1
 
-        for _v in _divide(_value.split("\n")):
+        for tag_group in _divide(_value.split("\n")):
             _contents.append(_v)
 
         for content in _contents:
