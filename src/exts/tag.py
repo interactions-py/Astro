@@ -229,7 +229,8 @@ class Tag(interactions.Extension):
         else:
             await ctx.send(f":x: Tag `{tag_name}` does not exist.", ephemeral=True)
 
-    def _check_role(self, ctx: interactions.CommandContext) -> bool:
+    @staticmethod
+    def _check_role(ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
         return bool(
