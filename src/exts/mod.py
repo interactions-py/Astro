@@ -675,8 +675,8 @@ class Mod(interactions.Extension):
         timeout_time: dict = {"days": 1}
 
         if UTC.localize(member.joined_at) < UTC.localize(
-            member.id.timestamp
-        ) + timedelta(**min_account_age_before_join):
+            member.id.timestamp + timedelta(**min_account_age_before_join)
+        ):
             await member.modify(
                 communication_disabled_until=(
                     now + timedelta(**timeout_time)
