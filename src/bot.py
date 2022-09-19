@@ -41,7 +41,7 @@ bot = interactions.Client(
 )
 setup(bot)
 monkeypatch(bot)
-
+bot.load("interactions.ext.persistence")
 
 [bot.load(f"src.exts.{ext}", db=db) for ext in EXTENSIONS]
 

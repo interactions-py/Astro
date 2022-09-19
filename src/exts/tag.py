@@ -4,18 +4,18 @@ import logging
 import src.const
 import src.model
 from interactions.ext.paginator import Page, Paginator
+from interactions.ext.persistence import PersistenceExtension, PersistentCustomID, extension_persistent_modal
 from src.const import *
 from pymongo.database import *
 
 log = logging.getLogger("astro.exts.tag")
 
 
-class Tag(interactions.Extension):
+class Tag(PersistenceExtension):
     """An extension dedicated to /tag."""
 
     def __init__(self, bot, **kwargs):
         self.bot = bot
-        self.edited_name = None
         self.db: Database = kwargs.get("db")
         self.tags: Collection = self.db.Tags
         self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
@@ -178,7 +178,7 @@ class Tag(interactions.Extension):
         elif tag_name in db:
             modal = interactions.Modal(
                 title="Edit tag",
-                custom_id="edit_tag",
+                custom_id=str(PersistentCustomID(self.bot, "edit_tag", tag_name)),
                 components=[
                     interactions.TextInput(
                         style=interactions.TextStyleType.SHORT,
@@ -200,7 +200,6 @@ class Tag(interactions.Extension):
                     ),
                 ],
             )
-            self.edited_name = tag_name
 
             await ctx.popup(modal)
         else:
@@ -297,24 +296,24 @@ class Tag(interactions.Extension):
                 ephemeral=True,
             )
 
-    @interactions.extension_modal(modal="edit_tag")
+    @extension_persistent_modal("edit_tag")
     async def __edit_tag(
-        self, ctx: interactions.CommandContext, tag_name: str, description: str
+        self, ctx: interactions.CommandContext, edited_name: str, tag_name: str, description: str
     ):
         """Creates a new tag through the modal UI."""
         await ctx.defer(ephemeral=True)
         db = self._tags
         tag = src.model.Tag(
-            id=db[self.edited_name]["id"],
+            id=db[edited_name]["id"],
             author=ctx.author.id,
-            name=self.edited_name,
+            name=edited_name,
             description=description,
-            created_at=db[self.edited_name]["created_at"],
+            created_at=db[edited_name]["created_at"],
             last_edited_at=datetime.datetime.now().timestamp(),
         )
 
-        if tag_name != self.edited_name:
-            del db[self.edited_name]
+        if tag_name != edited_name:
+            del db[edited_name]
 
         db.update({tag_name: tag._json})
         self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
@@ -322,9 +321,9 @@ class Tag(interactions.Extension):
 
         await ctx.send(
             (
-                f":heavy_check_mark: Tag `{self.edited_name}` has been edited."
-                if tag_name == self.edited_name
-                else f":heavy_check_mark: Tag `{self.edited_name}` has been edited and re-named to `{tag_name}`."
+                f":heavy_check_mark: Tag `{edited_name}` has been edited."
+                if tag_name == edited_name
+                else f":heavy_check_mark: Tag `{edited_name}` has been edited and re-named to `{tag_name}`."
             ),
             ephemeral=True,
         )
