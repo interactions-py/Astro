@@ -1,7 +1,7 @@
 import interactions
 import enum
 
-from interactions.api.models.attrs_utils import define, field
+from interactions.utils.attrs_utils import define, field
 
 
 class ActionType(enum.IntEnum):
