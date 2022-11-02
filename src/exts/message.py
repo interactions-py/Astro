@@ -120,9 +120,9 @@ class Message(interactions.Extension):
                 label=tag.name,
                 value=tag.id,
                 emoji=interactions.Emoji(
-                    name=tag.emoji_name,
+                    name=tag.emoji.name,
                 )
-                if tag.emoji_name
+                if tag.emoji
                 else None,
             )
             for tag in _tags
@@ -209,9 +209,9 @@ class Message(interactions.Extension):
                     label=tag.name,
                     value=tag.id,
                     emoji=interactions.Emoji(
-                        name=tag.emoji_name,
+                        name=tag.emoji.name,
                     )
-                    if tag.emoji_name
+                    if tag.emoji
                     else None,
                 )
                 for tag in _tags
