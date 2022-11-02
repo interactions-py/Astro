@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import interactions
 import logging
 import src.const
@@ -9,7 +9,6 @@ from time import perf_counter
 from asyncio import sleep
 from interactions.ext.wait_for import wait_for_component
 import asyncio
-from pytz import UTC
 from typing import Union
 from src.exts.gg_protector import GGProtector
 
@@ -670,11 +669,11 @@ class Mod(interactions.Extension):
         self, member: Union[interactions.Member, interactions.GuildMember]
     ) -> Union[GGProtector, bool]:
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         min_account_age_before_join: dict = {"days": 2}
         timeout_time: dict = {"days": 1}
 
-        if member.joined_at < member.id.timestamp + timedelta(**min_account_age_before_join):
+        if member.joined_at.replace(tzinfo=timezone.utc) < (member.id.timestamp + timedelta(**min_account_age_before_join)).replace(tzinfo=timezone.utc):
             await member.modify(
                 communication_disabled_until=(
                     now + timedelta(**timeout_time)
