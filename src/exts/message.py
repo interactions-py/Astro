@@ -117,12 +117,12 @@ class Message(interactions.Extension):
         _tags = ch.available_tags
         _options: list[interactions.SelectOption] = [
             interactions.SelectOption(
-                label=tag["name"],
-                value=tag["id"],
+                label=tag.name,
+                value=tag.id,
                 emoji=interactions.Emoji(
-                    name=tag["emoji_name"],
+                    name=tag.emoji_name,
                 )
-                if tag["emoji_name"]
+                if tag.emoji_name
                 else None,
             )
             for tag in _tags
@@ -203,15 +203,15 @@ class Message(interactions.Extension):
                 interactions.Channel,
                 object_id=src.const.METADATA["channels"]["help"],
             )
-            _tags = ch._extras["available_tags"]
+            _tags = ch.available_tags
             _options: list[interactions.SelectOption] = [
                 interactions.SelectOption(
-                    label=tag["name"],
-                    value=tag["id"],
+                    label=tag.name,
+                    value=tag.id,
                     emoji=interactions.Emoji(
-                        name=tag["emoji_name"],
+                        name=tag.emoji_name,
                     )
-                    if tag["emoji_name"]
+                    if tag.emoji_name
                     else None,
                 )
                 for tag in _tags
