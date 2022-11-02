@@ -96,7 +96,7 @@ class Message(interactions.Extension):
                 file._json_payload(_id) for _id, file in enumerate(files)
             ]
 
-        if not "AUTO" in thread_name:
+        if "AUTO" not in thread_name:
             thread_name = f"[AUTO] {thread_name}"
 
         _thread: dict = await self.bot._http.create_thread_in_forum(
@@ -114,7 +114,7 @@ class Message(interactions.Extension):
             interactions.Channel,
             object_id=src.const.METADATA["channels"]["help"],
         )
-        _tags = ch._extras["available_tags"]
+        _tags = ch.available_tags
         _options: list[interactions.SelectOption] = [
             interactions.SelectOption(
                 label=tag["name"],
@@ -194,15 +194,41 @@ class Message(interactions.Extension):
     @interactions.extension_listener
     async def on_thread_create(self, thread: interactions.Thread):
 
-        if (
-            thread._extras.get("applied_tags")
-            and thread.parent_id == 996211499364262039
-            and thread._extras.get("newly_created")
-            and "AUTO" not in thread.name
-        ):
+        members = await thread.get_members()
+
+        if all(member.user_id != self.bot.me.id for member in members):  # if astro is not already in the thread
+
+            ch = await interactions.get(
+                self.bot,
+                interactions.Channel,
+                object_id=src.const.METADATA["channels"]["help"],
+            )
+            _tags = ch._extras["available_tags"]
+            _options: list[interactions.SelectOption] = [
+                interactions.SelectOption(
+                    label=tag["name"],
+                    value=tag["id"],
+                    emoji=interactions.Emoji(
+                        name=tag["emoji_name"],
+                    )
+                    if tag["emoji_name"]
+                    else None,
+                )
+                for tag in _tags
+            ]
+
+            select = interactions.SelectMenu(
+                custom_id="TAG_SELECTION",
+                placeholder="Select the tags you want",
+                options=_options,
+                min_values=1,
+                max_values=5,
+            )
+
             msg = await thread.send(
                 "Hey! Once your issue is solved, press the button below to close this thread!",
                 components=[
+                    select,
                     interactions.Button(
                         style=interactions.ButtonStyle.DANGER,
                         label="Close this thread",
