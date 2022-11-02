@@ -119,11 +119,9 @@ class Message(interactions.Extension):
             interactions.SelectOption(
                 label=tag.name,
                 value=tag.id,
-                emoji=interactions.Emoji(
-                    name=tag.emoji_name,
-                )
-                if tag.emoji_name
-                else None,
+                emoji=tag.emoji
+
+
             )
             for tag in _tags
         ]
@@ -208,11 +206,7 @@ class Message(interactions.Extension):
                 interactions.SelectOption(
                     label=tag.name,
                     value=tag.id,
-                    emoji=interactions.Emoji(
-                        name=tag.emoji_name,
-                    )
-                    if tag.emoji_name
-                    else None,
+                    emoji=tag.emoji,
                 )
                 for tag in _tags
             ]
