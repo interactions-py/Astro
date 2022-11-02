@@ -3,7 +3,6 @@ import logging
 import pymongo
 from pymongo.server_api import *
 from pymongo.database import *
-from .forums import monkeypatch
 from interactions.ext.wait_for import setup
 from base64 import b64decode
 
@@ -40,7 +39,6 @@ bot = interactions.Client(
     disable_sync=False,
 )
 setup(bot)
-monkeypatch(bot)
 
 
 [bot.load(f"src.exts.{ext}", db=db) for ext in EXTENSIONS]

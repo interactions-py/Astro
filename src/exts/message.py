@@ -99,13 +99,12 @@ class Message(interactions.Extension):
         if not "AUTO" in thread_name:
             thread_name = f"[AUTO] {thread_name}"
 
-        _thread: dict = await self.bot._http.create_forum_thread(
-            self=self.bot._http,
+        _thread: dict = await self.bot._http.create_thread_in_forum(
             auto_archive_duration=1440,
             name=thread_name,
             channel_id=src.const.METADATA["channels"]["help"],
             applied_tags=["996215708595794071"],
-            message_payload=target._json,
+            message=target._json,
             files=files,
             reason="Auto help thread creation",
         )
