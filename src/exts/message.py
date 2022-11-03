@@ -220,16 +220,16 @@ class Message(interactions.Extension):
             )
 
             msg = await thread.send(
-                "Hey! Once your issue is solved, press the button below to close this thread!",
-                components=[
-                    interactions.spread_to_rows(select,
-                    interactions.Button(
-                        style=interactions.ButtonStyle.DANGER,
-                        label="Close this thread",
-                        custom_id="close thread",
-                    ),)
-                ],
+            "Hey! Once your issue is solved, press the button below to close this thread!",
+            components=interactions.spread_to_rows(
+                select,
+                interactions.Button(
+                    style=interactions.ButtonStyle.DANGER,
+                    label="Close this thread",
+                    custom_id="close thread",
+                ),
             )
+        )
             await msg.pin()
 
     @interactions.extension_component("close thread")
