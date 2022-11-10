@@ -2,6 +2,7 @@ import interactions
 import src.const
 import aiohttp
 from io import BytesIO
+import asyncio
 
 
 class Message(interactions.Extension):
@@ -195,7 +196,9 @@ class Message(interactions.Extension):
         members = await thread.get_members()
 
         if all(member.user_id != self.bot.me.id for member in members):  # if astro is not already in the thread
-
+            await asyncio.sleep(5)  
+            # make sure discord accepts the "first message" by the thread creator, see 
+            # https://canary.discord.com/channels/789032594456576001/850982027079319572/1039983760243961856
             ch = await interactions.get(
                 self.bot,
                 interactions.Channel,
