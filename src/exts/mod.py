@@ -708,7 +708,7 @@ class Mod(interactions.Extension):
 
         if self.gg_cola_check(member.user):
             staff = await interactions.get(
-                self.bot, interactions.Channel, object_id=850982027079319572
+                self.bot, interactions.Channel, object_id=820672900583522335
             )
 
             insta_ban = interactions.Button(
@@ -726,7 +726,8 @@ class Mod(interactions.Extension):
             components = [insta_ban, cancel]
 
             msg = await staff.send(
-                "@here\n\n⚠️ Attention⚠️\nI've detected a possible `GG`-guy-alt account:\n"
+                "<@&789041109208793139>"
+                "\n\n⚠️ Attention⚠️\nI've detected a possible `GG`-guy-alt account:\n"
                 f"{member.mention}\n\n"
                 f"I will proceed the account automatically in <t:{round(time.timestamp())}:R>"
                 "If you don't cancel the ban.\n",
@@ -767,7 +768,7 @@ class Mod(interactions.Extension):
 
         elif await self.account_age_check(member):
             staff = await interactions.get(
-                self.bot, interactions.Channel, object_id=850982027079319572
+                self.bot, interactions.Channel, object_id=820672900583522335
             )
 
             ban_vote_add = interactions.Button(
@@ -784,7 +785,7 @@ class Mod(interactions.Extension):
             components = [ban_vote_add, timeout_remove_vote_add]
 
             msg = await staff.send(
-                "@here <@&818861272484806656> <@&789041109208793139>"
+                "<@&789041109208793139>"
                 "\n\n⚠️ Attention⚠️\n"
                 "I've detected a possible `GG`-guy-alt account by account age:\n"
                 f"{member.mention}\n\n",
