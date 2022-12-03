@@ -14,6 +14,7 @@ class Docs(interactions.Extension):
     @interactions.option("query")
     async def docs_search(self, ctx: interactions.CommandContext, search: str = None):
         """Search interactions.py's documentation."""
+        await ctx.defer()
         if search is None:
             return await ctx.send("https://interactionspy.readthedocs.io/en/latest/index.html")
 
