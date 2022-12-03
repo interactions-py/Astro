@@ -10,11 +10,11 @@ from .const import *
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
-client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi("1"))
-db: Database = client.Astro
-tags: Collection = db.Tags
-moderation: Collection = db.Moderation
-modmail: Collection = db.Modmail
+# client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi("1"))
+# db: Database = client.Astro
+# tags: Collection = db.Tags
+# moderation: Collection = db.Moderation
+# modmail: Collection = db.Modmail
 
 presence = interactions.ClientPresence(
     activities=[
@@ -41,11 +41,12 @@ bot = interactions.Client(
 setup(bot)
 
 
-[bot.load(f"src.exts.{ext}", db=db) for ext in EXTENSIONS]
+[bot.load(f"src.exts.{ext}", db=None) for ext in EXTENSIONS]
 
 
 @bot.event
 async def on_ready():
+    print(bot._extensions)
     print(f"Logged in as {bot.me.name}.")
 
 
