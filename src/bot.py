@@ -215,11 +215,3 @@ async def letmegooglethat(ctx: interactions.CommandContext, param: str):
     q: str = "+".join(word for word in param.split(" "))
     await ctx.send("collecting Google things...", ephemeral=True)
     await (await ctx.get_channel()).send(f"<https://letmegooglethat.com/?q={q}>")
-
-
-@bot.command(scope=METADATA["guild"])
-@interactions.option()
-async def docs_search(ctx: interactions.CommandContext, query: str):
-    await ctx.send(
-        f"https://interactionspy.readthedocs.io/en/latest/search.html?q={'+'.join(word for word in query.split(' '))}&check_keywords=yes&area=default"
-    )

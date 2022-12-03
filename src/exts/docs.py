@@ -4,21 +4,22 @@ import aiohttp
 import interactions
 from interactions.ext.paginator import Page, Paginator
 
+from const import METADATA
+
 
 class Docs(interactions.Extension):
-    def __init__(self, client, **kwargs) -> None:
+    def __init__(self, client: interactions.Client) -> None:
         self.client = client
 
-    @interactions.extension_command()
-    @interactions.option("search query")
-    async def docs(self, ctx: interactions.CommandContext, search: str = None):
+    @interactions.extension_command(scope=METADATA["guild"])
+    @interactions.option("query")
+    async def docs_search(self, ctx: interactions.CommandContext, search: str = None):
         """Search interactions.py's documentation."""
         if search is None:
             return await ctx.send("https://interactionspy.readthedocs.io/en/latest/index.html")
         url = f"https://interactionspy.readthedocs.io/_/api/v2/search/?q={quote(search)}&project=interactionspy&version=latest&language=en"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as r:
-                data = await r.json()
+        async with self.client._http._req._session.get(url) as resp:
+            data = await resp.json()
         if data["count"] == 0:
             return await ctx.send("No results found.")
         results = []
@@ -41,7 +42,7 @@ class Docs(interactions.Extension):
             results.append(eb)
         if len(results) == 1:
             return await ctx.send(embed=results[0])
-        await Paginator(**[Page(embeds=i) for i in results]).run()
+        await Paginator(self.client, ctx, pages=[Page(embeds=i) for i in results]).run()
 
 
 def setup(client):
