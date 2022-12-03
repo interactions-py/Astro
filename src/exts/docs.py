@@ -29,24 +29,19 @@ class Docs(interactions.Extension):
             eb = interactions.Embed(title=i["title"], url=f"{i['domain']}{i['path']}")
             for j in i["blocks"]:
                 if j["type"] == "domain":
-                    content = j["highlights"]["content"]
-                    highlight = (
-                        j["highlights"]["content"].replace("<span>", "").replace("</span>", "")
-                    )
-
-                    if j["content"].startswith(highlight):
-                        content = f"... {content}"
-                    if j["content"].endswith(highlight):
-                        content = f"{content} ..."
-
                     content = (
-                        content.replace("*", "\\*")
+                        j["content"]
+                        .replace("*", "\\*")
                         .replace("_", "\\_")
                         .replace("`", "\\`")
                         .replace("~", "\\~")
-                        .replace("<span>", "**")
-                        .replace("</span>", "**")
                     )
+                    link = f"""\n[[Link]({i["domain"]}{i["path"]}#{j["id"]})]"""
+
+                    if len(content) + len(link) > 1024:
+                        content = f"{content[:1020 - len(link)]}..."
+                    content += link
+
                     eb.add_field(name=j["name"], value=content)
             results.append(eb)
 
