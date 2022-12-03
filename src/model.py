@@ -1,5 +1,8 @@
 import interactions
 import enum
+import typing
+from datetime import datetime
+from beanie import Document, Indexed
 
 from interactions.utils.attrs_utils import define, field
 
@@ -41,17 +44,9 @@ class Action(interactions.DictSerializerMixin):
         self._json.update({"moderator": self.moderator._json, "user": self.user._json})
 
 
-@define()
-class Tag(interactions.DictSerializerMixin):
-    """An object representing a custom-made feed."""
-
-    id: int | None = field(default=None)
-    author: interactions.Snowflake = field(converter=interactions.Snowflake)
-    name: str = field()
-    description: str = field()
-    created_at: int = field()
-    last_edited_at: int | None = field(default=None)
-
-    def __attrs_post_init__(self):
-        if isinstance(self.author, interactions.Snowflake):
-            self._json.update({"author": self.author._snowflake})
+class Tag(Document):
+    name: Indexed(str)
+    author_id: str
+    description: str
+    created_at: datetime
+    last_edited_at: typing.Optional[datetime] = None

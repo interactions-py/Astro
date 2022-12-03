@@ -3,4 +3,5 @@ interactions-wait-for>=1.0.6
 dinteractions-Paginator >= 2.0.2
 python-dotenv==0.20.0
 aiohttp~=3.8.1
-pymongo[srv]
+motor[srv]
+beanie
