@@ -154,6 +154,8 @@ async def add_role_menu(ctx: interactions.CommandContext):
         )
         await channel.send(components=role_menu)
         await ctx.send(":heavy_check_mark:", ephemeral=True)
+    else:
+        await ctx.send("You cannot use this command.", ephemeral=True)
 
 
 @bot.component("language_role")
