@@ -193,6 +193,9 @@ class Message(interactions.Extension):
     @interactions.extension_listener
     async def on_thread_create(self, thread: interactions.Thread):
 
+        if not thread.parent_id or int(thread.parent_id) != src.const.METADATA["channels"]["help"]:
+            return
+
         members = await thread.get_members()
 
         if all(member.user_id != self.bot.me.id for member in members):  # if astro is not already in the thread
