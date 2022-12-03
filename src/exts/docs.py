@@ -29,9 +29,9 @@ class Docs(interactions.Extension):
             eb = interactions.Embed(title=i["title"], url=f"{i['domain']}{i['path']}")
             for j in i["blocks"]:
                 if j["type"] == "domain":
-                    content = j["highlight"]["content"]
+                    content = j["highlights"]["content"]
                     highlight = (
-                        j["highlight"]["content"].replace("<span>", "").replace("</span>", "")
+                        j["highlights"]["content"].replace("<span>", "").replace("</span>", "")
                     )
 
                     if j["content"].startswith(highlight):
