@@ -1,20 +1,16 @@
 import interactions
 import logging
-import pymongo
-from pymongo.server_api import *
-from pymongo.database import *
-from interactions.ext.wait_for import setup
-from base64 import b64decode
 
+from pymongo.server_api import ServerApi
+from motor.motor_asyncio import *
+from interactions.ext.wait_for import setup
+from beanie import init_beanie
+
+from .model import Tag
 from .const import *
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
-# client = pymongo.MongoClient(MONGO_DB_URL, server_api=ServerApi("1"))
-# db: Database = client.Astro
-# tags: Collection = db.Tags
-# moderation: Collection = db.Moderation
-# modmail: Collection = db.Modmail
 
 presence = interactions.ClientPresence(
     activities=[
@@ -40,13 +36,18 @@ bot = interactions.Client(
 )
 setup(bot)
 
+async def db_setup():
+    client = AsyncIOMotorClient(MONGO_DB_URL, server_api=ServerApi("1"))
+    await init_beanie(client.Astro, document_models=[Tag])
 
-[bot.load(f"src.exts.{ext}", db=None) for ext in EXTENSIONS]
+bot._loop.create_task(db_setup())
+
+
+[bot.load(f"src.exts.{ext}") for ext in EXTENSIONS]
 
 
 @bot.event
 async def on_ready():
-    print(bot._extensions)
     print(f"Logged in as {bot.me.name}.")
 
 
