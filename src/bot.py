@@ -220,5 +220,5 @@ async def letmegooglethat(ctx: interactions.CommandContext, param: str):
 @interactions.option()
 async def docs_search(ctx: interactions.CommandContext, query: str):
     await ctx.send(
-        f"https://interactionspy.readthedocs.io/en/latest/search.html?q={'+'.join(query.split(' '))}&check_keywords=yes&area=default"
+        f"https://interactionspy.readthedocs.io/en/latest/search.html?q={quote_plus(query)}&check_keywords=yes&area=default"
     )
