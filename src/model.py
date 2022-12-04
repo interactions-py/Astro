@@ -17,7 +17,7 @@ class ActionType(enum.IntEnum):
 
 
 class Action(Document):
-    user: Indexed(str)
+    user: typing.Annotated[str, Indexed(str)]
     type: ActionType
     moderator: str
     created_at: datetime
@@ -25,7 +25,7 @@ class Action(Document):
 
 
 class Tag(Document):
-    name: Indexed(str)
+    name: typing.Annotated[str, Indexed(str)]
     author_id: str
     description: str
     created_at: datetime
