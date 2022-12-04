@@ -10,8 +10,17 @@ from pymongo.server_api import ServerApi
 from .const import *
 from .model import Action, Tag
 
-logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+
+stderr_handler = logging.StreamHandler()
+stderr_handler.setLevel(logging.WARNING)
+log.addHandler(stderr_handler)
+
+file_handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
+file_handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
+file_handler.setLevel(logging.INFO)
+log.addHandler(stderr_handler)
 
 presence = interactions.ClientPresence(
     activities=[

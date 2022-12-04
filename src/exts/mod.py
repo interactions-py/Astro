@@ -15,8 +15,6 @@ import src.model as model
 from src.const import *
 from src.exts.gg_protector import GGProtector
 
-log = logging.getLogger("astro.exts.mod")
-
 
 class Mod(interactions.Extension):
     """An extension dedicated to /mod and other functionalities."""

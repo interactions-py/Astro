@@ -9,7 +9,7 @@ import src.const
 import src.model as model
 from src.const import *
 
-log = logging.getLogger("astro.exts.tag")
+log = logging.getLogger("client")
 
 
 class Tag(interactions.Extension):
