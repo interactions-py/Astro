@@ -27,7 +27,7 @@ class Mod(interactions.Extension):
 
         self.action_logs = interactions.Channel(id=src.const.METADATA["channels"]["action-logs"], type=1)  # type: ignore
         self.mod_logs = interactions.Channel(id=src.const.METADATA["channels"]["mod-logs"], type=1)  # type: ignore
-        self.staff = interactions.Channel(id=820672900583522335, type=1)  # type: ignore
+        self.staff = interactions.Channel(id=src.const.METADATA["channels"]["staff"], type=1)  # type: ignore
 
     @interactions.extension_listener(name="on_start")
     async def add_httpclient(self):
