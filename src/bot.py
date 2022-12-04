@@ -207,11 +207,10 @@ async def language_role_selection(ctx: interactions.ComponentContext, choice: li
 @bot.command(scope=METADATA["guild"])
 @interactions.option("the thing to look for")
 async def letmegooglethat(ctx: interactions.CommandContext, param: str):
-    if not str(METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles]:
+    if str(METADATA["roles"]["Helper"]) not in [str(role) for role in ctx.author.roles]:
         return await ctx.send(":x: You are not a helper.", ephemeral=True)
 
-    params = param.split(" ")
-    q: str = "+".join(word for word in param.split(" "))
+    q: str = "+".join(param.split(" "))
     await ctx.send("collecting Google things...", ephemeral=True)
     await (await ctx.get_channel()).send(f"<https://letmegooglethat.com/?q={q}>")
 
@@ -220,5 +219,5 @@ async def letmegooglethat(ctx: interactions.CommandContext, param: str):
 @interactions.option()
 async def docs_search(ctx: interactions.CommandContext, query: str):
     await ctx.send(
-        f"https://interactionspy.readthedocs.io/en/latest/search.html?q={'+'.join(word for word in query.split(' '))}&check_keywords=yes&area=default"
+        f"https://interactionspy.readthedocs.io/en/latest/search.html?q={'+'.join(query.split(' '))}&check_keywords=yes&area=default"
     )
