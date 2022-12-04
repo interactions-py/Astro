@@ -6,7 +6,7 @@ import interactions
 from src.const import *
 
 if TYPE_CHECKING:
-    from exts._mod import Mod
+    from exts.mod import Mod
 
 
 class GGProtector:

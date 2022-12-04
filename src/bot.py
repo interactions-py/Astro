@@ -7,7 +7,7 @@ from motor.motor_asyncio import *
 from pymongo.server_api import ServerApi
 
 from .const import *
-from .model import Tag
+from .model import Action, Tag
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
@@ -39,7 +39,7 @@ setup(bot)
 
 async def db_setup():
     client = AsyncIOMotorClient(MONGO_DB_URL, server_api=ServerApi("1"))
-    await init_beanie(client.Astro, document_models=[Tag])
+    await init_beanie(client.Astro, document_models=[Tag, Action])
 
 
 bot._loop.create_task(db_setup())
