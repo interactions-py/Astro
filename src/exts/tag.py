@@ -221,9 +221,9 @@ class Tag(interactions.Extension):
     def _check_role(ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
-        return bool(
-            str(src.const.METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles]
-        )
+        return str(src.const.METADATA["roles"]["Helper"]) in [
+            str(role) for role in ctx.author.roles
+        ]
 
     @interactions.extension_autocomplete(command="tag", name="tag_name")
     async def __parse_tag(self, ctx: interactions.CommandContext, tag_name: str = ""):
