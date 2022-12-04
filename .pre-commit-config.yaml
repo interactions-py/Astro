@@ -1,0 +1,53 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+    - id: requirements-txt-fixer
+      name: Requirements
+      types: [file]
+      exclude_types: ['image']
+    - id: debug-statements
+      name: Debugging
+      language: python
+      language_version: python3.10
+      types: [file, python]
+      exclude_types: ['image']
+    - id: trailing-whitespace
+      name: Trailing Whitespace
+      language: python
+      types: [file]
+      exclude_types: ['image']
+    - id: end-of-file-fixer
+      name: EOF Newlines
+      language: python
+      types: [file]
+      exclude_types: ['image']
+    - id: check-yaml
+      name: YAML Structure
+      language: python
+    - id: check-toml
+      name: TOML Structure
+    - id: check-merge-conflict
+      name: Merge Conflicts
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+    - id: black
+      name: Black Formatting
+      language: python
+      types: [file, python]
+      args: [--target-version, py310, --line-length=100]
+      language_version: python3.10
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort Formatting
+        language: python
+        types: [file, python]
+ci:
+  autoupdate_branch: "master"
+  autofix_prs: true
+  autoupdate_commit_msg: "ci: weekly check."
+  autoupdate_schedule: weekly
+  autofix_commit_msg: "ci: correct from checks."

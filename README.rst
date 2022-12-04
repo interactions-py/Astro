@@ -15,14 +15,14 @@ Installation
 Installing and downloading the bot is very simple. Paste this command into your terminal line:
 
 .. code-block:: bash
-  
+
   pip install -U git+https://github.com/interactions-py/Astro.git
 
 In order to install any dependencies that the bot uses, please run this command in the root namespace of
 the cloned repository:
 
 .. code-block:: bash
-  
+
   pip install -r requirements.txt
 
 .. _interactions.py: https://discord.gg/interactions

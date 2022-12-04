@@ -1,4 +1,5 @@
 import interactions
+
 import src.const
 
 
@@ -30,9 +31,7 @@ class User(interactions.Extension):
                     value=f"{ctx.target.user.username}#{ctx.target.user.discriminator}",
                     inline=True,
                 ),
-                interactions.EmbedField(
-                    name="ID", value=str(ctx.target.user.id), inline=True
-                ),
+                interactions.EmbedField(name="ID", value=str(ctx.target.user.id), inline=True),
                 interactions.EmbedField(
                     name="Timestamps",
                     value="\n".join(
@@ -47,8 +46,7 @@ class User(interactions.Extension):
                     name="Roles",
                     value=(
                         ", ".join([f"<@&{role}>" for role in ctx.target.roles])
-                        if isinstance(ctx.target, interactions.Member)
-                        and ctx.target.roles
+                        if isinstance(ctx.target, interactions.Member) and ctx.target.roles
                         else "`N/A`"
                     ),
                 ),
@@ -56,9 +54,7 @@ class User(interactions.Extension):
         )
         await ctx.send(embeds=embed, ephemeral=True)
 
-    @interactions.extension_user_command(
-        name="Report user", scope=src.const.METADATA["guild"]
-    )
+    @interactions.extension_user_command(name="Report user", scope=src.const.METADATA["guild"])
     async def report_user(self, ctx: interactions.CommandContext):
         modal = interactions.Modal(
             title="Report user",

@@ -1,10 +1,12 @@
-import interactions
-from src.const import *
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+import interactions
+
+from src.const import *
+
 if TYPE_CHECKING:
-    from mod import Mod
+    from exts.mod import Mod
 
 
 class GGProtector:

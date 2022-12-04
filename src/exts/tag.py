@@ -1,11 +1,13 @@
 import datetime
-import interactions
 import logging
-import src.const
-import src.model
+
+import interactions
+from beanie import PydanticObjectId
 from interactions.ext.paginator import Page, Paginator
+
+import src.const
+import src.model as model
 from src.const import *
-from pymongo.database import *
 
 log = logging.getLogger("astro.exts.tag")
 
@@ -13,15 +15,8 @@ log = logging.getLogger("astro.exts.tag")
 class Tag(interactions.Extension):
     """An extension dedicated to /tag."""
 
-    def __init__(self, bot, **kwargs):
+    def __init__(self, bot):
         self.bot = bot
-        self.edited_name = None
-        self.db: Database = kwargs.get("db")
-        self.tags: Collection = self.db.Tags
-        self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
-
-    async def get_tags(self) -> None:
-        self._tags = self.tags.find({"id": TAGS_ID}).next()["tags"]
 
     @interactions.extension_command(scope=METADATA["guild"])
     async def tag(self, *args, **kwargs):
@@ -31,12 +26,11 @@ class Tag(interactions.Extension):
     @interactions.option("the name of the tag", autocomplete=True)
     async def view(self, ctx: interactions.CommandContext, tag_name: str):
         """Views a tag that currently exists within the database."""
-        db = self._tags
 
         log.debug("Matched for view. Returning result...")
 
-        if db.get(tag_name):
-            await ctx.send(db[tag_name]["description"])
+        if tag := await model.Tag.find_one(model.Tag.name == tag_name):
+            await ctx.send(tag.description)
         else:
             await ctx.send(f":x: Tag `{tag_name}` does not exist.", ephemeral=True)
 
@@ -44,13 +38,9 @@ class Tag(interactions.Extension):
     @interactions.option("The name of the tag", autocomplete=True)
     async def info(self, ctx: interactions.CommandContext, tag_name: str):
         """Gathers information about a tag that currently exists within the database."""
-        db = self._tags
-
         log.debug("Matched for info. Returning result...")
 
-        if db.get(tag_name):
-            _author: dict = await self.bot._http.get_user(db[tag_name]["author"])
-            author = interactions.User(**_author)
+        if tag := await model.Tag.find_one(model.Tag.name == tag_name):
             embed = interactions.Embed(
                 title='"' + tag_name + '"' if '"' not in tag_name else tag_name,
                 color=0x5865F2,
@@ -65,32 +55,30 @@ class Tag(interactions.Extension):
                 fields=[
                     interactions.EmbedField(
                         name="Author",
-                        value=author.mention,
+                        value=f"<@{tag.author_id}>",
                         inline=True,
                     ),
                     interactions.EmbedField(
                         name="ID",
-                        value=db[tag_name]["id"],
+                        value=str(tag.id),
                         inline=True,
                     ),
                     interactions.EmbedField(
                         name="Timestamps",
                         value="\n".join(
                             [
-                                f"Created: <t:{round(db[tag_name]['created_at'])}:R>.",
+                                f"Created: <t:{round(tag.created_at.timestamp())}:R>.",
                                 "Last edited: "
                                 + (
-                                    f"<t:{round(db[tag_name]['last_edited_at'])}:R>."
-                                    if db[tag_name].get("last_edited_at")
+                                    f"<t:{round(tag.last_edited_at.timestamp())}:R>."
+                                    if tag.last_edited_at
                                     else "N/A"
                                 ),
                             ]
                         ),
                         inline=True,
                     ),
-                    interactions.EmbedField(
-                        name="Content", value="Please use `/tag view`."
-                    ),
+                    interactions.EmbedField(name="Content", value="Please use `/tag view`."),
                 ],
             )
             await ctx.send(embeds=embed)
@@ -98,8 +86,6 @@ class Tag(interactions.Extension):
     @tag.subcommand()
     async def list(self, ctx: interactions.CommandContext):
         """Lists all the tags existing in the database."""
-        db = self._tags
-
         log.debug("Matched for list. Returning result...")
 
         _id: int = 0
@@ -112,8 +98,8 @@ class Tag(interactions.Extension):
             for i in range(0, len(_list), 5):
                 yield _list[i : i + 5]
 
-        for tag in db:
-            _value += f"` {_id} ` {tag}\n"
+        async for tag in model.Tag.find_all():
+            _value += f"` {_id} ` {tag.name}\n"
             _id += 1
 
         for tag_group in _divide(_value.split("\n")):
@@ -128,11 +114,17 @@ class Tag(interactions.Extension):
             new_embed.add_field(name="Names", value="\n".join(content))
             _embeds.append(new_embed)
 
-        paginator = Paginator(
-            client=self.client, ctx=ctx, pages=[Page(embeds=embed) for embed in _embeds], timeout=300,
-        )
+        if len(_embeds) == 1:
+            await ctx.send(embeds=_embeds)
+        else:
+            paginator = Paginator(
+                client=self.client,
+                ctx=ctx,
+                pages=[Page(embeds=embed) for embed in _embeds],
+                timeout=300,
+            )
 
-        await paginator.run()
+            await paginator.run()
 
     @tag.subcommand()
     async def create(self, ctx: interactions.CommandContext):
@@ -164,21 +156,20 @@ class Tag(interactions.Extension):
             )
 
             await ctx.popup(modal)
+            await ctx.send("Modal sent.", ephemeral=True)
 
     @tag.subcommand()
     @interactions.option("The name of the tag", autocomplete=True)
     async def edit(self, ctx: interactions.CommandContext, tag_name: str):
         """Edits a tag that currently exists within the database."""
-        db = self._tags
-
         log.debug("Matched for edit. Returning result...")
 
         if not self._check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
-        elif tag_name in db:
+        elif tag := await model.Tag.find_one(model.Tag.name == tag_name):
             modal = interactions.Modal(
                 title="Edit tag",
-                custom_id="edit_tag",
+                custom_id=f"edit_tag_{str(tag.id)}",
                 components=[
                     interactions.TextInput(
                         style=interactions.TextStyleType.SHORT,
@@ -193,16 +184,16 @@ class Tag(interactions.Extension):
                     interactions.TextInput(
                         style=interactions.TextStyleType.PARAGRAPH,
                         label="What do you want the tag to include?",
-                        value=db[tag_name]["description"],
+                        value=tag.description,
                         placeholder="(Note: you can also put codeblocks in here!)",
                         custom_id="new_tag_description",
                         max_length=2000,
                     ),
                 ],
             )
-            self.edited_name = tag_name
 
             await ctx.popup(modal)
+            await ctx.send("Modal sent.", ephemeral=True)
         else:
             await ctx.send(f":x: Tag `{tag_name}` does not exist.", ephemeral=True)
 
@@ -211,16 +202,13 @@ class Tag(interactions.Extension):
     async def delete(self, ctx: interactions.CommandContext, tag_name: str):
         """Deletes a tag that currently exists within the database."""
         await ctx.defer()
-        db = self._tags
 
         log.debug("Matched for delete. Returning result...")
 
         if not self._check_role(ctx):
             await ctx.send(":x: You are not a helper.", ephemeral=True)
-        elif tag_name in db:
-            del db[tag_name]
-            self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
-            await self.get_tags()
+        elif tag := await model.Tag.find_one(model.Tag.name == tag_name):
+            await tag.delete()
 
             await ctx.send(
                 f":heavy_check_mark: Tag `{tag_name}` has been successfully deleted.",
@@ -233,59 +221,46 @@ class Tag(interactions.Extension):
     def _check_role(ctx: interactions.CommandContext) -> bool:
         """Checks whether an invoker has the Helper role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
-        return bool(
-            str(src.const.METADATA["roles"]["Helper"])
-            in [str(role) for role in ctx.author.roles]
-        )
+        return str(src.const.METADATA["roles"]["Helper"]) in [
+            str(role) for role in ctx.author.roles
+        ]
 
     @interactions.extension_autocomplete(command="tag", name="tag_name")
     async def __parse_tag(self, ctx: interactions.CommandContext, tag_name: str = ""):
         """Parses the current choice you're making with /tag."""
-        letters: list = list(tag_name) if tag_name != "" else []
-        db = self._tags
-
         log.debug("Autocompleting tag query for choices...")
 
-        if not letters:
+        if not tag_name:
             await ctx.populate(
                 [
-                    interactions.Choice(name=tag[0], value=tag[0])
-                    for tag in (
-                        list(db.items())[:24] if len(db) > 25 else list(db.items())
-                    )
+                    interactions.Choice(name=tag.name, value=tag.name)
+                    async for tag in model.Tag.find_all(limit=25)
                 ]
             )
-
         else:
-            choices: list = []
+            choices: list[interactions.Choice] = []
 
-            focus: str = "".join(letters)
+            async for tag in model.Tag.find_all():
+                if tag_name.lower() in tag.name.lower():
+                    choices.append(interactions.Choice(name=tag.name, value=tag.name))
 
-            for tag in db:
-                if focus.lower() in tag.lower() and len(choices) < 26:
-                    choices.append(interactions.Choice(name=tag, value=tag))
+                if len(choices) >= 25:
+                    break
 
             await ctx.populate(choices)
 
     @interactions.extension_modal(modal="new_tag")
-    async def __new_tag(
-        self, ctx: interactions.CommandContext, tag_name: str, description: str
-    ):
+    async def __new_tag(self, ctx: interactions.CommandContext, tag_name: str, description: str):
         """Creates a new tag through the modal UI."""
         await ctx.defer(ephemeral=True)
-        db = self._tags
-        if tag_name not in db:
-            _id = len(list(db.items())) + 1
-            tag = src.model.Tag(
-                id=_id,
-                author=ctx.author.id,
+        if not await model.Tag.find_one(model.Tag.name == tag_name):
+            tag = model.Tag(
                 name=tag_name,
+                author_id=str(ctx.author.id),
                 description=description,
-                created_at=datetime.datetime.now().timestamp(),
+                created_at=datetime.datetime.now(),
             )
-            db.update({tag_name: tag._json})
-            self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
-            await self.get_tags()
+            await tag.insert()
 
             await ctx.send(
                 f":heavy_check_mark: `{tag_name}` now exists. In order to view it, please use `/tag view`.",
@@ -293,41 +268,43 @@ class Tag(interactions.Extension):
             )
         else:
             await ctx.send(
-                ":x: Tag `{name}` already exists.\n(Did you mean to use `/tag edit`?)",
+                f":x: Tag `{tag_name}` already exists.\n(Did you mean to use `/tag edit`?)",
                 ephemeral=True,
             )
 
-    @interactions.extension_modal(modal="edit_tag")
-    async def __edit_tag(
-        self, ctx: interactions.CommandContext, tag_name: str, description: str
-    ):
-        """Creates a new tag through the modal UI."""
-        await ctx.defer(ephemeral=True)
-        db = self._tags
-        tag = src.model.Tag(
-            id=db[self.edited_name]["id"],
-            author=ctx.author.id,
-            name=self.edited_name,
-            description=description,
-            created_at=db[self.edited_name]["created_at"],
-            last_edited_at=datetime.datetime.now().timestamp(),
-        )
+    @interactions.extension_listener(name="on_modal")
+    async def _edit_tag(self, ctx: interactions.CommandContext):
+        if not ctx.data.custom_id or not ctx.data.custom_id.startswith("edit_tag"):
+            return
 
-        if tag_name != self.edited_name:
-            del db[self.edited_name]
+        tag_id = ctx.data.custom_id.removeprefix("edit_tag_")
 
-        db.update({tag_name: tag._json})
-        self.tags.find_one_and_update({"id": TAGS_ID}, {"$set": {"tags": db}})
-        await self.get_tags()
+        if tag := await model.Tag.get(PydanticObjectId(tag_id)):
+            args = [
+                [value.value for value in component.components][0]
+                for component in ctx.data.components
+                if component.components
+            ]
 
-        await ctx.send(
-            (
-                f":heavy_check_mark: Tag `{self.edited_name}` has been edited."
-                if tag_name == self.edited_name
-                else f":heavy_check_mark: Tag `{self.edited_name}` has been edited and re-named to `{tag_name}`."
-            ),
-            ephemeral=True,
-        )
+            tag_name = args[0]
+            description = args[1]
+
+            original_name = tag.name
+            tag.name = tag_name
+            tag.description = description
+            tag.last_edited_at = datetime.datetime.now()
+            await tag.save()
+
+            await ctx.send(
+                (
+                    f":heavy_check_mark: Tag `{tag_name}` has been edited."
+                    if tag_name == original_name
+                    else f":heavy_check_mark: Tag `{original_name}` has been edited and re-named to `{tag_name}`."
+                ),
+                ephemeral=True,
+            )
+        else:
+            await ctx.send("The original tag could not be found.", ephemeral=True)
 
     @interactions.extension_command(scope=METADATA["guild"])
     async def archive(self, ctx: interactions.CommandContext):

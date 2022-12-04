@@ -1,8 +1,10 @@
-import interactions
-import src.const
-import aiohttp
-from io import BytesIO
 import asyncio
+from io import BytesIO
+
+import aiohttp
+import interactions
+
+import src.const
 
 
 class Message(interactions.Extension):
@@ -53,9 +55,7 @@ class Message(interactions.Extension):
         await ctx.popup(modal)
 
     @interactions.extension_component("TAG_SELECTION")
-    async def _help_thread_select(
-        self, ctx: interactions.ComponentContext, _selected: list[str]
-    ):
+    async def _help_thread_select(self, ctx: interactions.ComponentContext, _selected: list[str]):
         if (
             src.const.METADATA["roles"]["Helper"] not in ctx.author.roles
             and src.const.METADATA["roles"]["Moderator"] not in ctx.author.roles
@@ -63,9 +63,7 @@ class Message(interactions.Extension):
             return await ctx.send("missing permissions!", ephemeral=True)
         await self.bot._http.modify_channel(
             channel_id=int(ctx.channel_id),
-            payload={
-                "applied_tags": _selected if "remove_all_tags" not in _selected else []
-            },
+            payload={"applied_tags": _selected if "remove_all_tags" not in _selected else []},
         )
         await ctx.send("Done", ephemeral=True)
 
@@ -89,9 +87,7 @@ class Message(interactions.Extension):
                 for attachment in target.attachments:
                     async with session.get(attachment.url) as request:
                         _bytes: bytes = await request.content.read()
-                        files.append(
-                            interactions.File(attachment.filename, fp=BytesIO(_bytes))
-                        )
+                        files.append(interactions.File(attachment.filename, fp=BytesIO(_bytes)))
 
             target._json["attachments"] = [
                 file._json_payload(_id) for _id, file in enumerate(files)
@@ -117,13 +113,7 @@ class Message(interactions.Extension):
         )
         _tags = ch.available_tags
         _options: list[interactions.SelectOption] = [
-            interactions.SelectOption(
-                label=tag.name,
-                value=tag.id,
-                emoji=tag.emoji
-
-
-            )
+            interactions.SelectOption(label=tag.name, value=tag.id, emoji=tag.emoji)
             for tag in _tags
         ]
         _options.append(
@@ -193,11 +183,16 @@ class Message(interactions.Extension):
     @interactions.extension_listener
     async def on_thread_create(self, thread: interactions.Thread):
 
+        if not thread.parent_id or int(thread.parent_id) != src.const.METADATA["channels"]["help"]:
+            return
+
         members = await thread.get_members()
 
-        if all(member.user_id != self.bot.me.id for member in members):  # if astro is not already in the thread
-            await asyncio.sleep(5)  
-            # make sure discord accepts the "first message" by the thread creator, see 
+        if all(
+            member.user_id != self.bot.me.id for member in members
+        ):  # if astro is not already in the thread
+            await asyncio.sleep(5)
+            # make sure discord accepts the "first message" by the thread creator, see
             # https://canary.discord.com/channels/789032594456576001/850982027079319572/1039983760243961856
             ch = await interactions.get(
                 self.bot,
@@ -231,14 +226,15 @@ class Message(interactions.Extension):
                         label="Close this thread",
                         custom_id="close thread",
                     ),
-                )
+                ),
             )
             await msg.pin()
 
     @interactions.extension_component("close thread")
     async def _close_thread(self, ctx: interactions.ComponentContext):
         await ctx.get_channel()
-        from src.exts.tag import Tag
+        from exts.tag import Tag
+
         if not Tag._check_role(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await ctx.send(":x: You are not a helper.", ephemeral=True)
         await ctx.send("Closing! Thank you for using our help system!")
