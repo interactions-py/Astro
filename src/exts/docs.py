@@ -3,7 +3,7 @@ from urllib.parse import quote
 import interactions
 from interactions.ext.paginator import Page, Paginator
 
-from const import METADATA
+from src.const import *
 
 
 class Docs(interactions.Extension):
