@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import quote_plus
 
 import interactions
 from beanie import init_beanie
@@ -210,7 +211,7 @@ async def letmegooglethat(ctx: interactions.CommandContext, param: str):
     if str(METADATA["roles"]["Helper"]) not in [str(role) for role in ctx.author.roles]:
         return await ctx.send(":x: You are not a helper.", ephemeral=True)
 
-    q: str = "+".join(param.split(" "))
+    q = quote_plus(param)
     await ctx.send("collecting Google things...", ephemeral=True)
     await (await ctx.get_channel()).send(f"<https://letmegooglethat.com/?q={q}>")
 
