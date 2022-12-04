@@ -6,3 +6,4 @@ env/
 .env
 .vscode
 actions.json
+discord.log
