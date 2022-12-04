@@ -20,7 +20,7 @@ log.addHandler(stderr_handler)
 file_handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="a")
 file_handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
 file_handler.setLevel(logging.INFO)
-log.addHandler(stderr_handler)
+log.addHandler(file_handler)
 
 presence = interactions.ClientPresence(
     activities=[
