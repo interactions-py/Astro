@@ -7,3 +7,4 @@ env/
 .vscode
 actions.json
 discord.log
+*.config.js
