@@ -1,10 +1,12 @@
 import datetime
-import interactions
 import logging
-import src.const
-import src.model as model
+
+import interactions
 from beanie import PydanticObjectId
 from interactions.ext.paginator import Page, Paginator
+
+import src.const
+import src.model as model
 from src.const import *
 
 log = logging.getLogger("astro.exts.tag")
@@ -76,9 +78,7 @@ class Tag(interactions.Extension):
                         ),
                         inline=True,
                     ),
-                    interactions.EmbedField(
-                        name="Content", value="Please use `/tag view`."
-                    ),
+                    interactions.EmbedField(name="Content", value="Please use `/tag view`."),
                 ],
             )
             await ctx.send(embeds=embed)
@@ -118,7 +118,10 @@ class Tag(interactions.Extension):
             await ctx.send(embeds=_embeds)
         else:
             paginator = Paginator(
-                client=self.client, ctx=ctx, pages=[Page(embeds=embed) for embed in _embeds], timeout=300,
+                client=self.client,
+                ctx=ctx,
+                pages=[Page(embeds=embed) for embed in _embeds],
+                timeout=300,
             )
 
             await paginator.run()
@@ -219,8 +222,7 @@ class Tag(interactions.Extension):
         """Checks whether an invoker has the Helper role or not."""
         # TODO: please get rid of me when perms v2 is out. this is so dumb.
         return bool(
-            str(src.const.METADATA["roles"]["Helper"])
-            in [str(role) for role in ctx.author.roles]
+            str(src.const.METADATA["roles"]["Helper"]) in [str(role) for role in ctx.author.roles]
         )
 
     @interactions.extension_autocomplete(command="tag", name="tag_name")
@@ -236,9 +238,7 @@ class Tag(interactions.Extension):
             await ctx.populate(
                 [
                     interactions.Choice(name=tag, value=tag)
-                    for tag in (
-                        tag_names[:24] if len(tag_names) > 25 else tag_names
-                    )
+                    for tag in (tag_names[:24] if len(tag_names) > 25 else tag_names)
                 ]
             )
 
@@ -254,9 +254,7 @@ class Tag(interactions.Extension):
             await ctx.populate(choices)
 
     @interactions.extension_modal(modal="new_tag")
-    async def __new_tag(
-        self, ctx: interactions.CommandContext, tag_name: str, description: str
-    ):
+    async def __new_tag(self, ctx: interactions.CommandContext, tag_name: str, description: str):
         """Creates a new tag through the modal UI."""
         await ctx.defer(ephemeral=True)
         if not await model.Tag.find_one(model.Tag.name == tag_name):
@@ -286,7 +284,11 @@ class Tag(interactions.Extension):
         tag_id = ctx.data.custom_id.removeprefix("edit_tag_")
 
         if tag := await model.Tag.get(PydanticObjectId(tag_id)):
-            args = [[value.value for value in component.components][0] for component in ctx.data.components if component.components]
+            args = [
+                [value.value for value in component.components][0]
+                for component in ctx.data.components
+                if component.components
+            ]
 
             tag_name = args[0]
             description = args[1]

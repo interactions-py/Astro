@@ -1,9 +1,9 @@
-import interactions
 import enum
 import typing
 from datetime import datetime
-from beanie import Document, Indexed
 
+import interactions
+from beanie import Document, Indexed
 from interactions.utils.attrs_utils import define, field
 
 
@@ -26,9 +26,7 @@ class Action(interactions.DictSerializerMixin):
     moderator: interactions.Member = field(
         converter=interactions.Member, default=None, add_client=False
     )
-    user: interactions.User = field(
-        converter=interactions.User, default=None, add_client=False
-    )
+    user: interactions.User = field(converter=interactions.User, default=None, add_client=False)
     reason: str | None = field(default=None)
 
     def __attrs_post_init__(self):

@@ -1,15 +1,17 @@
-from datetime import datetime, timedelta, timezone
-import interactions
+import asyncio
 import logging
+from asyncio import sleep
+from datetime import datetime, timedelta, timezone
+from time import perf_counter
+from typing import Union
+
+import interactions
+from interactions.ext.wait_for import wait_for_component
+from pymongo.database import *
+
 import src.const
 import src.model
 from src.const import *
-from pymongo.database import *
-from time import perf_counter
-from asyncio import sleep
-from interactions.ext.wait_for import wait_for_component
-import asyncio
-from typing import Union
 from src.exts.gg_protector import GGProtector
 
 log = logging.getLogger("astro.exts.mod")
@@ -94,16 +96,12 @@ class Mod(interactions.Extension):
         channel = interactions.Channel(**_channel, _client=self.bot._http)
         await member.ban(guild_id=src.const.METADATA["guild"], reason=reason)
         await channel.send(embeds=embed)
-        await ctx.send(
-            f":heavy_check_mark: {member.mention} has been banned.", ephemeral=True
-        )
+        await ctx.send(f":heavy_check_mark: {member.mention} has been banned.", ephemeral=True)
 
     @member.subcommand()
     @interactions.option("The ID of the user you wish to unban.")
     @interactions.option("The reason behind why you want to unban them.")
-    async def unban(
-        self, ctx: interactions.CommandContext, id: str, reason: str = "N/A"
-    ):
+    async def unban(self, ctx: interactions.CommandContext, id: str, reason: str = "N/A"):
         """Unbans a user from the server and logs into the database."""
         await ctx.defer(ephemeral=True)
         db = self._actions
@@ -145,9 +143,7 @@ class Mod(interactions.Extension):
 
         await guild.remove_ban(user_id=id, reason=reason)
         await channel.send(embeds=embed)
-        await ctx.send(
-            f":heavy_check_mark: {user.mention} has been unbanned.", ephemeral=True
-        )
+        await ctx.send(f":heavy_check_mark: {user.mention} has been unbanned.", ephemeral=True)
 
     @member.subcommand()
     @interactions.option("The user you wish to kick")
@@ -204,9 +200,7 @@ class Mod(interactions.Extension):
 
         await member.kick(guild_id=src.const.METADATA["guild"], reason=reason)
         await channel.send(embeds=embed)
-        await ctx.send(
-            f":heavy_check_mark: {member.mention} has been kicked.", ephemeral=True
-        )
+        await ctx.send(f":heavy_check_mark: {member.mention} has been kicked.", ephemeral=True)
 
     @member.subcommand()
     @interactions.option("The user you wish to warn")
@@ -262,9 +256,7 @@ class Mod(interactions.Extension):
         channel = interactions.Channel(**_channel, _client=self.bot._http)
 
         await channel.send(embeds=embed)
-        await ctx.send(
-            f":heavy_check_mark: {member.mention} has been warned.", ephemeral=True
-        )
+        await ctx.send(f":heavy_check_mark: {member.mention} has been warned.", ephemeral=True)
 
     @member.subcommand()
     @interactions.option("The user you wish to timeout")
@@ -291,9 +283,7 @@ class Mod(interactions.Extension):
     ):
         """Timeouts a member in the server and logs into the database."""
         if not days and not hours and not minutes and not seconds:
-            return await ctx.send(
-                ":x: missing any indicator of timeout length!", ephemeral=True
-            )
+            return await ctx.send(":x: missing any indicator of timeout length!", ephemeral=True)
         await ctx.defer(ephemeral=True)
         db = self._actions
         id = len(list(db.items())) + 1
@@ -329,9 +319,7 @@ class Mod(interactions.Extension):
                         ]
                     ),
                 ),
-                interactions.EmbedField(
-                    name="Reason", value="N/A" if reason is None else reason
-                ),
+                interactions.EmbedField(name="Reason", value="N/A" if reason is None else reason),
             ],
         )
         _channel: dict = await self.bot._http.get_channel(
@@ -341,9 +329,7 @@ class Mod(interactions.Extension):
 
         time = datetime.now()
         time += timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
-        await member.modify(
-            guild_id=ctx.guild_id, communication_disabled_until=time.isoformat()
-        )
+        await member.modify(guild_id=ctx.guild_id, communication_disabled_until=time.isoformat())
         await channel.send(embeds=embed)
         await ctx.send(
             f":heavy_check_mark: {member.mention} has been timed out until <t:{round(time.timestamp())}:F> (<t:{round(time.timestamp())}:R>).",
@@ -395,9 +381,7 @@ class Mod(interactions.Extension):
                         ]
                     ),
                 ),
-                interactions.EmbedField(
-                    name="Reason", value="N/A" if reason is None else reason
-                ),
+                interactions.EmbedField(name="Reason", value="N/A" if reason is None else reason),
             ],
         )
         _channel: dict = await self.bot._http.get_channel(
@@ -406,15 +390,11 @@ class Mod(interactions.Extension):
         channel = interactions.Channel(**_channel, _client=self.bot._http)
 
         if member.communication_disabled_until is None:
-            return await ctx.send(
-                f":x: {member.mention} is not timed out.", ephemeral=True
-            )
+            return await ctx.send(f":x: {member.mention} is not timed out.", ephemeral=True)
 
         await member.modify(guild_id=ctx.guild_id, communication_disabled_until=None)
         await channel.send(embeds=embed)
-        await ctx.send(
-            f":heavy_check_mark: {member.mention} has been untimed out.", ephemeral=True
-        )
+        await ctx.send(f":heavy_check_mark: {member.mention} has been untimed out.", ephemeral=True)
 
     @mod.group()
     async def channel(self, *args, **kwargs):
@@ -455,9 +435,7 @@ class Mod(interactions.Extension):
             await msg.delete()
 
         else:
-            await ctx.send(
-                f":heavy_check_mark: {channel.mention} was purged. ", ephemeral=True
-            )
+            await ctx.send(f":heavy_check_mark: {channel.mention} was purged. ", ephemeral=True)
 
     @channel.subcommand()
     @interactions.option("The amount of time to be set as slowmode.")
@@ -479,9 +457,7 @@ class Mod(interactions.Extension):
             channel = await ctx.get_channel()
 
         await channel.modify(rate_limit_per_user=time, reason=reason)
-        await ctx.send(
-            f":heavy_check_mark: {channel.mention}'s slowmode was set!", ephemeral=True
-        )
+        await ctx.send(f":heavy_check_mark: {channel.mention}'s slowmode was set!", ephemeral=True)
 
     @channel.subcommand()
     @interactions.option("The reason of the lock.")
@@ -548,9 +524,7 @@ class Mod(interactions.Extension):
                 icon_url=message.author.avatar_url,
             ),
             fields=[
-                interactions.EmbedField(
-                    name="ID", value=str(message.author.id), inline=True
-                ),
+                interactions.EmbedField(name="ID", value=str(message.author.id), inline=True),
                 interactions.EmbedField(
                     name="Message",
                     value=message.content
@@ -567,9 +541,7 @@ class Mod(interactions.Extension):
         await channel.send(embeds=embed)
 
     @interactions.extension_listener()
-    async def on_message_update(
-        self, before: interactions.Message, after: interactions.Message
-    ):
+    async def on_message_update(self, before: interactions.Message, after: interactions.Message):
         embed = interactions.Embed(
             title="Message updated",
             color=0xED4245,
@@ -578,9 +550,7 @@ class Mod(interactions.Extension):
                 icon_url=before.author.avatar_url,
             ),
             fields=[
-                interactions.EmbedField(
-                    name="ID", value=str(before.author.id), inline=True
-                ),
+                interactions.EmbedField(name="ID", value=str(before.author.id), inline=True),
                 interactions.EmbedField(
                     name="Before:",
                     value=before.content
@@ -589,9 +559,7 @@ class Mod(interactions.Extension):
                 ),
                 interactions.EmbedField(
                     name="After:",
-                    value=after.content
-                    if after.content
-                    else "**Message could not be retrieved.**",
+                    value=after.content if after.content else "**Message could not be retrieved.**",
                 ),
             ],
         )
@@ -602,9 +570,7 @@ class Mod(interactions.Extension):
 
         await channel.send(embeds=embed)
 
-    async def ban_from_member_add(
-        self, member: interactions.GuildMember, guild_id: int
-    ):
+    async def ban_from_member_add(self, member: interactions.GuildMember, guild_id: int):
         db = self._actions
         id = len(list(db.items())) + 1
         mod = await interactions.get(
@@ -660,8 +626,7 @@ class Mod(interactions.Extension):
         gg_cola_identification_strings: set[str] = {"gg_", "goodgame_", "good_game_"}
 
         if any(
-            user.username.lower().startswith(string)
-            for string in gg_cola_identification_strings
+            user.username.lower().startswith(string) for string in gg_cola_identification_strings
         ):
             return True
 
@@ -673,11 +638,11 @@ class Mod(interactions.Extension):
         min_account_age_before_join: dict = {"days": 2}
         timeout_time: dict = {"days": 1}
 
-        if member.joined_at.replace(tzinfo=timezone.utc) < (member.id.timestamp + timedelta(**min_account_age_before_join)).replace(tzinfo=timezone.utc):
+        if member.joined_at.replace(tzinfo=timezone.utc) < (
+            member.id.timestamp + timedelta(**min_account_age_before_join)
+        ).replace(tzinfo=timezone.utc):
             await member.modify(
-                communication_disabled_until=(
-                    now + timedelta(**timeout_time)
-                ).isoformat()
+                communication_disabled_until=(now + timedelta(**timeout_time)).isoformat()
             )
 
             await member.send(
@@ -822,9 +787,7 @@ class Mod(interactions.Extension):
 
         await channel.send(embeds=embed)
 
-    async def check_protector(
-        self, ctx: interactions.ComponentContext
-    ) -> Union[GGProtector, bool]:
+    async def check_protector(self, ctx: interactions.ComponentContext) -> Union[GGProtector, bool]:
         _id = int(ctx.message.embeds[0].description)
         if protector := self.gg_protectors.get(_id):
             return protector

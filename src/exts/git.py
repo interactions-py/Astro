@@ -1,8 +1,9 @@
 import contextlib
-import interactions
-from datetime import datetime
 import re
+from datetime import datetime
+
 import aiohttp
+import interactions
 
 
 class Git(interactions.Extension):
@@ -31,28 +32,20 @@ class Git(interactions.Extension):
                 return
 
             async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    self.url + tags[0], headers=self.headers
-                ) as resp:
+                async with session.get(self.url + tags[0], headers=self.headers) as resp:
                     response: dict = await resp.json()
                     if len(response.keys()) == 2:
                         return
 
                 created_at, merged_at, closed_at = self._timestamps(response)
                 body, tasks, checklist = self._create_fields(response)
-                description = self._description(
-                    response, created_at, merged_at, closed_at
-                )
+                description = self._description(response, created_at, merged_at, closed_at)
                 message._client = self.bot._http
                 if checklist and tasks:
                     fields = [
                         interactions.EmbedField(name="**About**", value=body),
-                        interactions.EmbedField(
-                            name="**Tasks**", value=tasks, inline=True
-                        ),
-                        interactions.EmbedField(
-                            name="**Checklist**", value=checklist, inline=True
-                        ),
+                        interactions.EmbedField(name="**Tasks**", value=tasks, inline=True),
+                        interactions.EmbedField(name="**Checklist**", value=checklist, inline=True),
                     ]
                 else:
                     value = (
@@ -63,9 +56,7 @@ class Git(interactions.Extension):
                         )
                         + "\n**...**"
                     )
-                    fields = [
-                        interactions.EmbedField(name="*Description:*", value=value)
-                    ]
+                    fields = [interactions.EmbedField(name="*Description:*", value=value)]
 
                 await message.reply(
                     embeds=interactions.Embed(
@@ -152,15 +143,11 @@ class Git(interactions.Extension):
             return self._prepare_issue(clean)
 
     def _timestamps(self, res: dict):
-        created_at = round(
-            datetime.fromisoformat(res["created_at"].replace("Z", "")).timestamp()
-        )
+        created_at = round(datetime.fromisoformat(res["created_at"].replace("Z", "")).timestamp())
         merged_at = "None"
         closed_at = "None"
         if res["closed_at"]:
-            closed_at = round(
-                datetime.fromisoformat(res["closed_at"].replace("Z", "")).timestamp()
-            )
+            closed_at = round(datetime.fromisoformat(res["closed_at"].replace("Z", "")).timestamp())
             if "pull_request" in res and res["pull_request"]["merged_at"]:
                 merged_at = round(
                     datetime.fromisoformat(
@@ -173,9 +160,7 @@ class Git(interactions.Extension):
         description = f"• Created: <t:{cr_at}:R>\n"
         if res["state"] == "closed":
             if "pull_request" in res and res["pull_request"]["merged_at"]:
-                description += (
-                    f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
-                )
+                description += f"• Merged: <t:{mrg_at}:R> by {res['closed_by']['login']}\n"
                 return description
             description += f"• Closed: <t:{cls_at}:R> by {res['closed_by']['login']}"
         return description

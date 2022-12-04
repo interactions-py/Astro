@@ -1,13 +1,13 @@
-import interactions
 import logging
 
-from pymongo.server_api import ServerApi
-from motor.motor_asyncio import *
-from interactions.ext.wait_for import setup
+import interactions
 from beanie import init_beanie
+from interactions.ext.wait_for import setup
+from motor.motor_asyncio import *
+from pymongo.server_api import ServerApi
 
-from .model import Tag
 from .const import *
+from .model import Tag
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger()
@@ -36,9 +36,11 @@ bot = interactions.Client(
 )
 setup(bot)
 
+
 async def db_setup():
     client = AsyncIOMotorClient(MONGO_DB_URL, server_api=ServerApi("1"))
     await init_beanie(client.Astro, document_models=[Tag])
+
 
 bot._loop.create_task(db_setup())
 
@@ -63,9 +65,7 @@ async def on_ready():
             type=interactions.OptionType.STRING,
             choices=[
                 interactions.Choice(name="Only Main Library Changelogs", value="main"),
-                interactions.Choice(
-                    name="Only External Library Changelogs", value="external"
-                ),
+                interactions.Choice(name="Only External Library Changelogs", value="external"),
                 interactions.Choice(name="Both Changelogs", value="both"),
             ],
         )
@@ -120,9 +120,7 @@ async def subscribe(ctx: interactions.CommandContext, changelog: str = "main"):
 @bot.command(name="add-role-menu", description="N/A.", scope=METADATA["guild"])
 async def add_role_menu(ctx: interactions.CommandContext):
     if str(ctx.author.id) == "242351388137488384":
-        _channel: dict = await bot._http.get_channel(
-            METADATA["channels"]["information"]
-        )
+        _channel: dict = await bot._http.get_channel(METADATA["channels"]["information"])
         _roles: list[str] = [
             role
             for role in METADATA["roles"]
@@ -160,16 +158,13 @@ async def add_role_menu(ctx: interactions.CommandContext):
 
 
 @bot.component("language_role")
-async def language_role_selection(
-    ctx: interactions.ComponentContext, choice: list[str]
-):
+async def language_role_selection(ctx: interactions.ComponentContext, choice: list[str]):
     role: int
     roles: dict = {}
     [
         roles.update({role: METADATA["roles"][role]})
         for role in METADATA["roles"]
-        if role
-        not in ["Changelog pings", "Helper", "Moderator", "External Changelog pings"]
+        if role not in ["Changelog pings", "Helper", "Moderator", "External Changelog pings"]
     ]
 
     # so many people have been complaining about the bot being "broken"
