@@ -228,28 +228,24 @@ class Tag(interactions.Extension):
     @interactions.extension_autocomplete(command="tag", name="tag_name")
     async def __parse_tag(self, ctx: interactions.CommandContext, tag_name: str = ""):
         """Parses the current choice you're making with /tag."""
-        letters: list = list(tag_name) if tag_name != "" else []
-        tags = await model.Tag.find_all().to_list()
-        tag_names = [t.name for t in tags]
-
         log.debug("Autocompleting tag query for choices...")
 
-        if not letters:
+        if not tag_name:
             await ctx.populate(
                 [
-                    interactions.Choice(name=tag, value=tag)
-                    for tag in (tag_names[:24] if len(tag_names) > 25 else tag_names)
+                    interactions.Choice(name=tag.name, value=tag.name)
+                    async for tag in model.Tag.find_all(limit=25)
                 ]
             )
-
         else:
-            choices: list = []
+            choices: list[interactions.Choice] = []
 
-            focus: str = "".join(letters)
+            async for tag in model.Tag.find_all():
+                if tag_name.lower() in tag.name.lower():
+                    choices.append(interactions.Choice(name=tag.name, value=tag.name))
 
-            for tag in tag_names:
-                if focus.lower() in tag.lower() and len(choices) < 26:
-                    choices.append(interactions.Choice(name=tag, value=tag))
+                if len(choices) >= 25:
+                    break
 
             await ctx.populate(choices)
 
