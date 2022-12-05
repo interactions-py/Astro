@@ -44,7 +44,8 @@ class Docs(interactions.Extension):
                     content += link
 
                     eb.add_field(name=j["name"], value=content)
-            results.append(eb)
+            if eb.fields:
+                results.append(eb)
 
         if len(results) == 1:
             return await ctx.send(embeds=results[0])
