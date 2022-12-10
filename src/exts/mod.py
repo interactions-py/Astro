@@ -13,7 +13,6 @@ from pymongo.database import *
 import src.const
 import src.model as model
 from src.const import *
-from src.exts.gg_protector import GGProtector
 
 
 class Mod(interactions.Extension):
@@ -21,7 +20,6 @@ class Mod(interactions.Extension):
 
     def __init__(self, bot):
         self.bot: interactions.Client = bot
-        self.gg_protectors: Dict[int, GGProtector] = {}
 
         self.action_logs = interactions.Channel(id=src.const.METADATA["channels"]["action-logs"], type=1)  # type: ignore
         self.mod_logs = interactions.Channel(id=src.const.METADATA["channels"]["mod-logs"], type=1)  # type: ignore
@@ -557,178 +555,8 @@ class Mod(interactions.Extension):
 
         await self.mod_logs.send(embeds=embed)
 
-    async def ban_from_member_add(self, member: interactions.GuildMember):
-        await member.ban(reason="banned alt of gg cola")
-
-        await model.Action(
-            user=str(member.id),
-            type=model.ActionType.TIMEOUT,
-            moderator=str(self.bot.me.id),
-            created_at=datetime.now(),
-            reason="Banned alt of gg cola",
-        ).insert()
-
-        embed = interactions.Embed(
-            title="User banned",
-            color=0xED4245,
-            author=interactions.EmbedAuthor(
-                name=f"{member.user.username}#{member.user.discriminator}",
-                icon_url=member.user.avatar_url,
-            ),
-            fields=[
-                interactions.EmbedField(
-                    name="Moderator",
-                    value=f"<@{self.bot.me.id}>",
-                    inline=True,
-                ),
-                interactions.EmbedField(
-                    name="Timestamps",
-                    value="\n".join(
-                        [
-                            f"Joined: <t:{round(member.joined_at.timestamp())}:R>.",
-                            f"Created: <t:{round(member.id.timestamp.timestamp())}:R>.",
-                        ]
-                    ),
-                ),
-                interactions.EmbedField(name="Reason", value="Banned alt of gg cola"),
-            ],
-        )
-
-        await self.action_logs.send(embeds=embed)
-
-    @staticmethod
-    def gg_cola_check(user: interactions.User) -> bool:
-        gg_cola_identification_strings: set[str] = {"gg_", "goodgame_", "good_game_"}
-
-        if any(
-            user.username.lower().startswith(string) for string in gg_cola_identification_strings
-        ):
-            return True
-        return False
-
-    async def account_age_check(
-        self, member: Union[interactions.Member, interactions.GuildMember]
-    ) -> Union[GGProtector, bool]:
-
-        now = datetime.now(timezone.utc)
-        min_account_age_before_join: dict = {"days": 2}
-        if member.joined_at.replace(tzinfo=timezone.utc) < (
-            member.id.timestamp + timedelta(**min_account_age_before_join)
-        ).replace(tzinfo=timezone.utc):
-            timeout_time: dict = {"days": 1}
-
-            await member.modify(
-                communication_disabled_until=(now + timedelta(**timeout_time)).isoformat()
-            )
-
-            with contextlib.suppress(interactions.LibraryException):
-                await member.send(
-                    "Hi!\n"
-                    "We, the interactions.py server, are currently suffering because of a person who is "
-                    "constantly ban-evading and rejoining our server with alt accounts.\n"
-                    "Since your account age is less than two days, you have been muted for "
-                    f"{list(min_account_age_before_join.values())[0]} {list(min_account_age_before_join.keys())[0]}\n"
-                    "Unfortunately we have been forced to take such extreme measures, since this user leaves us no other"
-                    "choice.\n\n"
-                    "The server staff has been "
-                    "notified of your arrival and will remove your timeout as soon as possible if you are not an "
-                    "alternative account of that particular person.\n\n"
-                    "We apologize for any inconvenience\n"
-                    "The interactions.py-team. "
-                )
-
-            gg_prot = GGProtector(self, member)
-            self.gg_protectors[int(member.id)] = gg_prot
-
-            return gg_prot
-
-        else:
-            return False
-
     @interactions.extension_listener()
     async def on_guild_member_add(self, member: interactions.GuildMember):
-
-        if self.gg_cola_check(member.user):
-            insta_ban = interactions.Button(
-                label="Ban immediately",
-                custom_id="bye",
-                style=interactions.ButtonStyle.SUCCESS,
-            )
-            cancel = interactions.Button(
-                label="Cancel Ban",
-                custom_id="stop",
-                style=interactions.ButtonStyle.DANGER,
-            )
-
-            time = datetime.now() + timedelta(seconds=60)
-            components = [insta_ban, cancel]
-
-            msg = await self.staff.send(
-                "<@&789041109208793139>"
-                "\n\n⚠️ Attention⚠️\nI've detected a possible `GG`-guy-alt account:\n"
-                f"{member.mention}\n\n"
-                f"I will proceed the account automatically in <t:{round(time.timestamp())}:R>"
-                "If you don't cancel the ban.\n",
-                components=components,
-            )
-
-            try:
-                data: interactions.ComponentContext = await wait_for_component(
-                    self.bot, components=components, timeout=60
-                )
-
-                if data.custom_id == "bye":
-                    await data.send("<:blobpain:893296401415561246>", ephemeral=True)
-                    raise asyncio.TimeoutError()
-
-            except asyncio.TimeoutError:
-                insta_ban.disabled = True
-                cancel.disabled = True
-                await msg.edit(
-                    f"{msg.content}\n\nbanned.... <:blobpain:893296401415561246>",
-                    components=[insta_ban, cancel],
-                )
-                await self.ban_from_member_add(member)
-                await self.staff.send("User banned!")
-
-            else:
-                insta_ban.disabled = True
-                cancel.disabled = True
-
-                await data.defer(edit_origin=True)
-                content = data.message.content
-                await data.edit(
-                    f"{content}\n\nBanning has been cancelled!",
-                    components=[insta_ban, cancel],
-                )
-
-            return
-
-        elif await self.account_age_check(member):
-            ban_vote_add = interactions.Button(
-                label="Add ban vote",
-                custom_id="vote_ban_add",
-                style=interactions.ButtonStyle.DANGER,
-            )
-            timeout_remove_vote_add = interactions.Button(
-                label="Add timeout removal vote",
-                custom_id="add_vote_timeout",
-                style=interactions.ButtonStyle.DANGER,
-            )
-
-            components = [ban_vote_add, timeout_remove_vote_add]
-
-            msg = await self.staff.send(
-                "<@&789041109208793139>"
-                "\n\n⚠️ Attention⚠️\n"
-                "I've detected a possible `GG`-guy-alt account by account age:\n"
-                f"{member.mention}\n\n",
-                components=components,
-                embeds=interactions.Embed(
-                    title="UserID dumb save hack xd", description=str(member.id)
-                ),
-            )
-
         embed = interactions.Embed(
             title="User joined",
             color=0x57F287,
@@ -751,36 +579,6 @@ class Mod(interactions.Extension):
         )
 
         await self.mod_logs.send(embeds=embed)
-
-    async def check_protector(self, ctx: interactions.ComponentContext) -> Optional[GGProtector]:
-        _id = int(ctx.message.embeds[0].description)
-        if protector := self.gg_protectors.get(_id):
-            return protector
-        await ctx.send("Threat already resolved!", ephemeral=True)
-        components = ctx.message.components
-
-        for _components in components:
-            for component in _components.components:
-                component.disabled = True
-
-        await ctx.message.edit(components=components)
-        return None
-
-    @interactions.extension_component("vote_ban_add")
-    async def _ban_add(self, ctx: interactions.ComponentContext):
-        if protector := await self.check_protector(ctx):
-            if not await protector.increase_ban_votes(ctx.author):
-                await ctx.send("already voted, removing your vote", ephemeral=True)
-                return await protector.decrease_ban_votes(ctx.author)
-            return await ctx.send("vote added!", ephemeral=True)
-
-    @interactions.extension_component("add_vote_timeout")
-    async def _timeout_remove_add(self, ctx: interactions.ComponentContext):
-        if protector := await self.check_protector(ctx):
-            if not await protector.increase_timeout_votes(ctx.author):
-                await ctx.send("already voted, removing your vote", ephemeral=True)
-                return await protector.decrease_timeout_votes(ctx.author)
-            return await ctx.send("vote added!", ephemeral=True)
 
     @interactions.extension_listener()
     async def on_guild_member_remove(self, member: interactions.GuildMember):
