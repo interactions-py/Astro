@@ -20,5 +20,5 @@ class MetadataTyping(typing.TypedDict):
     channels: dict[str, int]
 
 
-with open("metadata.yml", "r") as file:
+with open(f"{SRC_PATH}/metadata.yml", "r") as file:
     METADATA: MetadataTyping = yaml.safe_load(file)
