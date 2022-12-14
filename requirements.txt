@@ -1,7 +1,5 @@
-aiohttp~=3.8.1
 beanie
-dinteractions-Paginator >= 2.0.2
-discord-py-interactions >= 4.3.4
-interactions-wait-for>=1.0.6
 motor[srv]
+naff[speedup]>=2.0.0
 python-dotenv==0.20.0
+pyyaml
