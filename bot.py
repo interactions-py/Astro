@@ -56,8 +56,6 @@ async def start():
     client = AsyncIOMotorClient(os.environ["MONGO_DB_URL"], server_api=ServerApi("1"))
     await init_beanie(client.Astro, document_models=[Tag, Action])  # type: ignore
 
-    # we want to be absolutely sure this path is correct, so we
-    # do a bit of complicated path logic to get the src folde
     ext_list = utils.get_all_extensions(SRC_PATH)
 
     for ext in ext_list:

@@ -3,6 +3,8 @@ from pathlib import Path
 
 import yaml
 
+# we want to be absolutely sure this path is correct, so we
+# do a bit of complicated path logic to get the src folder
 SRC_PATH = Path(__file__).parent.absolute().as_posix()
 
 
