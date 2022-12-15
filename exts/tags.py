@@ -254,6 +254,7 @@ class Tags(naff.Extension):
     @view.autocomplete("tag_name")
     @info.autocomplete("tag_name")
     @edit.autocomplete("tag_name")
+    @delete.autocomplete("tag_name")
     async def tag_name_autocomplete(self, ctx: naff.AutocompleteContext, tag_name: str, **kwargs):
         if not tag_name:
             await ctx.send(
