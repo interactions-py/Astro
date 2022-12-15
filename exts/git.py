@@ -69,8 +69,11 @@ class Git(naff.Extension):
 
         # make all headers bold instead
         for line in body.split("\n"):  # purposely using \n for consistency
-            if line.startswith("##"):
-                line = f"**{line[3:].strip()}**"
+            if line.startswith("#"):
+                # ideal format: ## title
+                space_split = line.split(" ", 1)
+                if all(c == "#" for c in space_split[0].strip()):
+                    line = f"**{space_split[1].strip()}**"
             new_body.append(line)
 
         if len(new_body) > 7:
