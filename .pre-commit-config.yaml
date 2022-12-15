@@ -36,7 +36,7 @@ repos:
       name: Black Formatting
       language: python
       types: [file, python]
-      args: [--target-version, py310, --line-length=100]
+      args: [--target-version, py310, --line-length=100, --preview]
       language_version: python3.10
   - repo: https://github.com/pycqa/isort
     rev: 5.10.1
