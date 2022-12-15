@@ -50,7 +50,8 @@ class Tags(naff.Extension):
         autocomplete=True,
     )
     async def info(self, ctx: naff.InteractionContext, name: str):
-        if not (tag := await Tag.find_one(Tag.name == name)):
+        tag = await Tag.find_one(Tag.name == name)
+        if not tag:
             raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
 
         embed = naff.Embed(
@@ -149,7 +150,8 @@ class Tags(naff.Extension):
         autocomplete=True,
     )
     async def edit(self, ctx: naff.InteractionContext, name: str):
-        if not (tag := await Tag.find_one(Tag.name == name)):
+        tag = await Tag.find_one(Tag.name == name)
+        if not tag:
             raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
 
         edit_modal = naff.Modal(

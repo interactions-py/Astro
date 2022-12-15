@@ -150,7 +150,8 @@ class Git(naff.Extension):
         if message.author.bot:
             return
 
-        if not (tag := TAG_REGEX.search(message.content)):
+        tag = TAG_REGEX.search(message.content)
+        if not tag:
             return
 
         issue_num = int(tag.group(1))
