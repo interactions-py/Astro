@@ -1,10 +1,18 @@
+import asyncio
 import re
+import textwrap
 
+import aiohttp
 import githubkit
 import naff
 from githubkit.exception import RequestFailed
 from githubkit.rest.models import Issue
 
+from common.const import ASTRO_COLOR
+
+GH_SNIPPET_REGEX = re.compile(
+    r"github\.com/(\S+)/(\S+)/blob/([\S][^\/]+)/([\S][^#]+)#L([\d]+)(?:-L([\d]+))?"
+)
 TAG_REGEX = re.compile(r"(?:\s|^)#(\d{1,5})")
 CODEBLOCK_REGEX = re.compile(r"```([^```]*)```")
 IMAGE_REGEX = re.compile(r"!\[.+\]\(.+\)")
@@ -20,6 +28,11 @@ class Git(naff.Extension):
         self.owner = "interactions-py"
         self.repo = "interactions.py"
         self.gh_client = githubkit.GitHub()
+        self.session = aiohttp.ClientSession()
+
+    def drop(self):
+        asyncio.create_task(self.session.close())
+        super().drop()
 
     def clean_content(self, content: str) -> str:
         content = content.replace("[ ]", "❌")
@@ -143,19 +156,7 @@ class Git(naff.Extension):
 
         return embed
 
-    @naff.listen("message_create")
-    async def on_message_create(self, event: naff.events.MessageCreate):
-        message = event.message
-
-        if message.author.bot:
-            return
-
-        tag = TAG_REGEX.search(message.content)
-        if not tag:
-            return
-
-        issue_num = int(tag.group(1))
-
+    async def resolve_issue_num(self, message: naff.Message, issue_num: int):
         try:
             resp = await self.gh_client.rest.issues.async_get(self.owner, self.repo, issue_num)
         except RequestFailed:
@@ -169,6 +170,111 @@ class Git(naff.Extension):
             embed = self.prepare_issue(issue)
 
         await message.reply(embeds=embed)
+
+    async def resolve_gh_snippet(self, message: naff.Message):
+        # heavily inspired and slightly stolen from
+        # https://github.com/NAFTeam/NAFB/blob/0460e8d2cada81e39909198ba3d84fa25f174e1a/scales/githubMessages.py#L203-L241
+        # NAFB under MIT License, owner LordOfPolls
+
+        results = GH_SNIPPET_REGEX.findall(message.content)
+
+        if not results:
+            return
+
+        results = results[0]
+
+        owner = results[0]
+        repo = results[1]
+        ref = results[2]
+        file_path = results[3]
+        extension = ".".join(file_path.split(".")[1:])
+
+        start_line_num = int(results[4]) if len(results) > 4 else 0
+        end_line_num = int(results[5]) if len(results) > 5 else -1
+
+        if end_line_num != -1 and start_line_num > end_line_num:
+            return
+
+        async with self.session.get(
+            f"https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{file_path}"
+        ) as resp:
+            if resp.status != 200:
+                return
+
+            try:
+                file_data = await resp.text()
+            except Exception:  # aiohttp doesn't give us one singular error that may happen
+                return
+            if not file_data:
+                return
+
+            line_split = file_data.splitlines()
+            file_data = line_split[start_line_num:]
+
+            if end_line_num > 0:
+                file_data = file_data[: end_line_num - start_line_num]
+
+            final_text = textwrap.dedent("\n".join(file_data))
+
+            if len(final_text) > 3900:
+                character_count = 0
+                new_final_text = []
+                line_split = final_text.splitlines()
+
+                for line in line_split:
+                    character_count += len(line)
+                    if character_count > 3900:
+                        break
+
+                    new_final_text.append(line)
+
+                final_text = "\n".join(new_final_text)
+
+            # there's an invisible character here so that the resulting codeblock
+            # doesn't fail if the code we're looking at has ` in it
+            final_text = final_text.replace("`", "`​")
+
+            embed = naff.Embed(
+                title=f"{owner}/{repo}",
+                description=f"```{extension}\n{final_text.strip()}\n```",
+                color=ASTRO_COLOR,
+            )
+            component = naff.Button(naff.ButtonStyles.DANGER, emoji="🗑️", custom_id="gh_delete")
+            await message.suppress_embeds()
+            await message.reply(embeds=embed, components=component)
+
+    @naff.component_callback("gh_delete")  # type: ignore
+    async def delete_gh(self, ctx: naff.ComponentContext):
+        await ctx.defer(ephemeral=True)
+        reply = await self.bot.cache.fetch_message(
+            ctx.message.message_reference.channel_id,
+            ctx.message.message_reference.message_id,
+        )
+        if reply:
+            if ctx.author.id == reply.author.id or (
+                isinstance(ctx.author, naff.Member)
+                and ctx.author.has_permission(naff.Permissions.MANAGE_MESSAGES)
+            ):
+                await ctx.message.delete()
+                await ctx.send("Deleted.", ephemeral=True)
+            else:
+                await ctx.send("You do not have permission to delete that!", ephemeral=True)
+        else:
+            await ctx.send("An unknown error occurred", ephemeral=True)
+
+    @naff.listen("message_create")
+    async def on_message_create(self, event: naff.events.MessageCreate):
+        message = event.message
+
+        if message.author.bot:
+            return
+
+        if "github.com/" in message.content and "#L" in message.content:
+            await self.resolve_gh_snippet(message)
+
+        elif tag := TAG_REGEX.search(message.content):
+            issue_num = int(tag.group(1))
+            await self.resolve_issue_num(message, issue_num)
 
 
 def setup(bot):
