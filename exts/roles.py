@@ -102,7 +102,7 @@ class Roles(naff.Extension):
                 for lang, role in METADATA["language_roles"].items()
             ],
             placeholder="Choose a language.",
-            custom_id="astro_language_role",
+            custom_id="language_role",
             min_values=1,
             max_values=25,
         )
@@ -110,7 +110,7 @@ class Roles(naff.Extension):
         await info_channel.send(components=role_menu)  # type: ignore
         await ctx.send(":heavy_check_mark:", ephemeral=True)
 
-    @naff.component_callback("astro_language_role")  # type: ignore
+    @naff.component_callback("language_role")  # type: ignore
     async def on_astro_language_role_select(self, ctx: naff.ComponentContext):
         await ctx.defer(ephemeral=True)
 
