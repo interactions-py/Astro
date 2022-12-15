@@ -72,7 +72,7 @@ class Git(naff.Extension):
             if line.startswith("#"):
                 # ideal format: ## title
                 space_split = line.split(" ", 1)
-                if all(c == "#" for c in space_split[0].strip()):
+                if len(space_split) > 1 and all(c == "#" for c in space_split[0].strip()):
                     line = f"**{space_split[1].strip()}**"
             new_body.append(line)
 
