@@ -67,8 +67,9 @@ class Tags(naff.Extension):
                 if tag.last_edited_at
                 else "N/A"
             ),
+            inline=True,
         )
-        embed.add_field("Content", f"Please use {self.view.mention()}.")
+        embed.add_field("Content", f"Please use {self.view.mention()}.", inline=True)
         embed.set_footer(
             "Tags are made and maintained by the Helpers here in the support server. Please contact one if you believe one is incorrect."
         )
