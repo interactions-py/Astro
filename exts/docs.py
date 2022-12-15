@@ -23,6 +23,8 @@ class Docs(naff.Extension):
         if query is None:
             return await ctx.send("https://interactionspy.readthedocs.io/en/latest/index.html")
 
+        await ctx.defer()
+
         url = f"https://interactionspy.readthedocs.io/_/api/v2/search/?q={quote(query)}&project=interactionspy&version=latest&language=en"
         async with self.session.get(url) as resp:
             data = await resp.json()

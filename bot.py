@@ -41,7 +41,6 @@ intents = naff.Intents.new(
 bot = naff.Client(
     intents=intents,
     sync_interactions=False,
-    auto_defer=naff.AutoDefer(enabled=True, time_until_defer=0),
     debug_scope=METADATA["guild"],
     disable_dm_commands=True,
     status=naff.Status.DO_NOT_DISTURB,

@@ -13,8 +13,6 @@ from common.models import Tag
 class Tags(naff.Extension):
     def __init__(self, bot: naff.Client):
         self.client = bot
-        # the function thats supposed to allow this doesn't allow for disabling autodefer
-        self.auto_defer = naff.AutoDefer(enabled=False)
 
     tag = naff.SlashCommand(
         name="tag",
