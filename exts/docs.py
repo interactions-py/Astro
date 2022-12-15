@@ -18,8 +18,13 @@ class Docs(naff.Extension):
         super().drop()
 
     @naff.slash_command(name="docs-search")
-    @naff.slash_option("query", "The query to search for", naff.OptionTypes.STRING, required=False)
-    async def docs_search(self, ctx: naff.InteractionContext, query: typing.Optional[str] = None):
+    async def docs_search(
+        self,
+        ctx: naff.InteractionContext,
+        query: typing.Annotated[
+            typing.Optional[str], naff.slash_str_option("The query to search for", required=False)
+        ] = None,
+    ):
         """Search interactions.py's documentation."""
         if query is None:
             return await ctx.send("https://interactionspy.readthedocs.io/en/latest/index.html")

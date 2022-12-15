@@ -25,31 +25,32 @@ class Roles(naff.Extension):
             'Adds the changelog and/or external pings role, "subscribing" to you to release news.'
         ),
     )
-    @naff.slash_option(
-        "changelog",
-        "To what changelogs do you want to subscribe? (default only main library)",
-        naff.OptionTypes.STRING,
-        choices=[
-            naff.SlashCommandChoice(
-                name="Only Main Library Changelogs", value=str(METADATA["roles"]["Changelog pings"])
-            ),
-            naff.SlashCommandChoice(
-                name="Only External Library Changelogs",
-                value=str(METADATA["roles"]["External Changelog pings"]),
-            ),
-            naff.SlashCommandChoice(
-                name="Both Changelogs",
-                value=(
-                    f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}"
-                ),
-            ),
-        ],
-        required=False,
-    )
     async def subscribe(
         self,
         ctx: naff.InteractionContext,
-        changelog: str = str(METADATA["roles"]["Changelog pings"]),
+        changelog: typing.Annotated[
+            str,
+            naff.slash_str_option(
+                "To what changelogs do you want to subscribe? (default only main library)",
+                choices=[
+                    naff.SlashCommandChoice(
+                        name="Only Main Library Changelogs",
+                        value=str(METADATA["roles"]["Changelog pings"]),
+                    ),
+                    naff.SlashCommandChoice(
+                        name="Only External Library Changelogs",
+                        value=str(METADATA["roles"]["External Changelog pings"]),
+                    ),
+                    naff.SlashCommandChoice(
+                        name="Both Changelogs",
+                        value=(
+                            f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}"
+                        ),
+                    ),
+                ],
+                required=False,
+            ),
+        ] = str(METADATA["roles"]["Changelog pings"]),
     ):
         await ctx.defer(ephemeral=True)
 

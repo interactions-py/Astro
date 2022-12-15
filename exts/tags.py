@@ -23,14 +23,14 @@ class Tags(naff.Extension):
         sub_cmd_name="view",
         sub_cmd_description="Views a tag that currently exists within the database.",
     )
-    @naff.slash_option(
-        "name",
-        "The name of the tag to view.",
-        naff.OptionTypes.STRING,
-        required=True,
-        autocomplete=True,
-    )
-    async def view(self, ctx: naff.InteractionContext, name: str):
+    async def view(
+        self,
+        ctx: naff.InteractionContext,
+        name: typing.Annotated[
+            str,
+            naff.slash_str_option("The name of the tag to view.", required=True, autocomplete=True),
+        ],
+    ):
         if tag := await Tag.find_one(Tag.name == name):
             await ctx.send(tag.description)
         else:
@@ -42,14 +42,14 @@ class Tags(naff.Extension):
             "Gathers information about a tag that currently exists within the database."
         ),
     )
-    @naff.slash_option(
-        "name",
-        "The name of the tag to get.",
-        naff.OptionTypes.STRING,
-        required=True,
-        autocomplete=True,
-    )
-    async def info(self, ctx: naff.InteractionContext, name: str):
+    async def info(
+        self,
+        ctx: naff.InteractionContext,
+        name: typing.Annotated[
+            str,
+            naff.slash_str_option("The name of the tag to get.", required=True, autocomplete=True),
+        ],
+    ):
         tag = await Tag.find_one(Tag.name == name)
         if not tag:
             raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
@@ -142,14 +142,14 @@ class Tags(naff.Extension):
         sub_cmd_description="Edits a tag that currently exists within the database.",
     )
     @utils.helpers_only()
-    @naff.slash_option(
-        "name",
-        "The name of the tag to edit.",
-        naff.OptionTypes.STRING,
-        required=True,
-        autocomplete=True,
-    )
-    async def edit(self, ctx: naff.InteractionContext, name: str):
+    async def edit(
+        self,
+        ctx: naff.InteractionContext,
+        name: typing.Annotated[
+            str,
+            naff.slash_str_option("The name of the tag to edit.", required=True, autocomplete=True),
+        ],
+    ):
         tag = await Tag.find_one(Tag.name == name)
         if not tag:
             raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
@@ -242,14 +242,16 @@ class Tags(naff.Extension):
         sub_cmd_description="Deletes a tag that currently exists within the database.",
     )
     @utils.helpers_only()
-    @naff.slash_option(
-        "name",
-        "The name of the tag to delete.",
-        naff.OptionTypes.STRING,
-        required=True,
-        autocomplete=True,
-    )
-    async def delete(self, ctx: naff.InteractionContext, name: str):
+    async def delete(
+        self,
+        ctx: naff.InteractionContext,
+        name: typing.Annotated[
+            str,
+            naff.slash_str_option(
+                "The name of the tag to delete.", required=True, autocomplete=True
+            ),
+        ],
+    ):
         await ctx.defer(ephemeral=True)
 
         if tag := await Tag.find_one(Tag.name == name):
