@@ -76,7 +76,9 @@ class Tags(naff.Extension):
 
         await ctx.send(embeds=embed)
 
-    @tag.subcommand(sub_cmd_name="list", sub_cmd_description="List all tags.")
+    @tag.subcommand(
+        sub_cmd_name="list", sub_cmd_description="Lists all the tags existing in the database."
+    )
     async def list(self, ctx: naff.InteractionContext):
         await ctx.defer()
 
