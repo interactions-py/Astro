@@ -95,13 +95,13 @@ async def on_command_error(event: naff.events.CommandError):
             await utils.error_send(
                 event.ctx,
                 msg=str(event.error),
-                color=naff.BrandColors.RED,
+                color=naff.MaterialColors.RED,
             )
         else:
             await utils.error_send(
                 event.ctx,
                 msg="An unexpected error has occured. The error will be logged and should be fixed shortly.",
-                color=naff.BrandColors.YELLOW,
+                color=naff.MaterialColors.RED,
             )
             bot.dispatch(
                 naff.events.Error(
