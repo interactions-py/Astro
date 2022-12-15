@@ -4,6 +4,7 @@ from urllib.parse import quote
 
 import aiohttp
 import naff
+import orjson
 from naff.ext import paginators
 
 
@@ -27,7 +28,7 @@ class Docs(naff.Extension):
 
         url = f"https://interactionspy.readthedocs.io/_/api/v2/search/?q={quote(query)}&project=interactionspy&version=latest&language=en"
         async with self.session.get(url) as resp:
-            data = await resp.json()
+            data = await resp.json(loads=orjson.loads)
 
         if data["count"] == 0:
             return await ctx.send("No results found.")
