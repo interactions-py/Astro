@@ -52,10 +52,10 @@ class Roles(naff.Extension):
         if typing.TYPE_CHECKING:
             assert isinstance(ctx.author, naff.Member)
 
-        author_roles = set(ctx.author._role_ids)
+        author_roles = set(ctx.author._role_ids)  # don't want to update roles till end
         str_builder = [":heavy_check_mark:"]
 
-        for role_id in changelog.split(" "):
+        for role_id in changelog.split(" "):  # kinda smart way of fitting 2+ roles in a choice
             action_word = ""
 
             if ctx.author.has_role(role_id):
@@ -66,6 +66,9 @@ class Roles(naff.Extension):
                 action_word = "added"
 
             role_name = self.subscribe_name_map[role_id]
+            # this looks weird out of context, but it'll look like:
+            # `Changelog pings` role added.
+            # which seems pretty natural to me
             str_builder.append(f"`{role_name}` role {action_word}.")
 
         await ctx.author.edit(roles=author_roles)
@@ -103,6 +106,7 @@ class Roles(naff.Extension):
             min_values=1,
             max_values=25,
         )
+
         await info_channel.send(components=role_menu)  # type: ignore
         await ctx.send(":heavy_check_mark:", ephemeral=True)
 
@@ -113,8 +117,11 @@ class Roles(naff.Extension):
         if typing.TYPE_CHECKING:
             assert isinstance(ctx.author, naff.Member)
 
+        # same idea as subscribe, but...
         author_roles = set(ctx.author._role_ids)
 
+        # since there are a lot more languages than roles, i wanted to make the result
+        # message a bit nicer. that requires having both of these lists
         added = []
         removed = []
 
@@ -123,11 +130,12 @@ class Roles(naff.Extension):
 
             role = METADATA["language_roles"].get(language)
             if not role:
+                # this shouldn't happen
                 return await ctx.send(":x: The role you selected was invalid.", ephemeral=True)
 
             if ctx.author.has_role(role["id"]):
                 author_roles.remove(int(role["id"]))
-                removed.append(f"`{language}`")
+                removed.append(f"`{language}`")  # thankfully, the language here is its role name
             else:
                 author_roles.add(int(role["id"]))
                 added.append(f"`{language}`")
@@ -135,6 +143,7 @@ class Roles(naff.Extension):
         await ctx.author.edit(roles=author_roles)
 
         resp = ":heavy_check_mark: "
+        # yep, all we're doing is listing out the roles added and removed
         if added:
             resp += f"Added: {', '.join(added)}. "
         if removed:
