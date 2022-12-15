@@ -75,14 +75,14 @@ async def on_command_error(event: naff.events.CommandError):
             await utils.error_send(
                 event.ctx,
                 msg=f"This command is on cooldown!\n"
-                f"Please try again in {int(event.error.cooldown.get_cooldown_time())} seconds",
-                color=naff.BrandColors.FUCHSIA,
+                f"Please try again in {int(event.error.cooldown.get_cooldown_time())} seconds.",
+                color=ASTRO_COLOR,
             )
         elif isinstance(event.error, naff.errors.MaxConcurrencyReached):
             await utils.error_send(
                 event.ctx,
                 msg="This command has reached its maximum concurrent usage!\nPlease try again shortly.",
-                color=naff.BrandColors.FUCHSIA,
+                color=ASTRO_COLOR,
             )
         elif isinstance(event.error, naff.errors.CommandCheckFailure):
             await utils.error_send(
