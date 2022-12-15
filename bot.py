@@ -74,14 +74,19 @@ async def on_command_error(event: naff.events.CommandError):
         if isinstance(event.error, naff.errors.CommandOnCooldown):
             await utils.error_send(
                 event.ctx,
-                msg=f"This command is on cooldown!\n"
-                f"Please try again in {int(event.error.cooldown.get_cooldown_time())} seconds.",
+                msg=(
+                    "This command is on cooldown!\n"
+                    f"Please try again in {int(event.error.cooldown.get_cooldown_time())} seconds."
+                ),
                 color=ASTRO_COLOR,
             )
         elif isinstance(event.error, naff.errors.MaxConcurrencyReached):
             await utils.error_send(
                 event.ctx,
-                msg="This command has reached its maximum concurrent usage!\nPlease try again shortly.",
+                msg=(
+                    "This command has reached its maximum concurrent usage!\nPlease try again"
+                    " shortly."
+                ),
                 color=ASTRO_COLOR,
             )
         elif isinstance(event.error, naff.errors.CommandCheckFailure):
@@ -99,7 +104,10 @@ async def on_command_error(event: naff.events.CommandError):
         else:
             await utils.error_send(
                 event.ctx,
-                msg="An unexpected error has occured. The error will be logged and should be fixed shortly.",
+                msg=(
+                    "An unexpected error has occured. The error will be logged and should be fixed"
+                    " shortly."
+                ),
                 color=naff.MaterialColors.RED,
             )
             bot.dispatch(

@@ -21,7 +21,9 @@ class Roles(naff.Extension):
 
     @naff.slash_command(
         "subscribe",
-        description='Adds the changelog and/or external pings role, "subscribing" to you to release news.',
+        description=(
+            'Adds the changelog and/or external pings role, "subscribing" to you to release news.'
+        ),
     )
     @naff.slash_option(
         "changelog",
@@ -37,7 +39,9 @@ class Roles(naff.Extension):
             ),
             naff.SlashCommandChoice(
                 name="Both Changelogs",
-                value=f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}",
+                value=(
+                    f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}"
+                ),
             ),
         ],
         required=False,

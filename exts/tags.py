@@ -38,7 +38,9 @@ class Tags(naff.Extension):
 
     @tag.subcommand(
         sub_cmd_name="info",
-        sub_cmd_description="Gathers information about a tag that currently exists within the database.",
+        sub_cmd_description=(
+            "Gathers information about a tag that currently exists within the database."
+        ),
     )
     @naff.slash_option(
         "tag_name",
@@ -69,7 +71,8 @@ class Tags(naff.Extension):
         )
         embed.add_field("Content", f"Please use {self.view.mention()}.", inline=True)
         embed.set_footer(
-            "Tags are made and maintained by the Helpers here in the support server. Please contact one if you believe one is incorrect."
+            "Tags are made and maintained by the Helpers here in the support server. Please contact"
+            " one if you believe one is incorrect."
         )
 
         await ctx.send(embeds=embed)
@@ -178,7 +181,8 @@ class Tags(naff.Extension):
         tag_name = ctx.responses["tag_name"]
         if await Tag.find_one(Tag.name == tag_name).exists():
             return await ctx.send(
-                f":x: Tag `{tag_name}` already exists.\n(Did you mean to use {self.edit.mention()}?)",
+                f":x: Tag `{tag_name}` already exists.\n(Did you mean to use"
+                f" {self.edit.mention()}?)",
                 ephemeral=True,
             )
 
@@ -190,7 +194,8 @@ class Tags(naff.Extension):
         ).insert()
 
         await ctx.send(
-            f":heavy_check_mark: `{tag_name}` now exists. In order to view it, please use {self.view.mention()}.",
+            f":heavy_check_mark: `{tag_name}` now exists. In order to view it, please use"
+            f" {self.view.mention()}.",
             ephemeral=True,
         )
 
@@ -210,7 +215,10 @@ class Tags(naff.Extension):
                 (
                     f":heavy_check_mark: Tag `{tag_name}` has been edited."
                     if tag_name == original_name
-                    else f":heavy_check_mark: Tag `{original_name}` has been edited and re-named to `{tag_name}`."
+                    else (
+                        f":heavy_check_mark: Tag `{original_name}` has been edited and re-named to"
+                        f" `{tag_name}`."
+                    )
                 ),
                 ephemeral=True,
             )
