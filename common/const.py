@@ -1,7 +1,10 @@
 import typing
 from pathlib import Path
 
+import naff
 import yaml
+
+ASTRO_COLOR = naff.Color(0x5865F2)
 
 # we want to be absolutely sure this path is correct, so we
 # do a bit of complicated path logic to get the src folder
