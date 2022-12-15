@@ -24,17 +24,17 @@ class Tags(naff.Extension):
         sub_cmd_description="Views a tag that currently exists within the database.",
     )
     @naff.slash_option(
-        "tag_name",
+        "name",
         "The name of the tag to view.",
         naff.OptionTypes.STRING,
         required=True,
         autocomplete=True,
     )
-    async def view(self, ctx: naff.InteractionContext, tag_name: str):
-        if tag := await Tag.find_one(Tag.name == tag_name):
+    async def view(self, ctx: naff.InteractionContext, name: str):
+        if tag := await Tag.find_one(Tag.name == name):
             await ctx.send(tag.description)
         else:
-            raise naff.errors.BadArgument(f":x: Tag {tag_name} does not exist.")
+            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
 
     @tag.subcommand(
         sub_cmd_name="info",
@@ -43,15 +43,15 @@ class Tags(naff.Extension):
         ),
     )
     @naff.slash_option(
-        "tag_name",
+        "name",
         "The name of the tag to get.",
         naff.OptionTypes.STRING,
         required=True,
         autocomplete=True,
     )
-    async def info(self, ctx: naff.InteractionContext, tag_name: str):
-        if not (tag := await Tag.find_one(Tag.name == tag_name)):
-            raise naff.errors.BadArgument(f":x: Tag {tag_name} does not exist.")
+    async def info(self, ctx: naff.InteractionContext, name: str):
+        if not (tag := await Tag.find_one(Tag.name == name)):
+            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
 
         embed = naff.Embed(
             title=tag.name,
@@ -142,15 +142,15 @@ class Tags(naff.Extension):
     )
     @utils.helpers_only()
     @naff.slash_option(
-        "tag_name",
+        "name",
         "The name of the tag to edit.",
         naff.OptionTypes.STRING,
         required=True,
         autocomplete=True,
     )
-    async def edit(self, ctx: naff.InteractionContext, tag_name: str):
-        if not (tag := await Tag.find_one(Tag.name == tag_name)):
-            raise naff.errors.BadArgument(f":x: Tag {tag_name} does not exist.")
+    async def edit(self, ctx: naff.InteractionContext, name: str):
+        if not (tag := await Tag.find_one(Tag.name == name)):
+            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
 
         edit_modal = naff.Modal(
             "Edit tag",
@@ -241,31 +241,31 @@ class Tags(naff.Extension):
     )
     @utils.helpers_only()
     @naff.slash_option(
-        "tag_name",
+        "name",
         "The name of the tag to delete.",
         naff.OptionTypes.STRING,
         required=True,
         autocomplete=True,
     )
-    async def delete(self, ctx: naff.InteractionContext, tag_name: str):
+    async def delete(self, ctx: naff.InteractionContext, name: str):
         await ctx.defer(ephemeral=True)
 
-        if tag := await Tag.find_one(Tag.name == tag_name):
+        if tag := await Tag.find_one(Tag.name == name):
             await tag.delete()
 
             await ctx.send(
-                f":heavy_check_mark: Tag `{tag_name}` has been successfully deleted.",
+                f":heavy_check_mark: Tag `{name}` has been successfully deleted.",
                 ephemeral=True,
             )
         else:
-            raise naff.errors.BadArgument(f":x: Tag {tag_name} does not exist.")
+            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
 
-    @view.autocomplete("tag_name")
-    @info.autocomplete("tag_name")
-    @edit.autocomplete("tag_name")
-    @delete.autocomplete("tag_name")
-    async def tag_name_autocomplete(self, ctx: naff.AutocompleteContext, tag_name: str, **kwargs):
-        if not tag_name:
+    @view.autocomplete("name")
+    @info.autocomplete("name")
+    @edit.autocomplete("name")
+    @delete.autocomplete("name")
+    async def tag_name_autocomplete(self, ctx: naff.AutocompleteContext, name: str, **kwargs):
+        if not name:
             await ctx.send(
                 [{"name": tag.name, "value": tag.name} async for tag in Tag.find_all(limit=25)]
             )
@@ -273,7 +273,7 @@ class Tags(naff.Extension):
             choices: list[dict[str, str]] = []
 
             async for tag in Tag.find_all():
-                if tag_name.lower() in tag.name.lower():
+                if name.lower() in tag.name.lower():
                     choices.append({"name": tag.name, "value": tag.name})
 
                 if len(choices) >= 25:
