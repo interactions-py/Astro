@@ -1,3 +1,4 @@
+import os
 import typing
 from pathlib import Path
 
@@ -23,5 +24,6 @@ class MetadataTyping(typing.TypedDict):
     channels: dict[str, int]
 
 
-with open(f"{SRC_PATH}/metadata.yml", "r") as file:
+METADATA_PATH = os.environ.get("METADATA_PATH", f"{SRC_PATH}/metadata.yml")
+with open(METADATA_PATH, "r") as file:
     METADATA: MetadataTyping = yaml.safe_load(file)

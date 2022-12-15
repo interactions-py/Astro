@@ -8,3 +8,4 @@ env/
 actions.json
 discord.log
 *.config.js
+metadata_test.yml
