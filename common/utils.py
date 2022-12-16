@@ -7,11 +7,15 @@ import naff
 from common.const import METADATA
 
 
+def helper_check(user: naff.Member | naff.User):
+    return isinstance(user, naff.Member) and user.has_role(
+        METADATA["roles"]["Helper"], METADATA["roles"]["Moderator"]
+    )
+
+
 def helpers_only() -> typing.Any:
     async def predicate(ctx: naff.Context):
-        return isinstance(ctx.author, naff.Member) and ctx.author.has_role(
-            METADATA["roles"]["Helper"], METADATA["roles"]["Moderator"]
-        )
+        return helper_check(ctx.author)
 
     return naff.check(predicate)
 
