@@ -92,7 +92,7 @@ async def on_command_error(event: naff.events.CommandError):
         elif isinstance(event.error, naff.errors.CommandCheckFailure):
             await utils.error_send(
                 event.ctx,
-                msg=":x: You do not have permission to run this command!",
+                msg=":x: You do not have permission to run this command.",
                 color=naff.BrandColors.YELLOW,
             )
         elif isinstance(event.error, naff.errors.BadArgument):
