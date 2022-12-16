@@ -151,17 +151,11 @@ class HelpChannel(naff.Extension):
                 custom_id="close_thread",
             )
 
-            actionrows = [
-                naff.ActionRow(original_message_button),
-                naff.ActionRow(select),
-                naff.ActionRow(close_button),
-            ]
-
             starter_message = await post_thread.send(
                 "This help thread was automatically generated. Read the message above for more"
                 " information.",
                 embeds=embed,
-                components=actionrows,
+                components=[[original_message_button], [select], [close_button]],
             )
             await starter_message.pin()
 
