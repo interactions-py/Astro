@@ -86,9 +86,13 @@ class Tags(naff.Extension):
 
         all_tags = await Tag.find_all().to_list()
         # generate the string summary of each tag
-        tag_list = [f"` {i+1} ` {t.name}`" for i, t in enumerate(all_tags)]
-        # get chunks of tags, each of which have 10 tags
-        chunks = [tag_list[x : x + 10] for x in range(0, len(tag_list), 10)]
+        tag_list = [f"` {i+1} ` {t.name}" for i, t in enumerate(all_tags)]
+        # get chunks of tags, each of which have 9 tags
+        # why 9? each tag, with  its name and number, can be at max
+        # around ~106-107 characters (100 for name of tag, 6-7 for other parts),
+        # and fields have a 1024 character limit
+        # 1024 // 107 gives 9, so here we are
+        chunks = [tag_list[x : x + 9] for x in range(0, len(tag_list), 9)]
         # finally, make embeds for each chunk of tags
         embeds = [
             naff.Embed(
