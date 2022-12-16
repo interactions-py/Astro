@@ -1,18 +1,19 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import asyncio
 import logging
 import os
 
 import naff
 from beanie import init_beanie
-from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
 import common.utils as utils
 from common.const import *
 from common.models import Action, Tag
-
-load_dotenv()
 
 logger = logging.getLogger("astro_bot")
 logger.setLevel(logging.DEBUG)
