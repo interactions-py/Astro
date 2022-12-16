@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 import io
 
 import aiohttp
@@ -212,4 +213,5 @@ class HelpChannel(naff.Extension):
 
 
 def setup(bot):
+    importlib.reload(utils)
     HelpChannel(bot)

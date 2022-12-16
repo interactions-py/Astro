@@ -186,10 +186,11 @@ class Tags(naff.Extension):
     async def add_tag(self, ctx: naff.ModalContext):
         tag_name = ctx.responses["tag_name"]
         if await Tag.find_one(Tag.name == tag_name).exists():
-            return await ctx.send(
+            return await utils.error_send(
+                ctx,
                 f":x: Tag `{tag_name}` already exists.\n(Did you mean to use"
                 f" {self.edit.mention()}?)",
-                ephemeral=True,
+                naff.BrandColors.YELLOW,
             )
 
         await Tag(

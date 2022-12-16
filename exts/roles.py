@@ -1,7 +1,9 @@
+import importlib
 import typing
 
 import naff
 
+import common.utils as utils
 from common.const import METADATA
 
 
@@ -136,7 +138,9 @@ class Roles(naff.Extension):
             role = METADATA["language_roles"].get(language)
             if not role:
                 # this shouldn't happen
-                return await ctx.send(":x: The role you selected was invalid.", ephemeral=True)
+                return await utils.error_send(
+                    ctx, ":x: The role you selected was invalid.", naff.MaterialColors.RED
+                )
 
             if ctx.author.has_role(role["id"]):
                 author_roles.remove(int(role["id"]))
@@ -158,4 +162,5 @@ class Roles(naff.Extension):
 
 
 def setup(bot):
+    importlib.reload(utils)
     Roles(bot)
