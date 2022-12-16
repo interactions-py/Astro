@@ -75,7 +75,7 @@ async def on_command_error(event: naff.events.CommandError):
             await utils.error_send(
                 event.ctx,
                 msg=(
-                    "This command is on cooldown!\n"
+                    ":x: This command is on cooldown.\n"
                     f"Please try again in {int(event.error.cooldown.get_cooldown_time())} seconds."
                 ),
                 color=ASTRO_COLOR,
@@ -84,7 +84,7 @@ async def on_command_error(event: naff.events.CommandError):
             await utils.error_send(
                 event.ctx,
                 msg=(
-                    "This command has reached its maximum concurrent usage!\nPlease try again"
+                    ":x: This command has reached its maximum concurrent usage.\nPlease try again"
                     " shortly."
                 ),
                 color=ASTRO_COLOR,
@@ -92,23 +92,23 @@ async def on_command_error(event: naff.events.CommandError):
         elif isinstance(event.error, naff.errors.CommandCheckFailure):
             await utils.error_send(
                 event.ctx,
-                msg="You do not have permission to run this command!",
+                msg=":x: You do not have permission to run this command!",
                 color=naff.BrandColors.YELLOW,
             )
         elif isinstance(event.error, naff.errors.BadArgument):
             await utils.error_send(
                 event.ctx,
-                msg=str(event.error),
+                msg=f":x: {event.error}",
                 color=naff.MaterialColors.RED,
             )
         else:
             await utils.error_send(
                 event.ctx,
                 msg=(
-                    "An unexpected error has occured. The error will be logged and should be fixed"
-                    " shortly."
+                    ":x: An unexpected error has occured. The error will be logged and should be"
+                    " fixed shortly."
                 ),
-                color=naff.MaterialColors.RED,
+                color=naff.RoleColors.DARK_RED,
             )
             bot.dispatch(
                 naff.events.Error(

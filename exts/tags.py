@@ -34,7 +34,7 @@ class Tags(naff.Extension):
         if tag := await Tag.find_one(Tag.name == name):
             await ctx.send(tag.description)
         else:
-            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
+            raise naff.errors.BadArgument(f"Tag {name} does not exist.")
 
     @tag.subcommand(
         sub_cmd_name="info",
@@ -52,7 +52,7 @@ class Tags(naff.Extension):
     ):
         tag = await Tag.find_one(Tag.name == name)
         if not tag:
-            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
+            raise naff.errors.BadArgument(f"Tag {name} does not exist.")
 
         embed = naff.Embed(
             title=tag.name,
@@ -156,7 +156,7 @@ class Tags(naff.Extension):
     ):
         tag = await Tag.find_one(Tag.name == name)
         if not tag:
-            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
+            raise naff.errors.BadArgument(f"Tag {name} does not exist.")
 
         edit_modal = naff.Modal(
             "Edit tag",
@@ -266,7 +266,7 @@ class Tags(naff.Extension):
                 ephemeral=True,
             )
         else:
-            raise naff.errors.BadArgument(f":x: Tag {name} does not exist.")
+            raise naff.errors.BadArgument(f"Tag {name} does not exist.")
 
     @view.autocomplete("name")
     @info.autocomplete("name")

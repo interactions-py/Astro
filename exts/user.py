@@ -50,7 +50,7 @@ class UserExt(naff.Extension):
     async def report_user(self, ctx: naff.InteractionContext):
         member: naff.Member | naff.User = ctx.target  # type: ignore
         if not isinstance(member, naff.Member):
-            raise naff.errors.BadArgument(":x: This user has left the server.")
+            raise naff.errors.BadArgument("This user has left the server.")
 
         modal = naff.Modal(
             "Report user",

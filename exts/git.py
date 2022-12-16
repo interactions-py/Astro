@@ -258,9 +258,9 @@ class Git(naff.Extension):
                 await ctx.message.delete()
                 await ctx.send("Deleted.", ephemeral=True)
             else:
-                raise naff.errors.BadArgument(":x: You do not have permission to delete this.")
+                raise naff.errors.BadArgument("You do not have permission to delete this.")
         else:
-            raise naff.errors.BadArgument(":x: Could not find original message.")
+            raise naff.errors.BadArgument("Could not find original message.")
 
     @naff.listen("message_create")
     async def on_message_create(self, event: naff.events.MessageCreate):
