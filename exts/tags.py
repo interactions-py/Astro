@@ -4,6 +4,7 @@ import importlib
 import naff
 from beanie import PydanticObjectId
 from naff.ext import paginators
+from rapidfuzz import fuzz, process
 
 import common.utils as utils
 from common.const import *
@@ -269,6 +270,9 @@ class Tags(naff.Extension):
         else:
             raise naff.errors.BadArgument(f"Tag {name} does not exist.")
 
+    def _process_tag(self, tag: Tag):
+        return tag.lower().strip() if isinstance(tag, str) else tag.name.lower().strip()
+
     @view.autocomplete("name")
     @info.autocomplete("name")
     @edit.autocomplete("name")
@@ -279,15 +283,11 @@ class Tags(naff.Extension):
                 [{"name": tag.name, "value": tag.name} async for tag in Tag.find_all(limit=25)]
             )
         else:
-            choices: list[dict[str, str]] = []
-
-            async for tag in Tag.find_all():
-                if name.lower() in tag.name.lower():
-                    choices.append({"name": tag.name, "value": tag.name})
-
-                if len(choices) >= 25:
-                    break
-
+            tags = await Tag.find_all().to_list()
+            options = process.extract(
+                name.lower(), tags, processor=self._process_tag, limit=25, score_cutoff=75
+            )
+            choices = [{"name": o[0].name, "value": o[0].name} for o in options]
             await ctx.send(choices)  # type: ignore
 
 
