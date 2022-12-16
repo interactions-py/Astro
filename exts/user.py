@@ -1,3 +1,5 @@
+import asyncio
+
 import naff
 
 from common.const import *
@@ -7,6 +9,7 @@ class UserExt(naff.Extension):
     def __init__(self, bot: naff.Client):
         self.client = bot
         self.action_logs: naff.GuildText = None  # type: ignore
+        asyncio.create_task(self.fill_action_logs())
 
     async def fill_action_logs(self):
         await self.bot.wait_until_ready()
