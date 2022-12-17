@@ -6,7 +6,7 @@ from common.const import ASTRO_COLOR
 class Info(naff.Extension):
     """An extension dedicated to /info."""
 
-    def __init__(self, bot, **kwargs):
+    def __init__(self, bot):
         self.bot = bot
 
     @naff.slash_command(

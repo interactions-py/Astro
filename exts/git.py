@@ -28,11 +28,7 @@ class Git(naff.Extension):
         self.owner = "interactions-py"
         self.repo = "interactions.py"
         self.gh_client = githubkit.GitHub()
-        self.session = aiohttp.ClientSession()
-
-    def drop(self):
-        asyncio.create_task(self.session.close())
-        super().drop()
+        self.session: aiohttp.ClientSession = bot.session
 
     def clean_content(self, content: str) -> str:
         content = content.replace("[ ]", "❌")

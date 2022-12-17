@@ -25,7 +25,7 @@ def _member_from_ctx(ctx: naff.Context):
 def helper_check(ctx: naff.Context):
     user = _member_from_ctx(ctx)
     return (
-        user.has_role(METADATA["roles"]["Helper"], METADATA["roles"]["Moderator"])
+        user.has_role(METADATA["roles"]["Helper"]) or user.has_role(METADATA["roles"]["Moderator"])
         if user
         else False
     )

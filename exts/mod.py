@@ -61,15 +61,15 @@ class Mod(naff.Extension):
         reason: str = "N/A",
     ):
         embed = naff.Embed(
-            title="User banned",
+            title=f"User {action}",
             color=action_str_to_color[action],
         )
-        embed.set_author(member.tag, member.display_avatar.as_url(size=128))
-        embed.add_field("Mention", member.mention)
-        embed.add_field("Moderator", moderator.mention)
+        embed.set_author(member.tag, icon_url=member.display_avatar.as_url(size=128))
+        embed.add_field("Mention", member.mention, inline=True)
+        embed.add_field("Moderator", moderator.mention, inline=True)
 
         if isinstance(member, naff.Member):
-            embed.add_field("Timestamps", self.timestamps_for_user(member))
+            embed.add_field("Timestamps", self.timestamps_for_user(member), inline=True)
 
         embed.add_field("Reason", reason)
         return embed
@@ -92,7 +92,7 @@ class Mod(naff.Extension):
         embed = self.generate_action_embed(member, ctx.author, action_to_str[action], reason)
         await self.action_log.send(embeds=embed)
         await ctx.send(
-            f":heavy_check_mark: {member.mention} has been {action_to_str[action]}.", ephemeral=True
+            f":white_check_mark: {member.mention} has been {action_to_str[action]}.", ephemeral=True
         )
 
     mod = naff.SlashCommand(
@@ -121,7 +121,7 @@ class Mod(naff.Extension):
         try:
             await member.ban(reason=reason)
         except naff.errors.HTTPException:
-            raise naff.errors.BadArgument(f"Could not ban {member.mention}.") from None
+            raise naff.errors.BadArgument("Could not ban user.") from None
 
         await self.process_action(ctx, member, models.ActionType.BAN, reason)
 
@@ -151,7 +151,7 @@ class Mod(naff.Extension):
         try:
             await ctx.guild.unban(user, reason)
         except naff.errors.HTTPException:
-            raise naff.errors.BadArgument(f"Could not unban {user.mention}.") from None
+            raise naff.errors.BadArgument("Could not unban user.") from None
 
         await self.process_action(ctx, user, models.ActionType.UNBAN, reason)
 
@@ -173,7 +173,7 @@ class Mod(naff.Extension):
         try:
             await member.kick(reason=reason)
         except naff.errors.HTTPException:
-            raise naff.errors.BadArgument(f"Could not kick {member.mention}.") from None
+            raise naff.errors.BadArgument("Could not kick user.") from None
 
         await self.process_action(ctx, member, models.ActionType.KICK, reason)
 
@@ -243,7 +243,7 @@ class Mod(naff.Extension):
         try:
             await member.timeout(time, reason)
         except naff.errors.HTTPException:
-            raise naff.errors.BadArgument(f"Could not timeout {member.mention}.") from None
+            raise naff.errors.BadArgument("Could not timeout user.") from None
 
         await self.process_action(ctx, member, models.ActionType.TIMEOUT, reason)
 
@@ -268,12 +268,12 @@ class Mod(naff.Extension):
             member.communication_disabled_until is None
             or member.communication_disabled_until < naff.Timestamp.utcnow()
         ):
-            raise naff.errors.BadArgument(f"{member.mention} is not timed out.")
+            raise naff.errors.BadArgument("User is not timed out.")
 
         try:
             await member.timeout(None, reason)
         except naff.errors.HTTPException:
-            raise naff.errors.BadArgument(f"Could not untimeout {member.mention}.") from None
+            raise naff.errors.BadArgument("Could not untimeout user.") from None
 
         await self.process_action(ctx, member, models.ActionType.UNTIMEOUT, reason)
 
@@ -312,7 +312,7 @@ class Mod(naff.Extension):
             deletion_time = naff.Timestamp.utcnow() + timedelta(seconds=30)
             await purge_channel.send(
                 (
-                    f":heavy_check_mark: {purge_channel.mention} was purged,"
+                    f":white_check_mark: {purge_channel.mention} was purged,"
                     f" {ctx.author.mention}.\n**I will self-destruct in"
                     f" <t:{deletion_time.timestamp()}:R>**!"
                 ),
@@ -320,7 +320,7 @@ class Mod(naff.Extension):
             )
         else:
             await ctx.send(
-                f":heavy_check_mark: {purge_channel.mention} was purged. ", ephemeral=True
+                f":white_check_mark: {purge_channel.mention} was purged. ", ephemeral=True
             )
 
     @channel.subcommand(
@@ -350,9 +350,12 @@ class Mod(naff.Extension):
         ] = "N/A",
     ):
         slowmode_channel: naff.GuildText = channel or ctx.channel
-        await slowmode_channel.edit(rate_limit_per_user=time, reason=reason)
+
+        # working around https://github.com/NAFTeam/NAFF/pull/738 - don't mind me
+        base_channel = naff.BaseChannel.from_dict({"id": slowmode_channel.id, "type": 0}, self.bot)
+        await base_channel.edit(rate_limit_per_user=time, reason=reason)
         await ctx.send(
-            f":heavy_check_mark: {slowmode_channel.mention}'s slowmode was set.", ephemeral=True
+            f":white_check_mark: {slowmode_channel.mention}'s slowmode was set.", ephemeral=True
         )
 
     @channel.subcommand(sub_cmd_name="lock", sub_cmd_description="Locks a channel.")
@@ -375,12 +378,27 @@ class Mod(naff.Extension):
         lock_channel: naff.GuildText = channel or ctx.channel
 
         overwrites = lock_channel.permission_overwrites
+
+        changed_guild_overwrite = False
+
         for overwrite in overwrites:
             if overwrite.id != METADATA["roles"]["Moderator"]:
                 overwrite.add_denies(naff.Permissions.SEND_MESSAGES, naff.Permissions.ADD_REACTIONS)
 
+                if overwrite.id == ctx.guild.id:
+                    changed_guild_overwrite = True
+
+        if not changed_guild_overwrite:
+            overwrites.append(
+                naff.PermissionOverwrite(
+                    id=ctx.guild.id,
+                    type=naff.OverwriteTypes.ROLE,
+                    deny=naff.Permissions.SEND_MESSAGES | naff.Permissions.ADD_REACTIONS,
+                )
+            )
+
         await lock_channel.edit(permission_overwrites=overwrites, reason=reason)
-        await ctx.send(f":heavy_check_mark: {lock_channel.mention} was locked. ", ephemeral=True)
+        await ctx.send(f":white_check_mark: {lock_channel.mention} was locked. ", ephemeral=True)
 
     @channel.subcommand(sub_cmd_name="unlock", sub_cmd_description="Unlocks a channel.")
     async def unlock(
@@ -407,17 +425,15 @@ class Mod(naff.Extension):
                 overwrite.add_allows(naff.Permissions.SEND_MESSAGES, naff.Permissions.ADD_REACTIONS)
 
         await unlock_channel.edit(permission_overwrites=overwrites, reason=reason)
-        await ctx.send(
-            f":heavy_check_mark: {unlock_channel.mention} was unlocked. ", ephemeral=True
-        )
+        await ctx.send(f":white_check_mark: {unlock_channel.mention} was unlocked.", ephemeral=True)
 
     @naff.prefixed_command()
     async def sync(self, ctx: naff.PrefixedContext):
         async with ctx.channel.typing:
             await self.bot.synchronise_interactions(
-                scopes=[METADATA["guild"]], delete_commands=True
+                scopes=[METADATA["guild"], 0], delete_commands=True
             )
-        await ctx.reply("Synchronized commands.")
+        await ctx.reply(":white_check_mark: Synchronized commands.")
 
 
 def setup(bot):

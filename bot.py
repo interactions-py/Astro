@@ -6,6 +6,7 @@ import asyncio
 import logging
 import os
 
+import aiohttp
 import naff
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -56,12 +57,17 @@ async def start():
     client = AsyncIOMotorClient(os.environ["MONGO_DB_URL"], server_api=ServerApi("1"))
     await init_beanie(client.Astro, document_models=[Tag, Action])  # type: ignore
 
+    bot.session = aiohttp.ClientSession()
+
     ext_list = utils.get_all_extensions(SRC_PATH)
 
     for ext in ext_list:
         bot.load_extension(ext)
 
-    await bot.astart(os.environ["TOKEN"])
+    try:
+        await bot.astart(os.environ["TOKEN"])
+    finally:
+        await bot.session.close()
 
 
 @naff.listen("command_error", disable_default_listeners=True)
@@ -138,4 +144,7 @@ async def on_startup():
 
 
 if __name__ == "__main__":
-    asyncio.run(start())
+    try:
+        asyncio.run(start())
+    except KeyboardInterrupt:
+        logger.info("Shutting down.")

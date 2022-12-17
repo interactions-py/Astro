@@ -64,14 +64,15 @@ class Tags(naff.Extension):
         embed.add_field(
             "Timestamps",
             f"Created at: {naff.Timestamp.fromdatetime(tag.created_at).format('R')}\n"
-            + (
-                naff.Timestamp.fromdatetime(tag.last_edited_at).format("R")
-                if tag.last_edited_at
-                else "N/A"
-            ),
+            + "Last edited:"
+            f" {(naff.Timestamp.fromdatetime(tag.last_edited_at).format('R') if tag.last_edited_at else 'N/A')}",
             inline=True,
         )
-        embed.add_field("Content", f"Please use {self.view.mention()}.", inline=True)
+        embed.add_field(
+            "Counts",
+            f"Words: {len(tag.description.split())}\nCharacters: {len(tag.description)}",
+            inline=True,
+        )
         embed.set_footer(
             "Tags are made and maintained by the Helpers here in the support server. Please contact"
             " one if you believe one is incorrect."
@@ -140,7 +141,7 @@ class Tags(naff.Extension):
         )
 
         await ctx.send_modal(create_modal)
-        await ctx.send("Modal sent.", ephemeral=True)
+        await ctx.send(":white_check_mark: Modal sent.", ephemeral=True)
 
     @tag.subcommand(
         sub_cmd_name="edit",
@@ -182,7 +183,7 @@ class Tags(naff.Extension):
             custom_id=f"astro_edit_tag_{str(tag.id)}",
         )
         await ctx.send_modal(edit_modal)
-        await ctx.send("Modal sent.", ephemeral=True)
+        await ctx.send(":white_check_mark: Modal sent.", ephemeral=True)
 
     async def add_tag(self, ctx: naff.ModalContext):
         tag_name = ctx.responses["tag_name"]
@@ -205,7 +206,7 @@ class Tags(naff.Extension):
 
         await ctx.send(
             (
-                f":heavy_check_mark: `{tag_name}` now exists. In order to view it, please use"
+                f":white_check_mark: `{tag_name}` now exists. In order to view it, please use"
                 f" {self.view.mention()}."
             ),
             ephemeral=True,
@@ -225,10 +226,10 @@ class Tags(naff.Extension):
 
             await ctx.send(
                 (
-                    f":heavy_check_mark: Tag `{tag_name}` has been edited."
+                    f":white_check_mark: Tag `{tag_name}` has been edited."
                     if tag_name == original_name
                     else (
-                        f":heavy_check_mark: Tag `{original_name}` has been edited and re-named to"
+                        f":white_check_mark: Tag `{original_name}` has been edited and re-named to"
                         f" `{tag_name}`."
                     )
                 ),
@@ -268,7 +269,7 @@ class Tags(naff.Extension):
             await tag.delete()
 
             await ctx.send(
-                f":heavy_check_mark: Tag `{name}` has been successfully deleted.",
+                f":white_check_mark: Tag `{name}` has been successfully deleted.",
                 ephemeral=True,
             )
         else:
@@ -281,7 +282,7 @@ class Tags(naff.Extension):
     @info.autocomplete("name")
     @edit.autocomplete("name")
     @delete.autocomplete("name")
-    async def tag_name_autocomplete(self, ctx: naff.AutocompleteContext, name: str, **kwargs):
+    async def tag_name_autocomplete(self, ctx: naff.AutocompleteContext, name: str, **_):
         if not name:
             await ctx.send(
                 [{"name": tag.name, "value": tag.name} async for tag in Tag.find_all(limit=25)]
@@ -289,7 +290,12 @@ class Tags(naff.Extension):
         else:
             tags = await Tag.find_all().to_list()
             options = process.extract(
-                name.lower(), tags, processor=self._process_tag, limit=25, score_cutoff=75
+                name.lower(),
+                tags,
+                scorer=fuzz.partial_ratio,
+                processor=self._process_tag,
+                limit=25,
+                score_cutoff=75,
             )
             choices = [{"name": o[0].name, "value": o[0].name} for o in options]
             await ctx.send(choices)  # type: ignore

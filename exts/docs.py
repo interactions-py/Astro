@@ -11,11 +11,7 @@ from naff.ext import paginators
 class Docs(naff.Extension):
     def __init__(self, client: naff.Client) -> None:
         self.client = client
-        self.session = aiohttp.ClientSession()
-
-    def drop(self):
-        asyncio.create_task(self.session.close())
-        super().drop()
+        self.session: aiohttp.ClientSession = client.session
 
     @naff.slash_command(name="docs-search")
     async def docs_search(

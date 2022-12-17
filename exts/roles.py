@@ -60,7 +60,7 @@ class Roles(naff.Extension):
             assert isinstance(ctx.author, naff.Member)
 
         author_roles = set(ctx.author._role_ids)  # don't want to update roles till end
-        str_builder = [":heavy_check_mark:"]
+        str_builder = [":white_check_mark:"]
 
         for role_id in changelog.split(" "):  # kinda smart way of fitting 2+ roles in a choice
             action_word = ""
@@ -111,11 +111,11 @@ class Roles(naff.Extension):
             placeholder="Choose a language.",
             custom_id="language_role",
             min_values=1,
-            max_values=25,
+            max_values=len(METADATA["language_roles"]),
         )
 
         await info_channel.send(components=role_menu)  # type: ignore
-        await ctx.send(":heavy_check_mark:", ephemeral=True)
+        await ctx.send(":white_check_mark:", ephemeral=True)
 
     @naff.component_callback("language_role")  # type: ignore
     async def on_astro_language_role_select(self, ctx: naff.ComponentContext):
@@ -151,7 +151,7 @@ class Roles(naff.Extension):
 
         await ctx.author.edit(roles=author_roles)
 
-        resp = ":heavy_check_mark: "
+        resp = ":white_check_mark: "
         # yep, all we're doing is listing out the roles added and removed
         if added:
             resp += f"Added: {', '.join(added)}. "

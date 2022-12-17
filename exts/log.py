@@ -28,7 +28,9 @@ class Log(naff.Extension):
 
     def generate_base(self, title: str, author: naff.Member | naff.User, color: naff.Color):
         embed = naff.Embed(title=title, color=color)
-        embed.set_author(author.tag, author.display_avatar.as_url())
+        embed.set_author(
+            author.tag, icon_url=author.display_avatar.as_url() if author.display_avatar else None
+        )
         return embed
 
     @naff.listen("message_delete")
@@ -54,6 +56,9 @@ class Log(naff.Extension):
             return
 
         if not before.content and not after.content:
+            return
+
+        if naff.MessageFlags.EPHEMERAL in after.flags:
             return
 
         embed = self.generate_base("Message updated", after.author, self.negative_color)

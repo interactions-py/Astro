@@ -19,7 +19,7 @@ class UserExt(naff.Extension):
     async def get_user_information(self, ctx: naff.InteractionContext):
         member: naff.Member | naff.User = ctx.target  # type: ignore
 
-        roles = reversed(sorted(member.roles if isinstance(member, naff.Member) else []))
+        roles = list(sorted(member.roles if isinstance(member, naff.Member) else []))[::-1]
         color_to_use = next(
             (r.color for r in roles if r.color.value), member.accent_color or ASTRO_COLOR
         )
@@ -57,6 +57,9 @@ class UserExt(naff.Extension):
         if not isinstance(member, naff.Member):
             raise naff.errors.BadArgument("This user has left the server.")
 
+        if member.id == ctx.author.id:
+            raise naff.errors.BadArgument("You cannot report yourself.")
+
         modal = naff.Modal(
             "Report user",
             [
@@ -70,7 +73,7 @@ class UserExt(naff.Extension):
             custom_id=f"astro_report_user_{member.id}",
         )
         await ctx.send_modal(modal)
-        await ctx.send("Modal sent.", ephemeral=True)
+        await ctx.send(":white_check_mark: Modal sent.", ephemeral=True)
 
     @naff.listen("modal_completion")
     async def report_handling(self, event: naff.events.ModalCompletion):
@@ -90,13 +93,13 @@ class UserExt(naff.Extension):
                 title="User Reported",
                 color=naff.MaterialColors.DEEP_ORANGE,
             )
-            embed.set_author(member.tag, member.display_avatar.as_url(size=128))
+            embed.set_author(member.tag, icon_url=member.display_avatar.as_url(size=128))
             embed.add_field("Reported User", f"<@{member_id}>", inline=True)
             embed.add_field("Reported By", ctx.author.mention, inline=True)
-            embed.add_field("Reason", ctx.responses["report_user_reason"], inline=False)
+            embed.add_field("Reason", ctx.responses.get("report_user_reason", "N/A"), inline=False)
 
             await self.action_logs.send(embed=embed)
-            await ctx.send(":heavy_check_mark: Report sent.", ephemeral=True)
+            await ctx.send(":white_check_mark: Report sent.", ephemeral=True)
 
 
 def setup(bot):
