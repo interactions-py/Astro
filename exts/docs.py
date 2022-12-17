@@ -5,6 +5,7 @@ from urllib.parse import quote
 import aiohttp
 import naff
 import orjson
+import tansy
 from naff.ext import paginators
 
 
@@ -13,13 +14,11 @@ class Docs(naff.Extension):
         self.client = client
         self.session: aiohttp.ClientSession = client.session
 
-    @naff.slash_command(name="docs-search")
+    @tansy.slash_command(name="docs-search")
     async def docs_search(
         self,
         ctx: naff.InteractionContext,
-        query: typing.Annotated[
-            typing.Optional[str], naff.slash_str_option("The query to search for", required=False)
-        ] = None,
+        query: typing.Optional[str] = tansy.Option("The query to search for.", default=None),
     ):
         """Search interactions.py's documentation."""
         if query is None:

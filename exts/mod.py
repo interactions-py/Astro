@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timedelta
 
 import naff
+import tansy
 
 import common.models as models
 import common.utils as utils
@@ -95,7 +96,7 @@ class Mod(naff.Extension):
             f":white_check_mark: {member.mention} has been {action_to_str[action]}.", ephemeral=True
         )
 
-    mod = naff.SlashCommand(
+    mod = tansy.TansySlashCommand(
         name="mod",
         description="Handles all moderation aspects.",
         default_member_permissions=naff.Permissions.MANAGE_MESSAGES,
@@ -110,13 +111,8 @@ class Mod(naff.Extension):
     async def ban(
         self,
         ctx: naff.InteractionContext,
-        member: typing.Annotated[
-            naff.Member, naff.slash_user_option("The user you wish to ban.", required=True)
-        ],
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option("The reason behind why you want to ban them.", required=False),
-        ] = "N/A",
+        member: naff.Member = tansy.Option("The member you wish to ban."),
+        reason: str = tansy.Option("The reason behind why you want to ban them.", default="N/A"),
     ):
         try:
             await member.ban(reason=reason)
@@ -132,13 +128,8 @@ class Mod(naff.Extension):
     async def unban(
         self,
         ctx: naff.InteractionContext,
-        id: typing.Annotated[
-            str, naff.slash_str_option("The ID of the user you wish to unban.", required=True)
-        ],
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option("The reason behind why you want to unban them.", required=False),
-        ] = "N/A",
+        id: str = tansy.Option("The ID of the user you wish to unban."),
+        reason: str = tansy.Option("The reason behind why you want to unban them.", default="N/A"),
     ):
         try:
             user = await self.bot.fetch_user(id)
@@ -162,13 +153,8 @@ class Mod(naff.Extension):
     async def kick(
         self,
         ctx: naff.InteractionContext,
-        member: typing.Annotated[
-            naff.Member, naff.slash_user_option("The user you wish to kick.", required=True)
-        ],
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option("The reason behind why you want to kick them.", required=False),
-        ] = "N/A",
+        member: naff.Member = tansy.Option("The member you wish to kick."),
+        reason: str = tansy.Option("The reason behind why you want to kick them.", default="N/A"),
     ):
         try:
             await member.kick(reason=reason)
@@ -184,13 +170,8 @@ class Mod(naff.Extension):
     async def warn(
         self,
         ctx: naff.InteractionContext,
-        member: typing.Annotated[
-            naff.Member, naff.slash_user_option("The user you wish to warn.", required=True)
-        ],
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option("The reason behind why you want to warn them.", required=False),
-        ] = "N/A",
+        member: naff.Member = tansy.Option("The member you wish to warn."),
+        reason: str = tansy.Option("The reason behind why you want to warn them.", default="N/A"),
     ):
         await ctx.channel.send(f"{member.mention}, you have been warned for reason: {reason}.")
         await self.process_action(ctx, member, models.ActionType.WARN, reason)
@@ -202,37 +183,14 @@ class Mod(naff.Extension):
     async def timeout(
         self,
         ctx: naff.InteractionContext,
-        member: typing.Annotated[
-            naff.Member, naff.slash_user_option("The user you wish to timeout.", required=True)
-        ],
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option(
-                "The reason behind why you want to timeout them.", required=False
-            ),
-        ] = "N/A",
-        days: typing.Annotated[
-            int,
-            naff.slash_int_option("How long the user should be timeouted in days.", required=False),
-        ] = 0,
-        hours: typing.Annotated[
-            int,
-            naff.slash_int_option(
-                "How long the user should be timeouted in hours.", required=False
-            ),
-        ] = 0,
-        minutes: typing.Annotated[
-            int,
-            naff.slash_int_option(
-                "How long the user should be timeouted in minutes.", required=False
-            ),
-        ] = 0,
-        seconds: typing.Annotated[
-            int,
-            naff.slash_int_option(
-                "How long the user should be timeouted in seconds.", required=False
-            ),
-        ] = 0,
+        member: naff.Member = tansy.Option("The member you wish to timeout."),
+        reason: str = tansy.Option(
+            "The reason behind why you want to timeout them.", default="N/A"
+        ),
+        days: int = tansy.Option("How long the user should be timed out in days.", default=0),
+        hours: int = tansy.Option("How long the user should be timed out in hours.", default=0),
+        minutes: int = tansy.Option("How long the user should be timed out in minutes.", default=0),
+        seconds: int = tansy.Option("How long the user should be timed out in seconds.", default=0),
     ):
         if not days and not hours and not minutes and not seconds:
             raise naff.errors.BadArgument("No timeout length specified.")
@@ -254,15 +212,10 @@ class Mod(naff.Extension):
     async def untimeout(
         self,
         ctx: naff.InteractionContext,
-        member: typing.Annotated[
-            naff.Member, naff.slash_user_option("The user you wish to untimeout.", required=True)
-        ],
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option(
-                "The reason behind why you want to untimeout them.", required=False
-            ),
-        ] = "N/A",
+        member: naff.Member = tansy.Option("The member you wish to untimeout."),
+        reason: str = tansy.Option(
+            "The reason behind why you want to untimeout them.", default="N/A"
+        ),
     ):
         if (
             member.communication_disabled_until is None
@@ -288,18 +241,11 @@ class Mod(naff.Extension):
     async def purge(
         self,
         ctx: naff.InteractionContext,
-        amount: typing.Annotated[
-            int, naff.slash_int_option("The amount of messages you want to delete.", required=True)
-        ],
-        channel: typing.Annotated[
-            typing.Optional[naff.GuildText],
-            naff.slash_channel_option(
-                "The channel that should be purged.", channel_types=[naff.ChannelTypes.GUILD_TEXT]
-            ),
-        ] = None,
-        reason: typing.Annotated[
-            str, naff.slash_str_option("The reason behind why you want to purge.", required=False)
-        ] = "N/A",
+        amount: int = tansy.Option("The amount of messages you want to delete."),
+        channel: typing.Optional[naff.GuildText] = tansy.Option(
+            "The channel that should be purged.", default=None
+        ),
+        reason: str = tansy.Option("The reason behind why you want to purge.", default="N/A"),
     ):
         purge_channel: naff.GuildText = channel or ctx.channel
         await ctx.send("Purging...", ephemeral=True)
@@ -329,25 +275,13 @@ class Mod(naff.Extension):
     async def slowmode(
         self,
         ctx: naff.InteractionContext,
-        time: typing.Annotated[
-            int,
-            naff.slash_int_option(
-                "The amount of time (in seconds) to be set as slowmode.", required=True
-            ),
-        ],
-        channel: typing.Annotated[
-            typing.Optional[naff.GuildText],
-            naff.slash_channel_option(
-                "The channel that should be slowmoded.",
-                channel_types=[naff.ChannelTypes.GUILD_TEXT],
-            ),
-        ] = None,
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option(
-                "The reason behind why you want to add slowmode.", required=False
-            ),
-        ] = "N/A",
+        time: int = tansy.Option("The amount of time (in seconds) to be set as slowmode."),
+        channel: typing.Optional[naff.GuildText] = tansy.Option(
+            "The channel that should be slowmoded.", default=None
+        ),
+        reason: str = tansy.Option(
+            "The reason behind why you want to add slowmode.", default="N/A"
+        ),
     ):
         slowmode_channel: naff.GuildText = channel or ctx.channel
 
@@ -362,18 +296,12 @@ class Mod(naff.Extension):
     async def lock(
         self,
         ctx: naff.InteractionContext,
-        channel: typing.Annotated[
-            typing.Optional[naff.GuildText],
-            naff.slash_channel_option(
-                "The channel that should be locked.", channel_types=[naff.ChannelTypes.GUILD_TEXT]
-            ),
-        ] = None,
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option(
-                "The reason behind why you want to lock the channel.", required=False
-            ),
-        ] = "N/A",
+        channel: typing.Optional[naff.GuildText] = tansy.Option(
+            "The channel that should be locked.", default=None
+        ),
+        reason: str = tansy.Option(
+            "The reason behind why you want to lock the channel.", default="N/A"
+        ),
     ):
         lock_channel: naff.GuildText = channel or ctx.channel
 
@@ -404,18 +332,12 @@ class Mod(naff.Extension):
     async def unlock(
         self,
         ctx: naff.InteractionContext,
-        channel: typing.Annotated[
-            typing.Optional[naff.GuildText],
-            naff.slash_channel_option(
-                "The channel that should be unlocked.", channel_types=[naff.ChannelTypes.GUILD_TEXT]
-            ),
-        ] = None,
-        reason: typing.Annotated[
-            str,
-            naff.slash_str_option(
-                "The reason behind why you want to unlock the channel.", required=False
-            ),
-        ] = "N/A",
+        channel: typing.Optional[naff.GuildText] = tansy.Option(
+            "The channel that should be unlocked.", default=None
+        ),
+        reason: str = tansy.Option(
+            "The reason behind why you want to unlock the channel.", default="N/A"
+        ),
     ):
         unlock_channel: naff.GuildText = channel or ctx.channel
 

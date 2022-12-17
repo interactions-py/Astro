@@ -2,6 +2,7 @@ import datetime
 import importlib
 
 import naff
+import tansy
 from beanie import PydanticObjectId
 from naff.ext import paginators
 from rapidfuzz import fuzz, process
@@ -15,7 +16,7 @@ class Tags(naff.Extension):
     def __init__(self, bot: naff.Client):
         self.client = bot
 
-    tag = naff.SlashCommand(
+    tag = tansy.TansySlashCommand(
         name="tag",
         description="The base command for managing and viewing tags.",  # type: ignore
     )
@@ -27,10 +28,7 @@ class Tags(naff.Extension):
     async def view(
         self,
         ctx: naff.InteractionContext,
-        name: typing.Annotated[
-            str,
-            naff.slash_str_option("The name of the tag to view.", required=True, autocomplete=True),
-        ],
+        name: str = tansy.Option("The name of the tag to view.", autocomplete=True),
     ):
         if tag := await Tag.find_one(Tag.name == name):
             await ctx.send(tag.description)
@@ -46,10 +44,7 @@ class Tags(naff.Extension):
     async def info(
         self,
         ctx: naff.InteractionContext,
-        name: typing.Annotated[
-            str,
-            naff.slash_str_option("The name of the tag to get.", required=True, autocomplete=True),
-        ],
+        name: str = tansy.Option("The name of the tag to get.", autocomplete=True),
     ):
         tag = await Tag.find_one(Tag.name == name)
         if not tag:
@@ -151,10 +146,7 @@ class Tags(naff.Extension):
     async def edit(
         self,
         ctx: naff.InteractionContext,
-        name: typing.Annotated[
-            str,
-            naff.slash_str_option("The name of the tag to edit.", required=True, autocomplete=True),
-        ],
+        name: str = tansy.Option("The name of the tag to edit.", autocomplete=True),
     ):
         tag = await Tag.find_one(Tag.name == name)
         if not tag:
@@ -256,12 +248,7 @@ class Tags(naff.Extension):
     async def delete(
         self,
         ctx: naff.InteractionContext,
-        name: typing.Annotated[
-            str,
-            naff.slash_str_option(
-                "The name of the tag to delete.", required=True, autocomplete=True
-            ),
-        ],
+        name: str = tansy.Option("The name of the tag to delete.", autocomplete=True),
     ):
         await ctx.defer(ephemeral=True)
 

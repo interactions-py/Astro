@@ -2,6 +2,7 @@ import importlib
 import typing
 
 import naff
+import tansy
 
 import common.utils as utils
 from common.const import METADATA
@@ -21,7 +22,7 @@ class Roles(naff.Extension):
             str(METADATA["roles"]["External Changelog pings"]): "External Changelog pings",
         }
 
-    @naff.slash_command(
+    @tansy.slash_command(
         "subscribe",
         description=(
             'Adds the changelog and/or external pings role, "subscribing" to you to release news.'
@@ -30,29 +31,26 @@ class Roles(naff.Extension):
     async def subscribe(
         self,
         ctx: naff.InteractionContext,
-        changelog: typing.Annotated[
-            str,
-            naff.slash_str_option(
-                "To what changelogs do you want to subscribe? (default only main library)",
-                choices=[
-                    naff.SlashCommandChoice(
-                        name="Only Main Library Changelogs",
-                        value=str(METADATA["roles"]["Changelog pings"]),
+        changelog: str = tansy.Option(
+            "To what changelogs do you want to subscribe? (default only main library)",
+            choices=[
+                naff.SlashCommandChoice(
+                    name="Only Main Library Changelogs",
+                    value=str(METADATA["roles"]["Changelog pings"]),
+                ),
+                naff.SlashCommandChoice(
+                    name="Only External Library Changelogs",
+                    value=str(METADATA["roles"]["External Changelog pings"]),
+                ),
+                naff.SlashCommandChoice(
+                    name="Both Changelogs",
+                    value=(
+                        f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}"
                     ),
-                    naff.SlashCommandChoice(
-                        name="Only External Library Changelogs",
-                        value=str(METADATA["roles"]["External Changelog pings"]),
-                    ),
-                    naff.SlashCommandChoice(
-                        name="Both Changelogs",
-                        value=(
-                            f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}"
-                        ),
-                    ),
-                ],
-                required=False,
-            ),
-        ] = str(METADATA["roles"]["Changelog pings"]),
+                ),
+            ],
+            default=str(METADATA["roles"]["Changelog pings"]),
+        ),
     ):
         await ctx.defer(ephemeral=True)
 

@@ -5,3 +5,4 @@ naff[speedup]>=2.0.0
 python-dotenv==0.20.0
 pyyaml
 rapidfuzz
+tansy
