@@ -185,11 +185,14 @@ class Git(naff.Extension):
         file_path = results[3]
         extension = ".".join(file_path.split(".")[1:])
 
-        start_line_num = int(results[4]) if len(results) > 4 else 0
-        end_line_num = int(results[5]) if len(results) > 5 else -1
+        start_line_num = int(results[4]) if len(results) > 4 and results[4] else 0
+        end_line_num = int(results[5]) if len(results) > 5 and results[5] else -1
 
         if end_line_num != -1 and start_line_num > end_line_num:
             return
+
+        if end_line_num == -1 and start_line_num > 0:
+            end_line_num = start_line_num + 1
 
         async with self.session.get(
             f"https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{file_path}"
