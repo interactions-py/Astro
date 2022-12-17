@@ -60,18 +60,20 @@ class HelpChannel(naff.Extension):
 
     def generate_tag_select(self):
         tags = self.help_channel.available_tags
-        # TODO: the emojis aren't going to work, try fixing it
-        options = [
-            naff.SelectOption(
-                t.name,
-                str(t.id),
-                emoji=naff.PartialEmoji(id=t.emoji_id, name=t.emoji_name, animated=False),
-            )
-            for t in tags
-        ]
+        options: list[naff.SelectOption] = []
+
+        for tag in tags:
+            emoji = None
+            if tag.emoji_id:
+                emoji = naff.PartialEmoji(id=tag.emoji_id, name=tag.emoji_name or "emoji")
+            elif tag.emoji_name:
+                emoji = naff.PartialEmoji.from_str(tag.emoji_name)
+
+            options.append(naff.SelectOption(tag.name, str(tag.id), emoji))
+
         options.append(
             naff.SelectOption(
-                label="remove all tags",
+                label="Remove all tags",
                 value="remove_all_tags",
                 emoji=naff.PartialEmoji.from_str("🗑"),
             ),
