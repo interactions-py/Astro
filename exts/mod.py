@@ -37,6 +37,8 @@ class Mod(naff.Extension):
     def __init__(self, bot: naff.Client):
         self.client = bot
         self.action_log: naff.GuildText = None  # type: ignore
+
+        self.add_ext_auto_defer(ephemeral=True)
         self.add_ext_check(mod_check_wrapper)
         asyncio.create_task(self.fill_action_log())
 
@@ -116,8 +118,6 @@ class Mod(naff.Extension):
             naff.slash_str_option("The reason behind why you want to ban them.", required=False),
         ] = "N/A",
     ):
-        await ctx.defer(ephemeral=True)
-
         try:
             await member.ban(reason=reason)
         except naff.errors.HTTPException:
@@ -140,8 +140,6 @@ class Mod(naff.Extension):
             naff.slash_str_option("The reason behind why you want to unban them.", required=False),
         ] = "N/A",
     ):
-        await ctx.defer(ephemeral=True)
-
         try:
             user = await self.bot.fetch_user(id)
         except naff.errors.HTTPException:
@@ -172,8 +170,6 @@ class Mod(naff.Extension):
             naff.slash_str_option("The reason behind why you want to kick them.", required=False),
         ] = "N/A",
     ):
-        await ctx.defer(ephemeral=True)
-
         try:
             await member.kick(reason=reason)
         except naff.errors.HTTPException:
@@ -196,8 +192,6 @@ class Mod(naff.Extension):
             naff.slash_str_option("The reason behind why you want to warn them.", required=False),
         ] = "N/A",
     ):
-        await ctx.defer(ephemeral=True)
-
         await ctx.channel.send(f"{member.mention}, you have been warned for reason: {reason}.")
         await self.process_action(ctx, member, models.ActionType.WARN, reason)
 
@@ -243,8 +237,6 @@ class Mod(naff.Extension):
         if not days and not hours and not minutes and not seconds:
             raise naff.errors.BadArgument("No timeout length specified.")
 
-        await ctx.defer(ephemeral=True)
-
         time = naff.Timestamp.utcnow()
         time += timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
 
@@ -272,8 +264,6 @@ class Mod(naff.Extension):
             ),
         ] = "N/A",
     ):
-        await ctx.defer(ephemeral=True)
-
         if (
             member.communication_disabled_until is None
             or member.communication_disabled_until < naff.Timestamp.utcnow()
@@ -382,7 +372,6 @@ class Mod(naff.Extension):
             ),
         ] = "N/A",
     ):
-        await ctx.defer(ephemeral=True)
         lock_channel: naff.GuildText = channel or ctx.channel
 
         overwrites = lock_channel.permission_overwrites
@@ -410,7 +399,6 @@ class Mod(naff.Extension):
             ),
         ] = "N/A",
     ):
-        await ctx.defer(ephemeral=True)
         unlock_channel: naff.GuildText = channel or ctx.channel
 
         overwrites = unlock_channel.permission_overwrites
