@@ -429,4 +429,5 @@ class Mod(naff.Extension):
 
 
 def setup(bot):
+    importlib.reload(utils)
     Mod(bot)

@@ -49,5 +49,5 @@ class Info(naff.Extension):
         await ctx.send(embeds=embed)
 
 
-def setup(bot, **kwargs):
-    Info(bot, **kwargs)
+def setup(bot):
+    Info(bot)
