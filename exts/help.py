@@ -4,6 +4,7 @@ import io
 
 import aiohttp
 import naff
+from naff.models.discord.channel import GuildForumPost
 
 import common.utils as utils
 from common.const import *
@@ -83,7 +84,7 @@ class HelpChannel(naff.Extension):
             placeholder="Select the tags you want",
             min_values=1,
             max_values=5,
-            custom_id="tag_selection",
+            custom_id="TAG_SELECTION",
         )
 
     @naff.listen("modal_completion")
@@ -203,6 +204,19 @@ class HelpChannel(naff.Extension):
         )
         await message.pin()
 
+    @naff.component_callback("TAG_SELECTION")  # type: ignore
+    async def modify_tags(self, ctx: naff.ComponentContext):
+        if not utils.helper_check(ctx) and ctx.author.id != ctx.channel.owner_id:
+            return await utils.error_send(
+                ctx, ":x: You are not a helper.", naff.MaterialColors.YELLOW
+            )
+
+        await ctx.defer(ephemeral=True)
+
+        channel: GuildForumPost = ctx.channel  # type: ignore
+        await channel.edit(applied_tags=[ctx.values if "remove_all_tags" not in ctx.values else []])
+        await ctx.send("Done.", ephemeral=True)
+
     @naff.component_callback("close_thread")  # type: ignore
     async def close_help_thread(self, ctx: naff.ComponentContext):
         if not utils.helper_check(ctx) and ctx.author.id != ctx.channel.owner_id:
@@ -210,7 +224,7 @@ class HelpChannel(naff.Extension):
                 ctx, ":x: You are not a helper.", naff.MaterialColors.YELLOW
             )
 
-        await ctx.send("Closing! Thank you for using our help system!")
+        await ctx.send("Closing. Thank you for using our help system.")
         await ctx.channel.edit(archived=True, locked=True)
 
 
