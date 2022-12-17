@@ -56,6 +56,7 @@ class HelpChannel(naff.Extension):
 
     def generate_tag_select(self):
         tags = self.help_channel.available_tags
+        # TODO: the emojis aren't going to work, try fixing it
         options = [
             naff.SelectOption(
                 t.name,

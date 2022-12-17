@@ -45,7 +45,11 @@ class Mod(naff.Extension):
         self.action_log = self.bot.get_channel(METADATA["channels"]["action-logs"])  # type: ignore
 
     def timestamps_for_user(self, user: naff.Member):
-        return f"Joined: {user.joined_at.format('R')}\nCreated: {user.created_at.format('R')}"
+        return (
+            "Joined:"
+            f" {user.joined_at.format('R') if isinstance(user, naff.Member) else 'N/A'}\nCreated:"
+            f" {user.created_at.format('R')}"
+        )
 
     def generate_action_embed(
         self,
