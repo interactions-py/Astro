@@ -7,24 +7,45 @@ import naff
 from common.const import METADATA
 
 
-def helper_check(user: naff.Member | naff.User):
-    return isinstance(user, naff.Member) and user.has_role(
-        METADATA["roles"]["Helper"], METADATA["roles"]["Moderator"]
+def _member_from_ctx(ctx: naff.Context):
+    user = ctx.author
+
+    if isinstance(user, naff.User):
+        guild = ctx.bot.get_guild(METADATA["guild"])
+        if not guild:
+            return None
+
+        user = guild.get_member(user.id)
+        if not user:
+            return None
+
+    return user
+
+
+def helper_check(ctx: naff.Context):
+    user = _member_from_ctx(ctx)
+    return (
+        user.has_role(METADATA["roles"]["Helper"], METADATA["roles"]["Moderator"])
+        if user
+        else False
     )
 
 
 def helpers_only() -> typing.Any:
     async def predicate(ctx: naff.Context):
-        return helper_check(ctx.author)
+        return helper_check(ctx)
 
     return naff.check(predicate)
 
 
+def mod_check(ctx: naff.Context):
+    user = _member_from_ctx(ctx)
+    return user.has_role(METADATA["roles"]["Moderator"]) if user else False
+
+
 def mods_only() -> typing.Any:
     async def predicate(ctx: naff.Context):
-        return isinstance(ctx.author, naff.Member) and ctx.author.has_role(
-            METADATA["roles"]["Moderator"]
-        )
+        return mod_check(ctx)
 
     return naff.check(predicate)
 

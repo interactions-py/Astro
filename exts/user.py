@@ -40,9 +40,11 @@ class UserExt(naff.Extension):
         embed.add_field("ID", member.id, inline=True)
         embed.add_field(
             "Timestamps",
-            "Joined:"
-            f" {member.joined_at.format('R') if isinstance(member, naff.Member) else 'N/A'}\nCreated:"
-            f" {member.created_at.format('R')}",
+            (
+                "Joined:"
+                f" {member.joined_at.format('R') if isinstance(member, naff.Member) else 'N/A'}\nCreated:"
+                f" {member.created_at.format('R')}"
+            ),
             inline=True,
         )
         embed.add_field("Roles", ", ".join(r.mention for r in roles) if roles else "N/A")

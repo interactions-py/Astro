@@ -152,8 +152,10 @@ class HelpChannel(naff.Extension):
             )
 
             starter_message = await post_thread.send(
-                "This help thread was automatically generated. Read the message above for more"
-                " information.",
+                (
+                    "This help thread was automatically generated. Read the message above for more"
+                    " information."
+                ),
                 embeds=embed,
                 components=[[original_message_button], [select], [close_button]],
             )
@@ -196,7 +198,7 @@ class HelpChannel(naff.Extension):
 
     @naff.component_callback("close_thread")  # type: ignore
     async def close_help_thread(self, ctx: naff.ComponentContext):
-        if not utils.helper_check(ctx.author) and ctx.author.id != ctx.channel.owner_id:
+        if not utils.helper_check(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await utils.error_send(
                 ctx, ":x: You are not a helper.", naff.MaterialColors.YELLOW
             )

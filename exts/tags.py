@@ -189,8 +189,10 @@ class Tags(naff.Extension):
         if await Tag.find_one(Tag.name == tag_name).exists():
             return await utils.error_send(
                 ctx,
-                f":x: Tag `{tag_name}` already exists.\n(Did you mean to use"
-                f" {self.edit.mention()}?)",
+                (
+                    f":x: Tag `{tag_name}` already exists.\n(Did you mean to use"
+                    f" {self.edit.mention()}?)"
+                ),
                 naff.BrandColors.YELLOW,
             )
 
@@ -202,8 +204,10 @@ class Tags(naff.Extension):
         ).insert()
 
         await ctx.send(
-            f":heavy_check_mark: `{tag_name}` now exists. In order to view it, please use"
-            f" {self.view.mention()}.",
+            (
+                f":heavy_check_mark: `{tag_name}` now exists. In order to view it, please use"
+                f" {self.view.mention()}."
+            ),
             ephemeral=True,
         )
 
