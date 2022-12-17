@@ -16,6 +16,10 @@ class HelpChannel(naff.Extension):
         self.help_channel: naff.GuildForum = None  # type: ignore
         asyncio.create_task(self.fill_help_channel())
 
+    def drop(self):
+        asyncio.create_task(self.session.close())
+        super().drop()
+
     async def fill_help_channel(self):
         await self.bot.wait_until_ready()
         self.help_channel = self.bot.get_channel(METADATA["channels"]["help"])  # type: ignore
