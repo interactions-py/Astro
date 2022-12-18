@@ -34,7 +34,7 @@ class HelpChannel(naff.Extension):
             [
                 naff.ShortText(
                     label="What should the thread be named?",
-                    value=f"[AUTO] Help thread for {message.author.username}",
+                    value=message.content[:40] + "..."
                     min_length=1,
                     max_length=100,
                     custom_id="help_thread_name",
