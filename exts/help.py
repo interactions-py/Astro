@@ -203,7 +203,7 @@ class HelpChannel(naff.Extension):
     async def modify_tags(self, ctx: naff.ComponentContext):
         if not utils.helper_check(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await utils.error_send(
-                ctx, ":x: You are not a helper.", naff.MaterialColors.YELLOW
+                ctx, ":x: You are not an advanced user.", naff.MaterialColors.YELLOW
             )
 
         await ctx.defer(ephemeral=True)
@@ -224,7 +224,7 @@ class HelpChannel(naff.Extension):
     async def close_help_thread(self, ctx: naff.ComponentContext):
         if not utils.helper_check(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await utils.error_send(
-                ctx, ":x: You are not a helper.", naff.MaterialColors.YELLOW
+                ctx, ":x: You are not an advanced user.", naff.MaterialColors.YELLOW
             )
 
         await ctx.send(":white_check_mark: Closing. Thank you for using our help system.")
