@@ -58,6 +58,9 @@ class Log(naff.Extension):
         if not before.content and not after.content:
             return
 
+        if naff.MessageFlags.LOADING in before.flags:
+            return
+
         if naff.MessageFlags.EPHEMERAL in after.flags:
             return
 
