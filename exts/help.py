@@ -216,9 +216,12 @@ class HelpChannel(naff.Extension):
         await channel.edit(applied_tags=tags)
         await ctx.send(":white_check_mark: Done.", ephemeral=True)
 
-    @naff.slash_command("archive", description="Archives a help thread.")
-    @utils.advanced_only()
     @naff.check(check_archive)  # type: ignore
+    @naff.slash_command(
+        "archive",
+        description="Archives a help thread.",
+        default_member_permissions=naff.Permissions.MANAGE_CHANNELS,
+    )
     async def archive(self, ctx: naff.InteractionContext):
         await ctx.send(":white_check_mark: Archiving...")
         await ctx.channel.edit(archived=True, locked=True)
