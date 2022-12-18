@@ -25,7 +25,7 @@ class Roles(naff.Extension):
     @tansy.slash_command(
         "subscribe",
         description=(
-            'Adds the changelog and/or external pings role, "subscribing" to you to release news.'
+            'Adds the changelog and/or external pings role, "subscribing" you to release news.'
         ),
     )
     async def subscribe(
