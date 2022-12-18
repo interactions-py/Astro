@@ -14,7 +14,7 @@ class Docs(naff.Extension):
         self.client = client
         self.session: aiohttp.ClientSession = client.session
 
-    @tansy.slash_command(name="docs-search")
+    @tansy.slash_command(name="docs")
     async def docs_search(
         self,
         ctx: naff.InteractionContext,
