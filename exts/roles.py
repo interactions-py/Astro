@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import typing
 
@@ -17,10 +18,13 @@ async def check_admin(ctx: naff.Context):
 class Roles(naff.Extension):
     def __init__(self, bot: naff.Client):
         self.client = bot
-        self.subscribe_name_map = {
-            str(METADATA["roles"]["Changelog pings"]): "Changelog pings",
-            str(METADATA["roles"]["External Changelog pings"]): "External Changelog pings",
-        }
+        self.guild: naff.Guild = None  # type: ignore
+
+        asyncio.create_task(self.fill_guild())
+
+    async def fill_guild(self):
+        await self.bot.wait_until_ready()
+        self.guild = self.bot.get_guild(METADATA["guild"])  # type: ignore
 
     @tansy.slash_command(
         "subscribe",
@@ -70,15 +74,21 @@ class Roles(naff.Extension):
                 author_roles.add(int(role_id))
                 action_word = "added"
 
-            role_name = self.subscribe_name_map[role_id]
+            role = self.guild.get_role(role_id)
+            # id prefer the actual name of the role here since pinging the role
+            # would probably look weird, but if the role somehow doesn't get
+            # found, might as well have a backup
+            role_name = f"`{role.name}`" if role is not None else f"<@&{role_id}>"
             # this looks weird out of context, but it'll look like:
             # `Changelog pings` role added.
             # which seems pretty natural to me
-            str_builder.append(f"`{role_name}` role {action_word}.")
+            str_builder.append(f"{role_name} role {action_word}.")
 
         await ctx.author.edit(roles=author_roles)
 
-        await ctx.send(" ".join(str_builder), ephemeral=True)
+        await ctx.send(
+            " ".join(str_builder), allowed_mentions=naff.AllowedMentions.none(), ephemeral=True
+        )
 
     @naff.check(check_admin)  # type: ignore - putting it first avoids a weird typehint thing
     @naff.slash_command(
