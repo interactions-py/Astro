@@ -28,15 +28,13 @@ class Roles(naff.Extension):
 
     @tansy.slash_command(
         "subscribe",
-        description=(
-            'Adds the changelog and/or external pings role, "subscribing" you to release news.'
-        ),
+        description="Subscribes (or unsubscribes) you to updates via self-assignable roles.",
     )
     async def subscribe(
         self,
         ctx: naff.InteractionContext,
         changelog: str = tansy.Option(
-            "To what changelogs do you want to subscribe? (default only main library)",
+            "To what roles do you want to (un)subscribe to? (default only main library changelogs)",
             choices=[
                 naff.SlashCommandChoice(
                     name="Only Main Library Changelogs",
@@ -51,6 +49,10 @@ class Roles(naff.Extension):
                     value=(
                         f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}"
                     ),
+                ),
+                naff.SlashCommandChoice(
+                    name="Polls Pings",
+                    value=str(METADATA["roles"]["Polls pings"]),
                 ),
             ],
             default=str(METADATA["roles"]["Changelog pings"]),
