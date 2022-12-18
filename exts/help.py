@@ -204,7 +204,7 @@ class HelpChannel(naff.Extension):
 
     @naff.component_callback("TAG_SELECTION")  # type: ignore
     async def modify_tags(self, ctx: naff.ComponentContext):
-        if not utils.helper_check(ctx) and ctx.author.id != ctx.channel.owner_id:
+        if not utils.advanced_check(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await utils.error_send(
                 ctx, ":x: You are not an advanced user.", naff.MaterialColors.YELLOW
             )
@@ -217,7 +217,7 @@ class HelpChannel(naff.Extension):
         await ctx.send(":white_check_mark: Done.", ephemeral=True)
 
     @naff.slash_command("archive", description="Archives a help thread.")
-    @utils.helpers_only()
+    @utils.advanced_only()
     @naff.check(check_archive)  # type: ignore
     async def archive(self, ctx: naff.InteractionContext):
         await ctx.send(":white_check_mark: Archiving...")
@@ -225,7 +225,7 @@ class HelpChannel(naff.Extension):
 
     @naff.component_callback("close_thread")  # type: ignore
     async def close_help_thread(self, ctx: naff.ComponentContext):
-        if not utils.helper_check(ctx) and ctx.author.id != ctx.channel.owner_id:
+        if not utils.advanced_check(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await utils.error_send(
                 ctx, ":x: You are not an advanced user.", naff.MaterialColors.YELLOW
             )

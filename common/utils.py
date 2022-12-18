@@ -22,18 +22,19 @@ def _member_from_ctx(ctx: naff.Context):
     return user
 
 
-def helper_check(ctx: naff.Context):
+def advanced_check(ctx: naff.Context):
     user = _member_from_ctx(ctx)
     return (
-        user.has_role(METADATA["roles"]["Helper"]) or user.has_role(METADATA["roles"]["Moderator"])
+        user.has_role(METADATA["roles"]["Advanced"])
+        or user.has_role(METADATA["roles"]["Moderator"])
         if user
         else False
     )
 
 
-def helpers_only() -> typing.Any:
+def advanced_only() -> typing.Any:
     async def predicate(ctx: naff.Context):
-        return helper_check(ctx)
+        return advanced_check(ctx)
 
     return naff.check(predicate)
 

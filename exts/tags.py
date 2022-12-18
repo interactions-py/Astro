@@ -69,8 +69,8 @@ class Tags(naff.Extension):
             inline=True,
         )
         embed.set_footer(
-            "Tags are made and maintained by the Helpers here in the support server. Please contact"
-            " one if you believe one is incorrect."
+            "Tags are made and maintained by the Advanced users here in the support server. Please"
+            " contact one if you believe one is incorrect."
         )
 
         await ctx.send(embeds=embed)
@@ -112,7 +112,7 @@ class Tags(naff.Extension):
     @tag.subcommand(
         sub_cmd_name="create", sub_cmd_description="Creates a tag and adds it into the database."
     )
-    @utils.helpers_only()
+    @utils.advanced_only()
     async def create(self, ctx: naff.InteractionContext):
         create_modal = naff.Modal(
             "Create new tag",
@@ -142,7 +142,7 @@ class Tags(naff.Extension):
         sub_cmd_name="edit",
         sub_cmd_description="Edits a tag that currently exists within the database.",
     )
-    @utils.helpers_only()
+    @utils.advanced_only()
     async def edit(
         self,
         ctx: naff.InteractionContext,
@@ -244,7 +244,7 @@ class Tags(naff.Extension):
         sub_cmd_name="delete",
         sub_cmd_description="Deletes a tag that currently exists within the database.",
     )
-    @utils.helpers_only()
+    @utils.advanced_only()
     async def delete(
         self,
         ctx: naff.InteractionContext,
