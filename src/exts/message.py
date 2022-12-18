@@ -100,7 +100,7 @@ class Message(interactions.Extension):
             auto_archive_duration=1440,
             name=thread_name,
             channel_id=src.const.METADATA["channels"]["help"],
-            applied_tags=["996215708595794071"],
+            applied_tags=["1054125934787186890"],
             message=target._json,
             files=files,
             reason="Auto help thread creation",
