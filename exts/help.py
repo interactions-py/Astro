@@ -41,7 +41,7 @@ class HelpChannel(naff.Extension):
                 ),
                 naff.ParagraphText(
                     label="What should the question be?",
-                    value=message.content,
+                    value=message.content[:4000],
                     min_length=1,
                     max_length=4000,
                     custom_id="edit_content",
