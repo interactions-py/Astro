@@ -204,11 +204,30 @@ class Git(naff.Extension):
             if resp.status != 200:
                 return
 
+            # weird code, but basically, we're trying to detect if the file is under
+            # 1 MiB, because if it's larger, we really don't want to download all
+            # of it and take memory
+
+            # anyways, readexactly... reads exactly how many bytes are specified
+            # however, if there are less bytes in the content (file) than
+            # specified, it will throw an error as it couldn't read everything
+            # we're abusing this by hoping it throws an error for files under
+            # 1 MiB, and making it stop downloading a file if it's over 1 MiB
+            # if it errors, we can get the data of the file from the partial variable
+            # and continue on
             try:
-                file_data = await resp.text()
-            except Exception:  # aiohttp doesn't give us one singular error that may happen
+                await resp.content.readexactly(1048577)  # one MiB + 1
                 return
-            if not file_data:
+            except asyncio.IncompleteReadError as e:
+                content = e.partial
+            except Exception:  # we can get some random errors
+                return
+
+            try:
+                file_data = content.decode(resp.get_encoding())
+                if not file_data:
+                    return
+            except Exception:  # we can get some random errors
                 return
 
             line_split = file_data.splitlines()
