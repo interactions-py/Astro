@@ -236,6 +236,10 @@ class HelpChannel(naff.Extension):
         await ctx.send(":white_check_mark: Closing. Thank you for using our help system.")
         await ctx.channel.edit(archived=True, locked=True)
 
+    @naff.component_callback("close thread")  # type: ignore
+    async def legacy_close_thread(self, ctx: naff.ComponentContext):
+        await self.close_help_thread.call_with_binding(self.close_help_thread.callback, ctx)
+
 
 def setup(bot):
     importlib.reload(utils)
