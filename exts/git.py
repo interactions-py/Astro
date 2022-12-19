@@ -188,6 +188,10 @@ class Git(naff.Extension):
         start_line_num = int(results[4]) if len(results) > 4 and results[4] else 0
         end_line_num = int(results[5]) if len(results) > 5 and results[5] else -1
 
+        if end_line_num != -1:
+            # i dont even know
+            end_line_num += 1
+
         if end_line_num != -1 and start_line_num > end_line_num:
             return
 
@@ -208,7 +212,7 @@ class Git(naff.Extension):
                 return
 
             line_split = file_data.splitlines()
-            file_data = line_split[start_line_num:]
+            file_data = line_split[start_line_num - 1 :]
 
             if end_line_num > 0:
                 file_data = file_data[: end_line_num - start_line_num]
