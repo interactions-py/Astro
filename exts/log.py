@@ -28,9 +28,12 @@ class Log(naff.Extension):
 
     def generate_base(self, title: str, author: naff.Member | naff.User, color: naff.Color):
         embed = naff.Embed(title=title, color=color)
-        embed.set_author(
-            author.tag, icon_url=author.display_avatar.as_url() if author.display_avatar else None
-        )
+
+        kwargs = {"name": author.tag}
+        if author.display_avatar:
+            kwargs["icon_url"] = author.display_avatar.as_url()
+
+        embed.set_author(**kwargs)
         return embed
 
     @naff.listen("message_delete")
@@ -51,6 +54,9 @@ class Log(naff.Extension):
     async def on_message_update(self, event: naff.events.MessageUpdate):
         before = event.before
         after = event.after
+
+        if not before or not after:
+            return
 
         if before.content == after.content:
             return
