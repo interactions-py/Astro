@@ -233,6 +233,10 @@ class HelpChannel(naff.Extension):
                 ctx, ":x: You are not an advanced user.", naff.MaterialColors.YELLOW
             )
 
+        if ctx.channel.archived:
+            # do nothing and return
+            return await ctx.defer(edit_origin=True)
+
         await ctx.send(":white_check_mark: Closing. Thank you for using our help system.")
         await ctx.channel.edit(archived=True, locked=True)
 
