@@ -29,7 +29,7 @@ class Log(naff.Extension):
     def generate_base(self, title: str, author: naff.Member | naff.User, color: naff.Color):
         embed = naff.Embed(title=title, color=color)
 
-        kwargs = {"name": author.tag}
+        kwargs = {"name": author.tag or "Unknown"}
         if author.display_avatar:
             kwargs["icon_url"] = author.display_avatar.as_url()
 
