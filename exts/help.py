@@ -200,10 +200,20 @@ class HelpChannel(naff.Extension):
             custom_id="close_thread",
         )
 
-        message = await thread.send(
-            "Hey! Once your issue is solved, press the button below to close this thread!",
-            components=[[select], [close_button]],
-        )
+        try:
+            message = await thread.send(
+                "Hey! Once your issue is solved, press the button below to close this thread!",
+                components=[[select], [close_button]],
+            )
+        except naff.errors.HTTPException:
+            # this tends to happen often if the "thread author has not sent their initial message"
+            # techically, they already did because you can't make a thread otherwise...
+            # so we're just waiting for discord to get the memo
+            await asyncio.sleep(5)
+            message = await thread.send(
+                "Hey! Once your issue is solved, press the button below to close this thread!",
+                components=[[select], [close_button]],
+            )
         await message.pin()
 
     @naff.component_callback("TAG_SELECTION")  # type: ignore
