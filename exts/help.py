@@ -29,12 +29,16 @@ class HelpChannel(naff.Extension):
     async def create_thread_context_menu(self, ctx: naff.InteractionContext):
         message: naff.Message = ctx.target  # type: ignore
 
+        thread_name = f"[AUTO] {message.content[:40]}"
+        if len(message.content) > 40:
+            thread_name += "..."
+
         modal = naff.Modal(
             "Create Help Thread",
             [
                 naff.ShortText(
                     label="What should the thread be named?",
-                    value=f"[AUTO] {message.content[:40]}...",
+                    value=thread_name,
                     min_length=1,
                     max_length=100,
                     custom_id="help_thread_name",
