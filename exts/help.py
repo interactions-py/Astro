@@ -235,7 +235,7 @@ class HelpChannel(naff.Extension):
 
     @naff.component_callback("TAG_SELECTION")  # type: ignore
     async def legacy_modify_tags(self, ctx: naff.ComponentContext):
-        await self.close_help_thread.call_with_binding(self.modify_tags.callback, ctx)
+        await self.modify_tags.call_with_binding(self.modify_tags.callback, ctx)
 
     @naff.check(check_archive)  # type: ignore
     @naff.slash_command(
