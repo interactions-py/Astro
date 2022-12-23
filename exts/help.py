@@ -91,7 +91,7 @@ class HelpChannel(naff.Extension):
             placeholder="Select the tags you want",
             min_values=1,
             max_values=len(options),
-            custom_id="TAG_SELECTION",
+            custom_id="tag_selection",
         )
 
     @naff.listen("modal_completion")
@@ -216,7 +216,7 @@ class HelpChannel(naff.Extension):
             )
         await message.pin()
 
-    @naff.component_callback("TAG_SELECTION")  # type: ignore
+    @naff.component_callback("tag_selection")  # type: ignore
     async def modify_tags(self, ctx: naff.ComponentContext):
         if not utils.advanced_check(ctx) and ctx.author.id != ctx.channel.owner_id:
             return await utils.error_send(
@@ -232,6 +232,10 @@ class HelpChannel(naff.Extension):
         tags = [int(v) for v in ctx.values] if "remove_all_tags" not in ctx.values else []
         await channel.edit(applied_tags=tags)
         await ctx.send(":white_check_mark: Done.", ephemeral=True)
+
+    @naff.component_callback("TAG_SELECTION")  # type: ignore
+    async def legacy_modify_tags(self, ctx: naff.ComponentContext):
+        await self.close_help_thread.call_with_binding(self.modify_tags.callback, ctx)
 
     @naff.check(check_archive)  # type: ignore
     @naff.slash_command(
