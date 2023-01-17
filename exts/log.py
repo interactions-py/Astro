@@ -39,8 +39,8 @@ class Log(naff.Extension):
     @naff.listen("message_delete")
     async def on_message_delete(self, event: naff.events.MessageDelete):
         embed = self.generate_base("Message deleted", event.message.author, self.negative_color)
-        embed.add_field("Author Mention", event.message.author.mention)
-        embed.add_field("Message ID", event.message.id)
+        embed.add_field("Author Mention", event.message.author.mention, inline=True)
+        embed.add_field("Message ID", event.message.id, inline=True)
         embed.add_field(
             "Message",
             event.message.content[:1024]
@@ -71,8 +71,8 @@ class Log(naff.Extension):
             return
 
         embed = self.generate_base("Message updated", after.author, self.negative_color)
-        embed.add_field("Author Mention", after.author.mention)
-        embed.add_field("Message ID", f"[{after.id}]({after.jump_url})")
+        embed.add_field("Author Mention", after.author.mention, inline=True)
+        embed.add_field("Message ID", f"[{after.id}]({after.jump_url})", inline=True)
         embed.add_field(
             "Before", before.content[:1024] if before.content else "Message could not be retrieved."
         )
@@ -90,8 +90,8 @@ class Log(naff.Extension):
         member = event.member
 
         embed = self.generate_base("User joined", member, self.positive_color)
-        embed.add_field("User", f"{member.mention} - {member.id}")
-        embed.add_field("Timestamps", self.timestamps_for_user(member))
+        embed.add_field("User", f"{member.mention} - {member.id}", inline=True)
+        embed.add_field("Timestamps", self.timestamps_for_user(member), inline=True)
 
         await self.mod_log.send(embeds=embed)
 
@@ -100,7 +100,7 @@ class Log(naff.Extension):
         member = event.member
 
         embed = self.generate_base("User left", member, self.negative_color)
-        embed.add_field("User", f"{member.mention} - {member.id}")
-        embed.add_field("Timestamps", self.timestamps_for_user(member))
+        embed.add_field("User", f"{member.mention} - {member.id}", inline=True)
+        embed.add_field("Timestamps", self.timestamps_for_user(member), inline=True)
 
         await self.mod_log.send(embeds=embed)
