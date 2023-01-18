@@ -58,9 +58,9 @@ class Tags(naff.Extension):
         embed.add_field("Author", f"<@{tag.author_id}>", inline=True)
         embed.add_field(
             "Timestamps",
-            f"Created at: {naff.Timestamp.fromdatetime(tag.created_at).format('R')}\n"
+            f"Created at: <t:{int(tag.created_at.timestamp())}:R>\n"
             + "Last edited:"
-            f" {(naff.Timestamp.fromdatetime(tag.last_edited_at).format('R') if tag.last_edited_at else 'N/A')}",
+            f" {f'<t:{int(tag.last_edited_at.timestamp())}:R>' if tag.last_edited_at else 'N/A'}",
             inline=True,
         )
         embed.add_field(
