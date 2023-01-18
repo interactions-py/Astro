@@ -285,9 +285,7 @@ class Mod(naff.Extension):
     ):
         slowmode_channel: naff.GuildText = channel or ctx.channel
 
-        # working around https://github.com/NAFTeam/NAFF/pull/738 - don't mind me
-        base_channel = naff.BaseChannel.from_dict({"id": slowmode_channel.id, "type": 0}, self.bot)
-        await base_channel.edit(rate_limit_per_user=time, reason=reason)
+        await slowmode_channel.edit(rate_limit_per_user=time, reason=reason)
         await ctx.send(
             f":white_check_mark: {slowmode_channel.mention}'s slowmode was set.", ephemeral=True
         )
