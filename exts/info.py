@@ -32,7 +32,7 @@ class Info(naff.Extension):
         embed.add_field(
             "What does this bot run on?",
             (
-                "This project is built with interactions.py, the no. 1 leading Python interactions"
+                "This project is built with interactions.py, the go-to interactions-based Python"
                 " library that empowers bots with the ability to implement slash commands and"
                 " components with ease. The codebase of this bot reflects how simple, modular and"
                 " scalable the library is---staying true to the motto of what it does."
