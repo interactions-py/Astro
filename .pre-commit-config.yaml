@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
     - id: requirements-txt-fixer
       name: Requirements
@@ -38,7 +38,7 @@ repos:
       args: [--target-version, py310, --line-length=100, --preview]
       language_version: python3.10
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.11.4
     hooks:
       - id: isort
         name: isort Formatting
