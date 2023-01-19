@@ -31,6 +31,7 @@ class Git(naff.Extension):
         self.session: aiohttp.ClientSession = bot.session
 
     def clean_content(self, content: str) -> str:
+        content = content.replace("### Pull-Request specification", "")
         content = content.replace("[ ]", "❌")
         content = content.replace("[x]", "✅")
         content = CODEBLOCK_REGEX.sub(string=content, repl="`[CODEBLOCK]`")
