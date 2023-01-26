@@ -90,7 +90,7 @@ class Log(naff.Extension):
         member = event.member
 
         embed = self.generate_base("User joined", member, self.positive_color)
-        embed.add_field("User", f"{member.mention} - {member.id}", inline=True)
+        embed.add_field("User", member.mention, inline=True)
         embed.add_field("Timestamps", self.timestamps_for_user(member), inline=True)
 
         await self.mod_log.send(embeds=embed)
@@ -100,7 +100,7 @@ class Log(naff.Extension):
         member = event.member
 
         embed = self.generate_base("User left", member, self.negative_color)
-        embed.add_field("User", f"{member.mention} - {member.id}", inline=True)
+        embed.add_field("User", member.mention, inline=True)
         embed.add_field("Timestamps", self.timestamps_for_user(member), inline=True)
 
         await self.mod_log.send(embeds=embed)
