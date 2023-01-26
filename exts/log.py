@@ -44,7 +44,7 @@ class Log(naff.Extension):
         embed.add_field(
             "Message",
             event.message.content[:1024]
-            if event.message.content
+            if isinstance(event.message, naff.Message) and event.message.content
             else "Message could not be retrieved.",
         )
 
