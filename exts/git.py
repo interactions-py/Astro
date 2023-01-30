@@ -239,6 +239,10 @@ class Git(naff.Extension):
 
             final_text = textwrap.dedent("\n".join(file_data))
 
+            # there's an invisible character here so that the resulting codeblock
+            # doesn't fail if the code we're looking at has ` in it
+            final_text = final_text.replace("`", "`​")
+
             if len(final_text) > 3900:
                 character_count = 0
                 new_final_text = []
@@ -252,10 +256,6 @@ class Git(naff.Extension):
                     new_final_text.append(line)
 
                 final_text = "\n".join(new_final_text)
-
-            # there's an invisible character here so that the resulting codeblock
-            # doesn't fail if the code we're looking at has ` in it
-            final_text = final_text.replace("`", "`​")
 
             embed = naff.Embed(
                 title=f"{owner}/{repo}",
