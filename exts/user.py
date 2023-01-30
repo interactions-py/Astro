@@ -19,7 +19,7 @@ class UserExt(naff.Extension):
     async def get_user_information(self, ctx: naff.InteractionContext):
         member: naff.Member | naff.User = ctx.target  # type: ignore
 
-        roles = list(sorted(member.roles if isinstance(member, naff.Member) else []))[::-1]
+        roles = list(reversed(sorted(member.roles if isinstance(member, naff.Member) else [])))
         color_to_use = next(
             (r.color for r in roles if r.color.value), member.accent_color or ASTRO_COLOR
         )
