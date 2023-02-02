@@ -5,6 +5,7 @@ import textwrap
 import aiohttp
 import githubkit
 import naff
+import unidiff
 from githubkit.exception import RequestFailed
 from githubkit.rest.models import Issue
 from naff.ext import paginators
@@ -15,6 +16,7 @@ GH_SNIPPET_REGEX = re.compile(
     r"https?://github\.com/(\S+)/(\S+)/blob/([\S][^\/]+)/([\S][^#]+)#L([\d]+)(?:-L([\d]+))?"
 )
 GH_COMMIT_REGEX = re.compile(r"https?://github\.com/(\S+)/(\S+)/commit/([0-9a-fA-F]{,40})")
+DIFF_MATCH = re.compile(r"diff --git \S+ \S+\n")
 TAG_REGEX = re.compile(r"(?:\s|^)#(\d{1,5})")
 CODEBLOCK_REGEX = re.compile(r"```([^```]*)```")
 IMAGE_REGEX = re.compile(r"!\[.+\]\(.+\)")
@@ -323,48 +325,41 @@ class Git(naff.Extension):
 
         # now, the raw diff we do get is... eh. yeah, it's eh, and i don't want to display it
         # so we'll do some processing to make it not so eh
-        diff_split = file_data.split("diff --git")
-
+        processed_diff = unidiff.PatchSet.from_string(file_data)
         final_diff_builder: list[str] = []
 
-        for diff in diff_split:
-            if not diff:
-                continue
+        for diff in processed_diff:
+            diff: unidiff.PatchedFile
+            diff_text = str(diff)
 
-            # the first line is in format: a/docs/Makefile b/docs/Makefile
-            file_name = diff.split(" b/", maxsplit=1)[0].strip().removeprefix("a/")
-            entry = f"--- {file_name} ---"
-
-            if "rename to" in diff:
-                new_file_name = (
-                    diff.split("rename to ", maxsplit=1)[1].split("\n", maxsplit=1)[0].strip()
-                )
-                entry = f"--- {file_name} > {new_file_name} ---"
-
+            entry = f"--- {diff.path} ---"
+            if diff.is_rename:
+                entry = f"--- {diff.source_file[2:]} > {diff.target_file[2:]} ---"
             new_diff_builder: list[str] = [entry]
 
             try:
-                first_double_at = diff.index("@@")
-                rest_of_diff = diff[first_double_at:].strip()
+                first_double_at = diff_text.index("@@")
+                rest_of_diff = diff_text[first_double_at:].strip()
 
                 line_split = rest_of_diff.splitlines()
                 if "No newline at end of file" in line_split[-1]:
                     line_split = line_split[:-1]
 
-                if line_split[0].split(" ")[2] == "+0,0":
+                if diff.is_removed_file:
                     new_diff_builder.append("File deleted.")
-                elif len(line_split) > 100:  # we have to draw the line somewhere
+                elif diff.added + diff.removed > 1000:
+                    # we have to draw the line somewhere
                     new_diff_builder.append("File changed. Large changes have not been rendered.")
                 else:
                     new_diff_builder.append("\n".join(line_split).strip())
 
             except ValueError:
                 # special cases - usually deletions or renames
-                if "rename to " in diff:
+                if diff.is_rename:
                     new_diff_builder.append("File renamed.")
-                elif "deleted file" in diff:
+                elif diff.is_removed_file:
                     new_diff_builder.append("File deleted.")
-                elif "new file" in diff:
+                elif diff.is_added_file:
                     new_diff_builder.append("File created.")
                 else:
                     new_diff_builder.append("Binary file changed.")
