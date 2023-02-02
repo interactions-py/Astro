@@ -7,17 +7,39 @@ import githubkit
 import naff
 from githubkit.exception import RequestFailed
 from githubkit.rest.models import Issue
+from naff.ext import paginators
 
 from common.const import ASTRO_COLOR
 
 GH_SNIPPET_REGEX = re.compile(
     r"https?://github\.com/(\S+)/(\S+)/blob/([\S][^\/]+)/([\S][^#]+)#L([\d]+)(?:-L([\d]+))?"
 )
+GH_COMMIT_REGEX = re.compile(r"https?://github\.com/(\S+)/(\S+)/commit/([0-9a-fA-F]{,40})")
 TAG_REGEX = re.compile(r"(?:\s|^)#(\d{1,5})")
 CODEBLOCK_REGEX = re.compile(r"```([^```]*)```")
 IMAGE_REGEX = re.compile(r"!\[.+\]\(.+\)")
 COMMENT_REGEX = re.compile(r"<!--(.*)-->")
 EXCESS_NEW_LINE_REGEX = re.compile(r"(\n[\t\r ]*){3,}")
+
+
+class GitPaginator(paginators.Paginator):
+    def create_components(self, disable: bool = False):
+        actionrows = super().create_components(disable=disable)
+
+        # basically:
+        # - find the callback button (in our case, the delete button)
+        # - if found, make it red and use the gh_delete custom id for it
+        for actionrow in actionrows:
+            for component in actionrow.components:
+                if (
+                    isinstance(component, naff.Button)
+                    and component.custom_id
+                    and "callback" in component.custom_id
+                ):
+                    component.custom_id = "gh_delete"
+                    component.style = naff.ButtonStyles.DANGER
+
+        return actionrows
 
 
 class Git(naff.Extension):
@@ -53,8 +75,8 @@ class Git(naff.Extension):
         if issue.state == "closed":
             if issue.pull_request and issue.pull_request.merged_at:
                 timestamps.append(
-                    f"• Merged: <t:{round(issue.pull_request.merged_at.timestamp())}:R> by"
-                    f" {issue.closed_by.login}"
+                    f"• Merged: <t:{round(issue.pull_request.merged_at.timestamp())}:R>"
+                    f" by {issue.closed_by.login}"
                 )
             else:
                 timestamps.append(
@@ -255,9 +277,153 @@ class Git(naff.Extension):
 
                 final_text = "\n".join(new_final_text)
 
+            if not final_text:
+                return
+
             embed = naff.Embed(
                 title=f"{owner}/{repo}",
                 description=f"```{extension}\n{final_text.strip()}\n```",
+                color=ASTRO_COLOR,
+            )
+            component = naff.Button(naff.ButtonStyles.DANGER, emoji="🗑️", custom_id="gh_delete")
+            await message.suppress_embeds()
+            await message.reply(embeds=embed, components=component)
+
+    async def resolve_gh_commit_diff(self, message: naff.Message):
+        results = GH_COMMIT_REGEX.search(message.content)
+
+        if not results:
+            return
+
+        owner = results[1]
+        repo = results[2]
+        commit_hash = results[3]
+
+        # get special funky url that gets us diff
+        async with self.session.get(
+            f"https://github.com/{owner}/{repo}/commit/{commit_hash}.diff"
+        ) as resp:
+            if resp.status != 200:
+                return
+
+            try:
+                await resp.content.readexactly(1048577)  # one MiB + 1
+                return
+            except asyncio.IncompleteReadError as e:
+                content = e.partial
+            except Exception:  # we can get some random errors
+                return
+
+            try:
+                file_data = content.decode(resp.get_encoding())
+                if not file_data:
+                    return
+            except Exception:  # we can get some random errors
+                return
+
+        # now, the raw diff we do get is... eh. yeah, it's eh, and i don't want to display it
+        # so we'll do some processing to make it not so eh
+        diff_split = file_data.split("diff --git")
+
+        final_diff_builder: list[str] = []
+
+        for diff in diff_split:
+            if not diff:
+                continue
+
+            # the first line is in format: a/docs/Makefile b/docs/Makefile
+            file_name = diff.split(" b/", maxsplit=1)[0].strip().removeprefix("a/")
+            entry = f"--- {file_name} ---"
+
+            if "rename to" in diff:
+                new_file_name = (
+                    diff.split("rename to ", maxsplit=1)[1].split("\n", maxsplit=1)[0].strip()
+                )
+                entry = f"--- {file_name} > {new_file_name} ---"
+
+            new_diff_builder: list[str] = [entry]
+
+            try:
+                first_double_at = diff.index("@@")
+                rest_of_diff = diff[first_double_at:].strip()
+
+                line_split = rest_of_diff.splitlines()
+                if "No newline at end of file" in line_split[-1]:
+                    line_split = line_split[:-1]
+
+                if line_split[0].split(" ")[2] == "+0,0":
+                    new_diff_builder.append("File deleted.")
+                elif len(line_split) > 100:  # we have to draw the line somewhere
+                    new_diff_builder.append("File changed. Large changes have not been rendered.")
+                else:
+                    new_diff_builder.append("\n".join(line_split).strip())
+
+            except ValueError:
+                # special cases - usually deletions or renames
+                if "rename to " in diff:
+                    new_diff_builder.append("File renamed.")
+                elif "deleted file" in diff:
+                    new_diff_builder.append("File deleted.")
+                elif "new file" in diff:
+                    new_diff_builder.append("File created.")
+                else:
+                    new_diff_builder.append("Binary file changed.")
+
+            final_diff_builder.append("\n".join(new_diff_builder))
+
+        final_diff = "\n\n".join(final_diff_builder)
+        final_diff = final_diff.replace("`", "`​")
+
+        embeds: list[naff.Embed] = []
+        current_entries: list[str] = []
+
+        current_length = 0
+        line_split = final_diff.splitlines()
+
+        for line in line_split:
+            current_length += len(line)
+            if current_length > 3700:
+                current_text = "\n".join(current_entries).strip()
+                embeds.append(
+                    naff.Embed(
+                        title=f"{owner}/{repo} @ {commit_hash}",
+                        description=f"```diff\n{current_text}\n```",
+                        color=ASTRO_COLOR,
+                    )
+                )
+                current_entries = []
+                current_length = 0
+
+            current_entries.append(line)
+
+        if current_entries:
+            current_text = "\n".join(current_entries).strip()
+            embeds.append(
+                naff.Embed(
+                    title=f"{owner}/{repo} @ {commit_hash}",
+                    description=f"```diff\n{current_text}\n```",
+                    color=ASTRO_COLOR,
+                )
+            )
+
+        if not embeds:
+            return
+
+        if len(embeds) > 1:
+            the_pag = GitPaginator.create_from_embeds(self.bot, *embeds, timeout=300)
+            the_pag.show_callback_button = True
+            the_pag.callback_button_emoji = "🗑️"
+            the_pag.callback = self.delete_gh.callback
+
+            fake_ctx = naff.PrefixedContext.from_message(self.bot, message)
+
+            await message.suppress_embeds()
+            await the_pag.reply(fake_ctx)
+
+        else:
+            embed = naff.Embed(
+                title=f"{owner}/{repo} @ {commit_hash}",
+                description=f"```diff\n{final_diff.strip()}\n```",
                 color=ASTRO_COLOR,
             )
             component = naff.Button(naff.ButtonStyles.DANGER, emoji="🗑️", custom_id="gh_delete")
@@ -290,8 +456,11 @@ class Git(naff.Extension):
         if message.author.bot:
             return
 
-        if "github.com/" in message.content and "#L" in message.content:
-            await self.resolve_gh_snippet(message)
+        if "github.com/" in message.content:
+            if "#L" in message.content:
+                await self.resolve_gh_snippet(message)
+            elif "commit" in message.content:
+                await self.resolve_gh_commit_diff(message)
 
         elif tag := TAG_REGEX.search(message.content):
             issue_num = int(tag.group(1))
