@@ -11,7 +11,7 @@ from githubkit.rest.models import Issue
 from common.const import ASTRO_COLOR
 
 GH_SNIPPET_REGEX = re.compile(
-    r"github\.com/(\S+)/(\S+)/blob/([\S][^\/]+)/([\S][^#]+)#L([\d]+)(?:-L([\d]+))?"
+    r"https?://github\.com/(\S+)/(\S+)/blob/([\S][^\/]+)/([\S][^#]+)#L([\d]+)(?:-L([\d]+))?"
 )
 TAG_REGEX = re.compile(r"(?:\s|^)#(\d{1,5})")
 CODEBLOCK_REGEX = re.compile(r"```([^```]*)```")
@@ -173,21 +173,19 @@ class Git(naff.Extension):
         # https://github.com/NAFTeam/NAFB/blob/0460e8d2cada81e39909198ba3d84fa25f174e1a/scales/githubMessages.py#L203-L241
         # NAFB under MIT License, owner LordOfPolls
 
-        results = GH_SNIPPET_REGEX.findall(message.content)
+        results = GH_SNIPPET_REGEX.search(message.content)
 
         if not results:
             return
 
-        results = results[0]
-
-        owner = results[0]
-        repo = results[1]
-        ref = results[2]
-        file_path = results[3]
+        owner = results[1]
+        repo = results[2]
+        ref = results[3]
+        file_path = results[4]
         extension = ".".join(file_path.split(".")[1:])
 
-        start_line_num = int(results[4]) if len(results) > 4 and results[4] else 0
-        end_line_num = int(results[5]) if len(results) > 5 and results[5] else -1
+        start_line_num = int(results[5]) if results.end() > 3 and results[5] else 0
+        end_line_num = int(results[6]) if results.end() > 4 and results[6] else -1
 
         if end_line_num != -1:
             # i dont even know
