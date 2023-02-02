@@ -16,7 +16,6 @@ GH_SNIPPET_REGEX = re.compile(
     r"https?://github\.com/(\S+)/(\S+)/blob/([\S][^\/]+)/([\S][^#]+)#L([\d]+)(?:-L([\d]+))?"
 )
 GH_COMMIT_REGEX = re.compile(r"https?://github\.com/(\S+)/(\S+)/commit/([0-9a-fA-F]{,40})")
-DIFF_MATCH = re.compile(r"diff --git \S+ \S+\n")
 TAG_REGEX = re.compile(r"(?:\s|^)#(\d{1,5})")
 CODEBLOCK_REGEX = re.compile(r"```([^```]*)```")
 IMAGE_REGEX = re.compile(r"!\[.+\]\(.+\)")
