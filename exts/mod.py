@@ -39,7 +39,7 @@ class Mod(naff.Extension):
         self.client = bot
         self.action_log: naff.GuildText = None  # type: ignore
 
-        self.add_ext_auto_defer(ephemeral=True)
+        self.add_ext_auto_defer()
         self.add_ext_check(mod_check_wrapper)
         asyncio.create_task(self.fill_action_log())
 
@@ -93,7 +93,7 @@ class Mod(naff.Extension):
         embed = self.generate_action_embed(member, ctx.author, action_to_str[action], reason)
         await self.action_log.send(embeds=embed)
         await ctx.send(
-            f":white_check_mark: {member.mention} has been {action_to_str[action]}.", ephemeral=True
+            f":white_check_mark: {member.mention} has been {action_to_str[action]}.",
         )
 
     mod = tansy.TansySlashCommand(
