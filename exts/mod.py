@@ -145,6 +145,34 @@ class Mod(naff.Extension):
             raise naff.errors.BadArgument("Could not unban user.") from None
 
         await self.process_action(ctx, user, models.ActionType.UNBAN, reason)
+        
+    @member.subcommand(
+        sub_cmd_name="shadowban",
+        sub_cmd_description="Shadowbans a user from a specific channel and logs into the database.",
+    )
+    async def shadowban(
+        self,
+        ctx: naff.InteractionContext,
+        member: naff.Member = tansy.Option("The member you wish to shadowban."),
+        channel: naff.GuildText = tansy.Option(
+            "The channel to shadowban the member from."
+        ),
+        reason: str = tansy.Option(
+            "The reason behind why you want to lock the channel.", default="N/A"
+        )
+    ):
+        try:
+#             await channel.edit(
+#                 permission_overwrites=naff.PermissionOverwrite.for_target(member).add_denies(
+#                     naff.Permissions.CREATE_POSTS,
+#                     naff.Permissions.SEND_MESSAGES
+#                 )
+#             )
+            pass
+        except naff.errors.HTTPException:
+            raise naff.errors.BadArgument("Could not shadowban user.") from None
+            
+#         await self.process_action(ctx, member, models.ActionType.SHADOWBAN, reason)
 
     @member.subcommand(
         sub_cmd_name="kick",
