@@ -4,7 +4,6 @@ import re
 import time
 from datetime import datetime, timedelta
 
-import naff
 import tansy
 
 import common.models as models
