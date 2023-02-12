@@ -22,7 +22,7 @@ Astro requires a ``.env`` file that contains sensitive information, like your bo
 
 .. code-block:: bash
 
-  TOKEN="Your bot token"
+  TOKEN="Your bot token."
   MONGO_DB_URL="A url pointing to a MongoDB database. You can create one for free on the MongoDB website, or run one yourself."
 
 ``metadata.yml`` will also likely need to be changed for your needs. The configuration on this repository is for the interactions.py server - you will need to change the IDs of each entry to the appropriate channels, roles, and tags in your server.
