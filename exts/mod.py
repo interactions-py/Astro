@@ -364,9 +364,11 @@ class Mod(naff.Extension):
     async def on_message_create(self, event: naff.events.MessageCreate):
         message = event.message
         if message.content and TOKEN_REG.search(message.content):
+            await message.reply(
+                "Careful with your token! It looks like you leaked it. :eyes:", delete_after=30
+            )
             with suppress(naff.errors.Forbidden, naff.errors.NotFound):
                 await message.delete()
-            await message.channel.send("Careful with your token! It looks like you leaked it. :eyes:", delete_after=30)
 
 
 def setup(bot):
