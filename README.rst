@@ -10,19 +10,27 @@ Astro
 
 This project is built with **interactions.py**, the no. 1 leading Python interactions library that empowers bots with the ability to implement slash commands and components with ease. The codebase of this bot reflects how simple, modular and scalable the library is---staying true to the motto of what it does.
 
-Installation
+Setup
 ************
-Installing and downloading the bot is very simple. Paste this command into your terminal line:
+Setting up this bot is simple. First, clone this repository. Then, in order to install any dependencies that the bot uses, please run this command in the root namespace of the cloned repository:
 
 .. code-block:: bash
 
-  pip install -U git+https://github.com/interactions-py/Astro.git
+  pip install -U -r requirements.txt
 
-In order to install any dependencies that the bot uses, please run this command in the root namespace of
-the cloned repository:
+Astro requires a ``.env`` file that contains sensitive information, like your bot token. In particular, it is looking for a file in this format:
 
 .. code-block:: bash
 
-  pip install -r requirements.txt
+  TOKEN="Your bot token"
+  MONGO_DB_URL="A url pointing to a MongoDB database. You can create one for free on the MongoDB website, or run one yourself."
+
+``metadata.yml`` will also likely need to be changed for your needs. The configuration on this repository is for the interactions.py server - you will need to change the IDs of each entry to the appropriate channels, roles, and tags in your server.
+
+Finally, running the bot is as simple as:
+
+.. code-block:: bash
+
+  python bot.py
 
 .. _interactions.py: https://discord.gg/interactions
