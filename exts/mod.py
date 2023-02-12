@@ -2,6 +2,7 @@ import asyncio
 import importlib
 import re
 import time
+from contextlib import suppress
 from datetime import datetime, timedelta
 
 import tansy
@@ -361,7 +362,8 @@ class Mod(naff.Extension):
     async def on_message_create(self, event: naff.events.MessageCreate):
         message = event.message
         if message.content and TOKEN_REG.search(message.content):
-            await message.delete()
+            with suppress(naff.errors.Forbidden, naff.errors.NotFound):
+                await message.delete()
             await message.channel.send("Careful with your token! It looks like you leaked it. :eyes:", delete_after=30)
 
 
