@@ -5,6 +5,8 @@ from pathlib import Path
 import naff
 import yaml
 
+__all__ = ("ASTRO_COLOR", "SRC_PATH", "LanguageRole", "MetadataTyping", "METADATA")
+
 ASTRO_COLOR = naff.Color(0x5865F2)
 
 # we want to be absolutely sure this path is correct, so we
