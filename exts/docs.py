@@ -1,4 +1,3 @@
-import asyncio
 import typing
 from urllib.parse import quote
 
