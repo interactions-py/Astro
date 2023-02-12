@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import re
 import time
 from datetime import datetime, timedelta
 
@@ -32,6 +33,8 @@ action_str_to_color = {
     "timed out": naff.Color(0xFEE75C),
     "untimed out": naff.Color(0xFEE75C),
 }
+
+TOKEN_REG = re.compile(r"[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27,}")
 
 
 class Mod(naff.Extension):
@@ -354,6 +357,13 @@ class Mod(naff.Extension):
                 scopes=[METADATA["guild"], 0], delete_commands=True
             )
         await ctx.reply(":white_check_mark: Synchronized commands.")
+
+    @naff.listen()
+    async def on_message_create(self, event: naff.events.MessageCreate):
+        message = event.message
+        if message.content and TOKEN_REG.search(message.content):
+            await message.delete()
+            await message.channel.send("Careful with your token! It looks like you leaked it. :eyes:", delete_after=30)
 
 
 def setup(bot):
