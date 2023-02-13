@@ -12,20 +12,31 @@ Some of the features Astro has include:
 - Moderation commands for kicking, banning, timeouts and other conventional channel tools.
 - GitHub embed rendering of Pull Requests, Issues and commit hash logs.
 
-Installation
-************
+Setup
+*****
 
-Installing and downloading the bot is very simple. Paste this command into your terminal line:
+Setting up this bot is simple.
 
-.. code-block:: bash
+First, clone this repository. Then, in order to install any dependencies that the bot uses, please run this command in the root namespace of the cloned repository:
 
-  pip install -U git+https://github.com/interactions-py/Astro.git
-
-In order to install any dependencies that the bot uses, please run this command in the root namespace of
-the cloned repository:
 
 .. code-block:: bash
 
-  pip install -r requirements.txt
+  pip install -U -r requirements.txt
+
+Astro requires a ``.env`` file that contains sensitive information, like your bot token. In particular, it is looking for a file in this format:
+
+.. code-block:: bash
+
+  TOKEN="Your bot token."
+  MONGO_DB_URL="A url pointing to a MongoDB database. You can create one for free on the MongoDB website, or run one yourself."
+
+``metadata.yml`` will also likely need to be changed for your needs. The configuration on this repository is for the interactions.py server - you will need to change the IDs of each entry to the appropriate channels, roles, and tags in your server.
+
+Finally, running the bot is as simple as:
+
+.. code-block:: bash
+
+  python bot.py
 
 .. _interactions.py: https://discord.gg/interactions
