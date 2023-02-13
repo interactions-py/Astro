@@ -374,13 +374,26 @@ class Git(naff.Extension):
         current_length = 0
         line_split = final_diff.splitlines()
 
+        url = f"https://github.com/{owner}/{repo}/commit/{commit_hash}"
+        title = f"{owner}/{repo} @ {commit_hash}"
+
+        # the gh embed that gh generates has the title of the commit
+        # if we can find it, exploit it by using the title from the embed as the
+        # title of our own embed
+        possible_gh_embed = next(
+            (e for e in message.embeds if e.url and e.url.lower() == url), None
+        )
+        if possible_gh_embed:
+            title = possible_gh_embed.title
+
         for line in line_split:
             current_length += len(line)
             if current_length > 3700:
                 current_text = "\n".join(current_entries).strip()
                 embeds.append(
                     naff.Embed(
-                        title=f"{owner}/{repo} @ {commit_hash}",
+                        title=title,
+                        url=url,
                         description=f"```diff\n{current_text}\n```",
                         color=ASTRO_COLOR,
                     )
@@ -394,7 +407,8 @@ class Git(naff.Extension):
             current_text = "\n".join(current_entries).strip()
             embeds.append(
                 naff.Embed(
-                    title=f"{owner}/{repo} @ {commit_hash}",
+                    title=title,
+                    url=url,
                     description=f"```diff\n{current_text}\n```",
                     color=ASTRO_COLOR,
                 )
@@ -415,14 +429,9 @@ class Git(naff.Extension):
             await the_pag.reply(fake_ctx)
 
         else:
-            embed = naff.Embed(
-                title=f"{owner}/{repo} @ {commit_hash}",
-                description=f"```diff\n{final_diff.strip()}\n```",
-                color=ASTRO_COLOR,
-            )
             component = naff.Button(naff.ButtonStyles.DANGER, emoji="🗑️", custom_id="gh_delete")
             await message.suppress_embeds()
-            await message.reply(embeds=embed, components=component)
+            await message.reply(embeds=embeds, components=component)
 
     @naff.component_callback("gh_delete")  # type: ignore
     async def delete_gh(self, ctx: naff.ComponentContext):
