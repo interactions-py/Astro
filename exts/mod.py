@@ -22,6 +22,7 @@ action_to_str = {
     models.ActionType.WARN: "warned",
     models.ActionType.TIMEOUT: "timed out",
     models.ActionType.UNTIMEOUT: "untimed out",
+    models.ActionType.RESTRICT: "restricted",
 }
 
 action_str_to_color = {
@@ -31,6 +32,7 @@ action_str_to_color = {
     "warned": naff.Color(0xFEE75C),
     "timed out": naff.Color(0xFEE75C),
     "untimed out": naff.Color(0xFEE75C),
+    "restricted": naff.Color(0xED4245),
 }
 
 
