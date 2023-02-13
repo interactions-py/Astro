@@ -376,7 +376,7 @@ class Git(naff.Extension):
         line_split = final_diff.splitlines()
 
         url = f"https://github.com/{owner}/{repo}/commit/{commit_hash}"
-        title = f"{owner}/{repo} @ {commit_hash}"
+        title = f"{owner}/{repo}@{commit_hash}"
 
         # the gh embed that gh generates has the title of the commit
         # if we can find it, exploit it by using the title from the embed as the
@@ -386,9 +386,12 @@ class Git(naff.Extension):
         else:
             with contextlib.suppress(RequestFailed):
                 resp = await self.gh_client.rest.git.async_get_commit(owner, repo, commit_hash)
-                first_line = resp.parsed_data.message.splitlines()[0].strip()
-                # this is around what gh does
-                title = first_line if len(first_line) < 70 else f"{first_line[:69]}..."
+                data = resp.parsed_data
+
+                # this is around what gh does for their embeds
+                first_line = data.message.splitlines()[0].strip()
+                with_extras = f"{first_line} · {owner}/{repo}@{data.sha[:7]}"
+                title = with_extras if len(with_extras) <= 70 else f"{with_extras[:67]}..."
 
         for line in line_split:
             current_length += len(line)
