@@ -1,17 +1,20 @@
-=====
 Astro
 =====
 
-**🔎 Utilities made easy.**
+Astro is an open-sourced, in-house bot designed for the needs of the interactions.py Discord support server. We've built this bot off of our own library.
 
-----
+Features
+********
 
-**Astro** is the main bot powering moderation and other utilities in the `interactions.py`_ support server. The goal of Astro is to make searching simple, and automate our moderation process. Whether that's creating tags with autocompleted suggestions, code examples, or interactive tutorials: Astro has you covered. Interactions should be simple to understand, and coding them is no different.
+Some of the features Astro has include:
 
-This project is built with **interactions.py**, the no. 1 leading Python interactions library that empowers bots with the ability to implement slash commands and components with ease. The codebase of this bot reflects how simple, modular and scalable the library is---staying true to the motto of what it does.
+- "Tag" commands for storing text prompts, followed by fuzzy matched autocompletion.
+- Moderation commands for kicking, banning, timeouts and other conventional channel tools.
+- GitHub embed rendering of Pull Requests, Issues and commit hash logs.
 
 Installation
 ************
+
 Installing and downloading the bot is very simple. Paste this command into your terminal line:
 
 .. code-block:: bash
