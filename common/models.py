@@ -14,6 +14,7 @@ class ActionType(enum.IntEnum):
     WARN = 4
     TIMEOUT = 5
     UNTIMEOUT = 6
+    RESTRICT = 7
 
 
 class Action(Document):
