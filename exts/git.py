@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import re
 import textwrap
 
@@ -380,11 +381,14 @@ class Git(naff.Extension):
         # the gh embed that gh generates has the title of the commit
         # if we can find it, exploit it by using the title from the embed as the
         # title of our own embed
-        possible_gh_embed = next(
-            (e for e in message.embeds if e.url and e.url.lower() == url), None
-        )
-        if possible_gh_embed:
+        if possible_gh_embed := next((e for e in message.embeds if e.url and e.url == url), None):
             title = possible_gh_embed.title
+        else:
+            with contextlib.suppress(RequestFailed):
+                resp = await self.gh_client.rest.git.async_get_commit(owner, repo, commit_hash)
+                first_line = resp.parsed_data.message.splitlines()[0].strip()
+                # this is around what gh does
+                title = first_line if len(first_line) < 70 else f"{first_line[:69]}..."
 
         for line in line_split:
             current_length += len(line)
