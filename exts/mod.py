@@ -147,18 +147,18 @@ class Mod(naff.Extension):
         await self.process_action(ctx, user, models.ActionType.UNBAN, reason)
         
     @member.subcommand(
-        sub_cmd_name="shadowban",
-        sub_cmd_description="Shadowbans a user from a specific channel and logs into the database.",
+        sub_cmd_name="restrict",
+        sub_cmd_description="Restricts a user from a specific channel and logs into the database.",
     )
     async def shadowban(
         self,
         ctx: naff.InteractionContext,
-        member: naff.Member = tansy.Option("The member you wish to shadowban."),
+        member: naff.Member = tansy.Option("The member you wish to restrict access."),
         channel: naff.GuildText = tansy.Option(
-            "The channel to shadowban the member from."
+            "The channel to restrict the member from."
         ),
         reason: str = tansy.Option(
-            "The reason behind why you want to lock the channel.", default="N/A"
+            "The reason behind why you want to restrict the user from this channel.", default="N/A"
         )
     ):
         try:
@@ -170,9 +170,9 @@ class Mod(naff.Extension):
 #             )
             pass
         except naff.errors.HTTPException:
-            raise naff.errors.BadArgument("Could not shadowban user.") from None
+            raise naff.errors.BadArgument("Could not restrict user.") from None
             
-#         await self.process_action(ctx, member, models.ActionType.SHADOWBAN, reason)
+#         await self.process_action(ctx, member, models.ActionType.RESTRICT, reason)
 
     @member.subcommand(
         sub_cmd_name="kick",
