@@ -4,7 +4,7 @@ from datetime import datetime
 
 from beanie import Document, Indexed
 
-__all__ = "Tag"
+__all__ = ("Tag",)
 
 
 class Tag(Document):
