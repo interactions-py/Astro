@@ -14,7 +14,7 @@ from pymongo.server_api import ServerApi
 
 import common.utils as utils
 from common.const import *
-from common.models import Action, Tag
+from common.models import Tag
 
 logger = logging.getLogger("astro_bot")
 logger.setLevel(logging.DEBUG)
@@ -55,7 +55,7 @@ bot = naff.Client(
 
 async def start():
     client = AsyncIOMotorClient(os.environ["MONGO_DB_URL"], server_api=ServerApi("1"))
-    await init_beanie(client.Astro, document_models=[Tag, Action])  # type: ignore
+    await init_beanie(client.Astro, document_models=[Tag])  # type: ignore
 
     bot.session = aiohttp.ClientSession()
 
