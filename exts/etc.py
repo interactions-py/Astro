@@ -10,7 +10,7 @@ from common.const import *
 TOKEN_REG = re.compile(r"[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27,}")
 
 
-async def mod_check_wrapper(ctx: naff.Context):
+async def mod_check_wrapper(ctx: naff.Context) -> bool:
     return utils.mod_check(ctx)
 
 
@@ -19,6 +19,7 @@ class Etc(naff.Extension):
         self.bot = bot
 
     @naff.prefixed_command()
+    @naff.check(mod_check_wrapper)
     async def sync(self, ctx: naff.PrefixedContext):
         async with ctx.channel.typing:
             await self.bot.synchronise_interactions(
