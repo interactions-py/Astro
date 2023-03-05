@@ -37,18 +37,8 @@ class Roles(naff.Extension):
             "To what roles do you want to (un)subscribe to? (default only main library changelogs)",
             choices=[
                 naff.SlashCommandChoice(
-                    name="Only Main Library Changelogs",
+                    name="Library Changelogs",
                     value=str(METADATA["roles"]["Changelog pings"]),
-                ),
-                naff.SlashCommandChoice(
-                    name="Only External Library Changelogs",
-                    value=str(METADATA["roles"]["External Changelog pings"]),
-                ),
-                naff.SlashCommandChoice(
-                    name="Both Changelogs",
-                    value=(
-                        f"{METADATA['roles']['Changelog pings']} {METADATA['roles']['External Changelog pings']}"
-                    ),
                 ),
                 naff.SlashCommandChoice(
                     name="Polls Pings",
