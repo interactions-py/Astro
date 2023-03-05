@@ -54,6 +54,10 @@ class Roles(naff.Extension):
                     name="Polls Pings",
                     value=str(METADATA["roles"]["Polls pings"]),
                 ),
+                naff.SlashCommandChoice(
+                    name="Server News",
+                    value=str(METADATA["roles"]["Server news"]),
+                ),
             ],
             default=str(METADATA["roles"]["Changelog pings"]),
         ),
