@@ -44,6 +44,30 @@ class GitPaginator(paginators.Paginator):
         return actionrows
 
 
+class CustomStrIterator:
+    def __init__(self, strs: list[str]) -> None:
+        self.strs = strs
+        self.index = 0
+        self.length = len(self.strs)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> str:
+        if self.index >= self.length:
+            raise StopIteration
+
+        result = self.strs[self.index]
+        self.index += 1
+        return result
+
+    def next(self) -> str:
+        return self.__next__()
+
+    def back(self) -> None:
+        self.index -= 1
+
+
 class Git(naff.Extension):
     """An extension dedicated to linking PRs/issues."""
 
@@ -128,6 +152,7 @@ class Git(naff.Extension):
 
         body = self.clean_content(issue.body or "No description")
         line_split = body.split("\n")  # purposely using \n for consistency
+        line_iter = CustomStrIterator(line_split)  # we need to go back and forward at will
 
         # essentially, what we're trying to do is get each "part" of the pr
         # that's seperated by a header, or ##
@@ -137,8 +162,42 @@ class Git(naff.Extension):
         header_split: list[str] = []
         current_part = []
 
-        for line in line_split:
-            if line.startswith("## "):
+        check_types = False
+
+        for line in line_iter:
+            # we need to extract the pr type so it doesnt take 200 lines
+            # we also need to ignore whitespace until we get to the checkboxes, so take this
+            # ugly hack
+            if line.startswith("## Pull Request Type"):
+                check_types = True
+
+            # once we're ready to check the checkboxes and know we're searching for types in the first
+            # place, we go in here
+            elif check_types and (line.startswith("- ✅") or line.startswith("- ❌")):
+                line_iter.back()  # rewind to previous line
+                types: list[str] = []
+
+                while (line := line_iter.next()) and (
+                    line.startswith("- ✅") or line.startswith("- ❌")
+                ):  # while the next line is still a checkbox line
+                    if line.startswith("- ✅"):
+                        types.append(line.removeprefix("- ✅ ").strip())
+
+                if types:
+                    embed.description = (
+                        f"• Pull Request Type: {', '.join(types)}\n{embed.description}"
+                    )
+
+                check_types = False
+
+                # continue iter until next title
+                while (line := line_iter.next()) and not line.startswith("## "):
+                    continue
+                line_iter.back()
+
+                continue
+
+            elif line.startswith("## "):
                 if current_part:
                     header_split.append("\n".join(current_part).strip())
                 current_part = []
@@ -155,7 +214,8 @@ class Git(naff.Extension):
                     header_split.append("\n".join(current_part).strip())
                 current_part = ["## Checklist"]
 
-            current_part.append(line)
+            if not check_types:
+                current_part.append(line)
 
         # likely will be spares
         if current_part:
@@ -167,13 +227,19 @@ class Git(naff.Extension):
                 line_split = part.split("\n")
                 title = line_split[0].removeprefix("## ").strip()
                 desc = "\n".join(line_split[1:])
+                if not desc:
+                    desc = "N/A"
             else:
                 title = "Description"
 
             if len(desc) > 1021:  # field limit
                 desc = f"{desc[:1021].strip()}..."
 
-            embed.add_field(title, desc, inline=title in ("Tasks", "Checklist"))
+            embed.add_field(
+                title,
+                desc,
+                inline=title in ("Python Compatibility", "Tasks", "Checklist"),
+            )
 
         return embed
 
