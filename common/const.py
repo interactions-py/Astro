@@ -2,12 +2,12 @@ import os
 import typing
 from pathlib import Path
 
-import naff
+import interactions as ipy
 import yaml
 
 __all__ = ("ASTRO_COLOR", "SRC_PATH", "LanguageRole", "MetadataTyping", "METADATA")
 
-ASTRO_COLOR = naff.Color(0x5865F2)
+ASTRO_COLOR = ipy.Color(0x5865F2)
 
 # we want to be absolutely sure this path is correct, so we
 # do a bit of complicated path logic to get the src folder

@@ -2,23 +2,23 @@ import asyncio
 import importlib
 import typing
 
-import naff
+import interactions as ipy
 import tansy
 
 import common.utils as utils
 from common.const import METADATA
 
 
-async def check_admin(ctx: naff.Context):
-    return isinstance(ctx.author, naff.Member) and ctx.author.has_permission(
-        naff.Permissions.ADMINISTRATOR
+async def check_admin(ctx: ipy.BaseContext):
+    return isinstance(ctx.author, ipy.Member) and ctx.author.has_permission(
+        ipy.Permissions.ADMINISTRATOR
     )
 
 
-class Roles(naff.Extension):
-    def __init__(self, bot: naff.Client):
+class Roles(ipy.Extension):
+    def __init__(self, bot: ipy.Client):
         self.client = bot
-        self.guild: naff.Guild = None  # type: ignore
+        self.guild: ipy.Guild = None  # type: ignore
 
         asyncio.create_task(self.fill_guild())
 
@@ -32,19 +32,19 @@ class Roles(naff.Extension):
     )
     async def subscribe(
         self,
-        ctx: naff.InteractionContext,
+        ctx: ipy.InteractionContext,
         changelog: str = tansy.Option(
             "To what roles do you want to (un)subscribe to? (default only main library changelogs)",
             choices=[
-                naff.SlashCommandChoice(
+                ipy.SlashCommandChoice(
                     name="Library Changelogs",
                     value=str(METADATA["roles"]["Changelog pings"]),
                 ),
-                naff.SlashCommandChoice(
+                ipy.SlashCommandChoice(
                     name="Polls Pings",
                     value=str(METADATA["roles"]["Polls pings"]),
                 ),
-                naff.SlashCommandChoice(
+                ipy.SlashCommandChoice(
                     name="Server News",
                     value=str(METADATA["roles"]["Server news"]),
                 ),
@@ -55,7 +55,7 @@ class Roles(naff.Extension):
         await ctx.defer(ephemeral=True)
 
         if typing.TYPE_CHECKING:
-            assert isinstance(ctx.author, naff.Member)
+            assert isinstance(ctx.author, ipy.Member)
 
         author_roles = set(ctx.author._role_ids)  # don't want to update roles till end
         str_builder = [":white_check_mark:"]
@@ -83,35 +83,37 @@ class Roles(naff.Extension):
         await ctx.author.edit(roles=author_roles)
 
         await ctx.send(
-            " ".join(str_builder), allowed_mentions=naff.AllowedMentions.none(), ephemeral=True
+            " ".join(str_builder),
+            allowed_mentions=ipy.AllowedMentions.none(),
+            ephemeral=True,
         )
 
-    @naff.check(check_admin)  # type: ignore - putting it first avoids a weird typehint thing
-    @naff.slash_command(
+    @ipy.slash_command(
         "add-role-menu",
         description="N/A.",
-        default_member_permissions=naff.Permissions.ADMINISTRATOR,
+        default_member_permissions=ipy.Permissions.ADMINISTRATOR,
     )
-    async def add_role_menu(self, ctx: naff.InteractionContext):
+    @ipy.check(check_admin)
+    async def add_role_menu(self, ctx: ipy.InteractionContext):
         await ctx.defer(ephemeral=True)
 
         info_channel = await self.bot.fetch_channel(METADATA["channels"]["information"])
 
-        role_menu = naff.StringSelectMenu(
-            options=[
-                naff.SelectOption(
+        role_menu = ipy.StringSelectMenu(
+            *(
+                ipy.StringSelectOption(
                     label=lang,
                     # if it were up to me, the value would be the role id
                     # sadly, we must keep backwards compat
                     value=lang,
-                    emoji=naff.PartialEmoji(
+                    emoji=ipy.PartialEmoji(
                         id=None,
                         name=role["emoji"],
                         animated=False,
                     ),
                 )
                 for lang, role in METADATA["language_roles"].items()
-            ],
+            ),
             placeholder="Choose a language.",
             custom_id="language_role",
             min_values=1,
@@ -121,12 +123,12 @@ class Roles(naff.Extension):
         await info_channel.send(components=role_menu)  # type: ignore
         await ctx.send(":white_check_mark:", ephemeral=True)
 
-    @naff.component_callback("language_role")  # type: ignore
-    async def on_astro_language_role_select(self, ctx: naff.ComponentContext):
+    @ipy.component_callback("language_role")  # type: ignore
+    async def on_astro_language_role_select(self, ctx: ipy.ComponentContext):
         await ctx.defer(ephemeral=True)
 
         if typing.TYPE_CHECKING:
-            assert isinstance(ctx.author, naff.Member)
+            assert isinstance(ctx.author, ipy.Member)
 
         # same idea as subscribe, but...
         author_roles = set(ctx.author._role_ids)
@@ -143,7 +145,9 @@ class Roles(naff.Extension):
             if not role:
                 # this shouldn't happen
                 return await utils.error_send(
-                    ctx, ":x: The role you selected was invalid.", naff.MaterialColors.RED
+                    ctx,
+                    ":x: The role you selected was invalid.",
+                    ipy.MaterialColors.RED,
                 )
 
             if ctx.author.has_role(role["id"]):

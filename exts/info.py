@@ -1,20 +1,20 @@
-import naff
+import interactions as ipy
 
 from common.const import ASTRO_COLOR
 
 
-class Info(naff.Extension):
+class Info(ipy.Extension):
     """An extension dedicated to /info."""
 
     def __init__(self, bot):
         self.bot = bot
 
-    @naff.slash_command(
+    @ipy.slash_command(
         "info",
         description="Get information about the bot.",
     )
-    async def info(self, ctx: naff.InteractionContext):
-        embed = naff.Embed(
+    async def info(self, ctx: ipy.InteractionContext):
+        embed = ipy.Embed(
             title="Info",
             color=ASTRO_COLOR,
         )

@@ -2,13 +2,14 @@ import collections
 import typing
 from pathlib import Path
 
-import naff
+import interactions as ipy
+from interactions.ext import prefixed_commands as prefixed
 
 from common.const import METADATA
 
 __all__ = (
-    "advanced_check",
-    "advanced_only",
+    "proficient_check",
+    "proficient_only",
     "mod_check",
     "mods_only",
     "file_to_ext",
@@ -17,10 +18,10 @@ __all__ = (
 )
 
 
-def _member_from_ctx(ctx: naff.Context):
+def _member_from_ctx(ctx: ipy.BaseContext):
     user = ctx.author
 
-    if isinstance(user, naff.User):
+    if isinstance(user, ipy.User):
         guild = ctx.bot.get_guild(METADATA["guild"])
         if not guild:
             return None
@@ -32,33 +33,33 @@ def _member_from_ctx(ctx: naff.Context):
     return user
 
 
-def advanced_check(ctx: naff.Context):
+def proficient_check(ctx: ipy.BaseContext):
     user = _member_from_ctx(ctx)
     return (
-        user.has_role(METADATA["roles"]["Advanced"])
+        user.has_role(METADATA["roles"]["Proficient"])
         or user.has_role(METADATA["roles"]["Moderator"])
         if user
         else False
     )
 
 
-def advanced_only() -> typing.Any:
-    async def predicate(ctx: naff.Context):
-        return advanced_check(ctx)
+def proficient_only() -> typing.Any:
+    async def predicate(ctx: ipy.BaseContext):
+        return proficient_check(ctx)
 
-    return naff.check(predicate)
+    return ipy.check(predicate)
 
 
-def mod_check(ctx: naff.Context):
+def mod_check(ctx: ipy.BaseContext):
     user = _member_from_ctx(ctx)
     return user.has_role(METADATA["roles"]["Moderator"]) if user else False
 
 
 def mods_only() -> typing.Any:
-    async def predicate(ctx: naff.Context):
+    async def predicate(ctx: ipy.BaseContext):
         return mod_check(ctx)
 
-    return naff.check(predicate)
+    return ipy.check(predicate)
 
 
 def file_to_ext(str_path, base_path):
@@ -93,19 +94,19 @@ def get_all_extensions(str_path, folder="exts"):
 
 
 async def error_send(
-    ctx: naff.InteractionContext | naff.PrefixedContext | naff.HybridContext,
+    ctx: ipy.InteractionContext | prefixed.PrefixedContext,
     msg: str,
-    color: naff.Color,
+    color: ipy.Color,
 ):
-    embed = naff.Embed(description=msg, color=color)
+    embed = ipy.Embed(description=msg, color=color)
 
     # prefixed commands being replied to looks nicer
-    func_name = "send" if isinstance(ctx, naff.InteractionContext) else "reply"
+    func_name = "send" if isinstance(ctx, ipy.InteractionContext) else "reply"
     func = getattr(ctx, func_name)
 
     kwargs: dict[str, typing.Any] = {"embeds": [embed]}
 
-    if isinstance(ctx, (naff.InteractionContext, naff.HybridContext)):
+    if isinstance(ctx, ipy.InteractionContext):
         kwargs["ephemeral"] = not ctx.responded or ctx.ephemeral
 
     await func(**kwargs)

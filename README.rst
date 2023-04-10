@@ -9,8 +9,8 @@ Features
 Some of the features Astro has include:
 
 - "Tag" commands for storing text prompts, followed by fuzzy matched autocompletion.
-- Moderation commands for kicking, banning, timeouts and other conventional channel tools.
 - GitHub embed rendering of Pull Requests, Issues and commit hash logs.
+- Commands to help manage the help channel, including post generation and archiving.
 
 Setup
 *****

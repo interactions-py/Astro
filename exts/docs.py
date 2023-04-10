@@ -2,21 +2,21 @@ import typing
 from urllib.parse import quote
 
 import aiohttp
-import naff
+import interactions as ipy
 import orjson
 import tansy
-from naff.ext import paginators
+from interactions.ext import paginators
 
 
-class Docs(naff.Extension):
-    def __init__(self, client: naff.Client) -> None:
+class Docs(ipy.Extension):
+    def __init__(self, client: ipy.Client) -> None:
         self.client = client
         self.session: aiohttp.ClientSession = client.session
 
     @tansy.slash_command(name="docs")
     async def docs_search(
         self,
-        ctx: naff.InteractionContext,
+        ctx: ipy.InteractionContext,
         query: typing.Optional[str] = tansy.Option("The query to search for.", default=None),
     ):
         """Search interactions.py's documentation."""
@@ -32,9 +32,9 @@ class Docs(naff.Extension):
         if data["count"] == 0:
             return await ctx.send("No results found.")
 
-        results: list[naff.Embed] = []
+        results: list[ipy.Embed] = []
         for i in data["results"]:
-            eb = naff.Embed(title=i["title"], url=f"{i['domain']}{i['path']}")
+            eb = ipy.Embed(title=i["title"], url=f"{i['domain']}{i['path']}")
             for j in i["blocks"]:
                 if j["type"] == "domain":
                     content = (

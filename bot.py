@@ -7,8 +7,9 @@ import logging
 import os
 
 import aiohttp
-import naff
+import interactions as ipy
 from beanie import init_beanie
+from interactions.ext import prefixed_commands
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
@@ -29,28 +30,29 @@ file_handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s:
 file_handler.setLevel(logging.INFO)
 logger.addHandler(file_handler)
 
-activity = naff.Activity.create(name="you. 👀", type=naff.ActivityType.WATCHING)
+activity = ipy.Activity.create(name="you. 👀", type=ipy.ActivityType.WATCHING)
 
-intents = naff.Intents.new(
+intents = ipy.Intents.new(
     guilds=True,
     guild_members=True,
-    guild_bans=True,
+    guild_moderation=True,
     guild_messages=True,
     direct_messages=True,
-    guild_message_content=True,
+    message_content=True,
 )
 
-bot = naff.Client(
+bot = ipy.Client(
     intents=intents,
     sync_interactions=False,
     debug_scope=METADATA["guild"],
     disable_dm_commands=True,
-    status=naff.Status.DO_NOT_DISTURB,
+    status=ipy.Status.DO_NOT_DISTURB,
     activity=activity,
     fetch_members=True,
     send_command_tracebacks=False,
     logger=logger,
 )
+prefixed_commands.setup(bot)
 
 
 async def start():
@@ -70,15 +72,15 @@ async def start():
         await bot.session.close()
 
 
-@naff.listen("command_error", disable_default_listeners=True)
-async def on_command_error(event: naff.events.CommandError):
+@ipy.listen("command_error", disable_default_listeners=True)
+async def on_command_error(event: ipy.events.CommandError):
     # basically, this, compared to the built-in version:
     # - makes sure if the error can be sent ephemerally, it will
     # - only log the error if it isn't an "expected" error (check failure, cooldown, etc)
     # - send a message to the user if there's an unexpected error
 
     try:
-        if isinstance(event.error, naff.errors.CommandOnCooldown):
+        if isinstance(event.error, ipy.errors.CommandOnCooldown):
             await utils.error_send(
                 event.ctx,
                 msg=(
@@ -87,7 +89,7 @@ async def on_command_error(event: naff.events.CommandError):
                 ),
                 color=ASTRO_COLOR,
             )
-        elif isinstance(event.error, naff.errors.MaxConcurrencyReached):
+        elif isinstance(event.error, ipy.errors.MaxConcurrencyReached):
             await utils.error_send(
                 event.ctx,
                 msg=(
@@ -96,17 +98,17 @@ async def on_command_error(event: naff.events.CommandError):
                 ),
                 color=ASTRO_COLOR,
             )
-        elif isinstance(event.error, naff.errors.CommandCheckFailure):
+        elif isinstance(event.error, ipy.errors.CommandCheckFailure):
             await utils.error_send(
                 event.ctx,
                 msg=":x: You do not have permission to run this command.",
-                color=naff.BrandColors.YELLOW,
+                color=ipy.BrandColors.YELLOW,
             )
-        elif isinstance(event.error, naff.errors.BadArgument):
+        elif isinstance(event.error, ipy.errors.BadArgument):
             await utils.error_send(
                 event.ctx,
                 msg=f":x: {event.error}",
-                color=naff.MaterialColors.RED,
+                color=ipy.MaterialColors.RED,
             )
         else:
             await utils.error_send(
@@ -115,21 +117,21 @@ async def on_command_error(event: naff.events.CommandError):
                     ":x: An unexpected error has occured. The error will be logged and should be"
                     " fixed shortly."
                 ),
-                color=naff.RoleColors.DARK_RED,
+                color=ipy.RoleColors.DARK_RED,
             )
             bot.dispatch(
-                naff.events.Error(
-                    source=f"cmd `/{event.ctx.invoke_target}`",
+                ipy.events.Error(
+                    source=f"cmd `/{event.ctx.invoke_target}`",  # type: ignore
                     error=event.error,
                     args=event.args,
                     kwargs=event.kwargs,
                     ctx=event.ctx,
                 )
             )
-    except naff.errors.NaffException:
+    except ipy.errors.LibraryException:
         bot.dispatch(
-            naff.events.Error(
-                source=f"cmd `/{event.ctx.invoke_target}`",
+            ipy.events.Error(
+                source=f"cmd `/{event.ctx.invoke_target}`",  # type: ignore
                 error=event.error,
                 args=event.args,
                 kwargs=event.kwargs,
@@ -138,7 +140,7 @@ async def on_command_error(event: naff.events.CommandError):
         )
 
 
-@naff.listen("startup")
+@ipy.listen("startup")
 async def on_startup():
     print(f"Logged in as {bot.user.tag}.")
 

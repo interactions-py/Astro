@@ -1,7 +1,7 @@
 beanie
+discord-py-interactions
 githubkit
 motor[srv]
-naff[speedup]>=2.1.0
 python-dotenv==0.20.0
 pyyaml
 rapidfuzz

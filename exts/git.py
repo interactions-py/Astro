@@ -5,11 +5,12 @@ import textwrap
 
 import aiohttp
 import githubkit
-import naff
+import interactions as ipy
 import unidiff
 from githubkit.exception import RequestFailed
 from githubkit.rest.models import Issue
-from naff.ext import paginators
+from interactions.ext import paginators
+from interactions.ext import prefixed_commands as prefixed
 
 from common.const import ASTRO_COLOR
 
@@ -34,12 +35,12 @@ class GitPaginator(paginators.Paginator):
         for actionrow in actionrows:
             for component in actionrow.components:
                 if (
-                    isinstance(component, naff.Button)
+                    isinstance(component, ipy.Button)
                     and component.custom_id
                     and "callback" in component.custom_id
                 ):
                     component.custom_id = "gh_delete"
-                    component.style = naff.ButtonStyles.DANGER
+                    component.style = ipy.ButtonStyle.DANGER
 
         return actionrows
 
@@ -68,11 +69,11 @@ class CustomStrIterator:
         self.index -= 1
 
 
-class Git(naff.Extension):
+class Git(ipy.Extension):
     """An extension dedicated to linking PRs/issues."""
 
     def __init__(self, bot):
-        self.bot: naff.Client = bot
+        self.bot: ipy.Client = bot
         self.owner = "interactions-py"
         self.repo = "interactions.py"
         self.gh_client = githubkit.GitHub()
@@ -90,10 +91,10 @@ class Git(naff.Extension):
 
     def get_color(self, issue: Issue):
         if issue.state == "open":
-            return naff.Color(0x00B700)
+            return ipy.Color(0x00B700)
         elif issue.pull_request and issue.pull_request.merged_at:
-            return naff.Color(0x9E3EFF)
-        return naff.Color(0xC40000)
+            return ipy.Color(0x9E3EFF)
+        return ipy.Color(0xC40000)
 
     def create_timestamps(self, issue: Issue):
         timestamps = [f"• Created: <t:{round(issue.created_at.timestamp())}:R>"]
@@ -113,7 +114,7 @@ class Git(naff.Extension):
         return "\n".join(timestamps)
 
     def prepare_issue(self, issue: Issue):
-        embed = naff.Embed(
+        embed = ipy.Embed(
             title=issue.title,
             description=self.create_timestamps(issue),
             color=self.get_color(issue),
@@ -141,7 +142,7 @@ class Git(naff.Extension):
         return embed
 
     def prepare_pr(self, issue: Issue):
-        embed = naff.Embed(
+        embed = ipy.Embed(
             title=issue.title,
             description=self.create_timestamps(issue),
             color=self.get_color(issue),
@@ -243,7 +244,7 @@ class Git(naff.Extension):
 
         return embed
 
-    async def resolve_issue_num(self, message: naff.Message, issue_num: int):
+    async def resolve_issue_num(self, message: ipy.Message, issue_num: int):
         try:
             resp = await self.gh_client.rest.issues.async_get(self.owner, self.repo, issue_num)
         except RequestFailed:
@@ -258,7 +259,7 @@ class Git(naff.Extension):
 
         await message.reply(embeds=embed)
 
-    async def resolve_gh_snippet(self, message: naff.Message):
+    async def resolve_gh_snippet(self, message: ipy.Message):
         # heavily inspired and slightly stolen from
         # https://github.com/NAFTeam/NAFB/blob/0460e8d2cada81e39909198ba3d84fa25f174e1a/scales/githubMessages.py#L203-L241
         # NAFB under MIT License, owner LordOfPolls
@@ -348,16 +349,16 @@ class Git(naff.Extension):
             if not final_text:
                 return
 
-            embed = naff.Embed(
+            embed = ipy.Embed(
                 title=f"{owner}/{repo}",
                 description=f"```{extension}\n{final_text.strip()}\n```",
                 color=ASTRO_COLOR,
             )
-            component = naff.Button(naff.ButtonStyles.DANGER, emoji="🗑️", custom_id="gh_delete")
+            component = ipy.Button(style=ipy.ButtonStyle.DANGER, emoji="🗑️", custom_id="gh_delete")
             await message.suppress_embeds()
             await message.reply(embeds=embed, components=component)
 
-    async def resolve_gh_commit_diff(self, message: naff.Message):
+    async def resolve_gh_commit_diff(self, message: ipy.Message):
         results = GH_COMMIT_REGEX.search(message.content)
 
         if not results:
@@ -435,7 +436,7 @@ class Git(naff.Extension):
         final_diff = "\n\n".join(final_diff_builder)
         final_diff = final_diff.replace("`", "`​")
 
-        embeds: list[naff.Embed] = []
+        embeds: list[ipy.Embed] = []
         current_entries: list[str] = []
 
         current_length = 0
@@ -464,7 +465,7 @@ class Git(naff.Extension):
             if current_length > 3700:
                 current_text = "\n".join(current_entries).strip()
                 embeds.append(
-                    naff.Embed(
+                    ipy.Embed(
                         title=title,
                         url=url,
                         description=f"```diff\n{current_text}\n```",
@@ -479,7 +480,7 @@ class Git(naff.Extension):
         if current_entries:
             current_text = "\n".join(current_entries).strip()
             embeds.append(
-                naff.Embed(
+                ipy.Embed(
                     title=title,
                     url=url,
                     description=f"```diff\n{current_text}\n```",
@@ -496,18 +497,18 @@ class Git(naff.Extension):
             the_pag.callback_button_emoji = "🗑️"
             the_pag.callback = self.delete_gh.callback
 
-            fake_ctx = naff.PrefixedContext.from_message(self.bot, message)
+            fake_ctx = prefixed.PrefixedContext.from_message(self.bot, message)
 
             await message.suppress_embeds()
             await the_pag.reply(fake_ctx)
 
         else:
-            component = naff.Button(naff.ButtonStyles.DANGER, emoji="🗑️", custom_id="gh_delete")
+            component = ipy.Button(style=ipy.ButtonStyle.DANGER, emoji="🗑️", custom_id="gh_delete")
             await message.suppress_embeds()
             await message.reply(embeds=embeds, components=component)
 
-    @naff.component_callback("gh_delete")  # type: ignore
-    async def delete_gh(self, ctx: naff.ComponentContext):
+    @ipy.component_callback("gh_delete")  # type: ignore
+    async def delete_gh(self, ctx: ipy.ComponentContext):
         await ctx.defer(ephemeral=True)
         reply = await self.bot.cache.fetch_message(
             ctx.message.message_reference.channel_id,
@@ -515,18 +516,18 @@ class Git(naff.Extension):
         )
         if reply:
             if ctx.author.id == reply.author.id or (
-                isinstance(ctx.author, naff.Member)
-                and ctx.author.has_permission(naff.Permissions.MANAGE_MESSAGES)
+                isinstance(ctx.author, ipy.Member)
+                and ctx.author.has_permission(ipy.Permissions.MANAGE_MESSAGES)
             ):
                 await ctx.message.delete()
                 await ctx.send("Deleted.", ephemeral=True)
             else:
-                raise naff.errors.BadArgument("You do not have permission to delete this.")
+                raise ipy.errors.BadArgument("You do not have permission to delete this.")
         else:
-            raise naff.errors.BadArgument("Could not find original message.")
+            raise ipy.errors.BadArgument("Could not find original message.")
 
-    @naff.listen("message_create")
-    async def on_message_create(self, event: naff.events.MessageCreate):
+    @ipy.listen("message_create")
+    async def on_message_create(self, event: ipy.events.MessageCreate):
         message = event.message
 
         if message.author.bot:
