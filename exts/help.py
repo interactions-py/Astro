@@ -4,6 +4,7 @@ import io
 
 import aiohttp
 import interactions as ipy
+from typing_extensions import deprecated
 
 import common.utils as utils
 from common.const import *
@@ -221,10 +222,9 @@ class HelpChannel(ipy.Extension):
                 "Hey! Once your issue is solved, press the button below to close this thread!",
                 components=[[select], [close_button]],
             )
-        await message.pin()
 
         if int(thread.parent_id) == METADATA["channels"]["help-v4"]:
-            message = await thread.send(
+            deprecated_message = await thread.send(
                 embed=ipy.Embed(
                     title="Warning",
                     description=(
@@ -235,7 +235,9 @@ class HelpChannel(ipy.Extension):
                     color=ipy.MaterialColors.YELLOW,
                 )
             )
-            await message.pin()
+            await deprecated_message.pin()
+
+        await message.pin()
 
     @ipy.component_callback("tag_selection")  # type: ignore
     async def modify_tags(self, ctx: ipy.ComponentContext):
