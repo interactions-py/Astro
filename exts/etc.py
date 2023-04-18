@@ -22,10 +22,7 @@ class Etc(ipy.Extension):
     @prefixed.prefixed_command()
     @ipy.check(mod_check_wrapper)
     async def sync(self, ctx: prefixed.PrefixedContext):
-        async with ctx.channel.typing:
-            await self.bot.synchronise_interactions(
-                scopes=[METADATA["guild"], 0], delete_commands=True
-            )
+        await self.bot.synchronise_interactions(scopes=[METADATA["guild"], 0], delete_commands=True)
         await ctx.reply(":white_check_mark: Synchronized commands.")
 
     @ipy.listen()
