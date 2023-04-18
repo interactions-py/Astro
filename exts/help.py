@@ -4,7 +4,6 @@ import io
 
 import aiohttp
 import interactions as ipy
-from typing_extensions import deprecated
 
 import common.utils as utils
 from common.const import *
