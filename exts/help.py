@@ -228,9 +228,9 @@ class HelpChannel(ipy.Extension):
                 embed=ipy.Embed(
                     title="Warning",
                     description=(
-                        "This version is deprecated, and while we are helping you with this issue,"
-                        " we may not help with this version in the future and heavily recommend you"
-                        " upgrade to the latest major version."
+                        "This version is deprecated, and while we will be helping you with this"
+                        " issue, we may not help with this version in the future and heavily"
+                        " recommend you upgrade to the latest major version."
                     ),
                     color=ipy.MaterialColors.YELLOW,
                 )
