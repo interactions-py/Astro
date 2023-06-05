@@ -8,7 +8,7 @@ from interactions.ext import prefixed_commands as prefixed
 import common.utils as utils
 from common.const import *
 
-TOKEN_REG = re.compile(r"[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27,}")
+TOKEN_REG = re.compile(r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}")
 
 
 async def mod_check_wrapper(ctx: ipy.BaseContext) -> bool:
