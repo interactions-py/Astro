@@ -30,10 +30,15 @@ class Tags(ipy.Extension):
         ctx: ipy.InteractionContext,
         name: str = tansy.Option("The name of the tag to view.", autocomplete=True),
     ):
-        if tag := await Tag.find_one(Tag.name == name):
-            await ctx.send(tag.description)
-        else:
+        if not (tag := await Tag.find_one(Tag.name == name)):
             raise ipy.errors.BadArgument(f"Tag {name} does not exist.")
+
+        if len(tag.description) > 2048:
+            await ctx.send(
+                embed=ipy.Embed(title=tag.name, description=tag.description, color=ASTRO_COLOR)
+            )
+        else:
+            await ctx.send(tag.description, allowed_mentions=ipy.AllowedMentions.none())
 
     @tag.subcommand(
         sub_cmd_name="info",
@@ -129,7 +134,7 @@ class Tags(ipy.Extension):
                 placeholder="(Note: you can also put codeblocks in here!)",
                 custom_id="tag_description",
                 min_length=1,
-                max_length=2000,
+                max_length=4096,
             ),
             title="Create new tag",
             custom_id="astro_new_tag",
@@ -167,7 +172,7 @@ class Tags(ipy.Extension):
                 placeholder="(Note: you can also put codeblocks in here!)",
                 custom_id="tag_description",
                 min_length=1,
-                max_length=2000,
+                max_length=4096,
             ),
             title="Edit tag",
             custom_id=f"astro_edit_tag_{str(tag.id)}",
