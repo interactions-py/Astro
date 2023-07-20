@@ -18,13 +18,11 @@ class HelpChannel(ipy.Extension):
         self.client = bot
         self.session: aiohttp.ClientSession = bot.session
         self.help_channel: ipy.GuildForum = None  # type: ignore
-        self.help_v4: ipy.GuildForum = None  # type: ignore
         asyncio.create_task(self.fill_help_channel())
 
     async def fill_help_channel(self):
         await self.bot.wait_until_ready()
         self.help_channel = self.bot.get_channel(METADATA["channels"]["help"])  # type: ignore
-        self.help_v4 = self.bot.get_channel(METADATA["channels"]["help-v4"])  # type: ignore
 
     @ipy.context_menu("Create Help Thread", context_type=ipy.CommandType.MESSAGE)
     async def create_thread_context_menu(self, ctx: ipy.ContextMenuContext):
