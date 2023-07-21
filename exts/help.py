@@ -18,13 +18,11 @@ class HelpChannel(ipy.Extension):
         self.client = bot
         self.session: aiohttp.ClientSession = bot.session
         self.help_channel: ipy.GuildForum = None  # type: ignore
-        self.help_v4: ipy.GuildForum = None  # type: ignore
         asyncio.create_task(self.fill_help_channel())
 
     async def fill_help_channel(self):
         await self.bot.wait_until_ready()
         self.help_channel = self.bot.get_channel(METADATA["channels"]["help"])  # type: ignore
-        self.help_v4 = self.bot.get_channel(METADATA["channels"]["help-v4"])  # type: ignore
 
     @ipy.context_menu("Create Help Thread", context_type=ipy.CommandType.MESSAGE)
     async def create_thread_context_menu(self, ctx: ipy.ContextMenuContext):
@@ -191,7 +189,6 @@ class HelpChannel(ipy.Extension):
         thread = event.thread
         if not thread.parent_id or int(thread.parent_id) not in {
             METADATA["channels"]["help"],
-            METADATA["channels"]["help-v4"],
         }:
             return
 
@@ -221,20 +218,6 @@ class HelpChannel(ipy.Extension):
                 "Hey! Once your issue is solved, press the button below to close this thread!",
                 components=[[select], [close_button]],
             )
-
-        if int(thread.parent_id) == METADATA["channels"]["help-v4"]:
-            deprecated_message = await thread.send(
-                embed=ipy.Embed(
-                    title="Warning",
-                    description=(
-                        "This version is deprecated, and while we will be helping you with this"
-                        " issue, we may not help with this version in the future and heavily"
-                        " recommend you upgrade to the latest major version."
-                    ),
-                    color=ipy.MaterialColors.YELLOW,
-                )
-            )
-            await deprecated_message.pin()
 
         await message.pin()
 
