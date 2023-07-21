@@ -189,7 +189,6 @@ class HelpChannel(ipy.Extension):
         thread = event.thread
         if not thread.parent_id or int(thread.parent_id) not in {
             METADATA["channels"]["help"],
-            METADATA["channels"]["help-v4"],
         }:
             return
 
@@ -219,20 +218,6 @@ class HelpChannel(ipy.Extension):
                 "Hey! Once your issue is solved, press the button below to close this thread!",
                 components=[[select], [close_button]],
             )
-
-        if int(thread.parent_id) == METADATA["channels"]["help-v4"]:
-            deprecated_message = await thread.send(
-                embed=ipy.Embed(
-                    title="Warning",
-                    description=(
-                        "This version is deprecated, and while we will be helping you with this"
-                        " issue, we may not help with this version in the future and heavily"
-                        " recommend you upgrade to the latest major version."
-                    ),
-                    color=ipy.MaterialColors.YELLOW,
-                )
-            )
-            await deprecated_message.pin()
 
         await message.pin()
 
