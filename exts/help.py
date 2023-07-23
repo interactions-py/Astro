@@ -139,6 +139,7 @@ class HelpChannel(ipy.Extension):
                 auto_archive_duration=1440,  # type: ignore
                 files=files,  # type: ignore
                 reason="Auto help thread creation",
+                allowed_mentions=ipy.AllowedMentions.none(),
             )
 
             await post_thread.add_member(ctx.author)
