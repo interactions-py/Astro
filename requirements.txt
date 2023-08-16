@@ -1,6 +1,7 @@
 beanie
 discord-py-interactions
 githubkit
+lxml
 motor[srv]
 python-dotenv==0.20.0
 pyyaml
