@@ -3,27 +3,26 @@ import asyncio
 import aiohttp
 import interactions as ipy
 import lxml.etree as etree
+import tansy
 
 
-def url_encode(url):
+def url_encode(url: str):
     """Partial URL encoder, because we don't want to encode slashes"""
     return url.replace(" ", "%20").lower()
 
 
-def url_to_page_name(url):
+def url_to_page_name(url: str):
     """Turns the URL of a guide into a human readable name"""
     url = url.strip("/").split("/")[-1]  # Get the last part of the url
-    url = url.replace("%20", " ")
-    return url
+    return url.replace("%20", " ")
 
 
-def trim_base(url):
+def trim_base(url: str):
     """Removes the base URL, and replaces %20 with spaces"""
     url = url.replace(
         "https://interactions-py.github.io/interactions.py/API%20Reference/API%20Reference/", ""
     )
-    url = url.replace("%20", " ")
-    return url
+    return url.replace("%20", " ")
 
 
 class DocsCommands(ipy.Extension):
@@ -47,25 +46,19 @@ class DocsCommands(ipy.Extension):
         self.guides = [p for p in sitemap if "/Guides/" in p]
         self.api_ref = [p for p in sitemap if "/API%20Reference/" in p]
 
-    @ipy.slash_command(name="docs")
-    async def docs(self, ctx: ipy.SlashContext):
-        ...
+    docs = tansy.SlashCommand(name="docs")
 
-    @docs.subcommand("guide")
-    @ipy.slash_option(
-        "query",
-        description="The page to search for",
-        opt_type=ipy.OptionType.STRING,
-        required=True,
-        autocomplete=True,
-    )
-    async def guide(self, ctx: ipy.SlashContext, query: str):
-        """Pull up a guide in the i.py docs"""
+    @docs.subcommand("guide", sub_cmd_description="Pull up a guide in the interactions.py docs.")
+    async def guide(
+        self,
+        ctx: ipy.SlashContext,
+        query: str = tansy.Option("The page to search for.", autocomplete=True),
+    ):
         for page in self.guides:
             if url_encode(query) in url_encode(page):
-                await ctx.respond(page)
+                await ctx.send(page)
                 return
-        return "Not Found"
+        raise ipy.errors.BadArgument("Guide not found.")
 
     @guide.autocomplete("query")
     async def guide_autocomplete(self, ctx: ipy.AutocompleteContext):
@@ -77,21 +70,19 @@ class DocsCommands(ipy.Extension):
             ]
         )
 
-    @docs.subcommand("api")
-    @ipy.slash_option(
-        "query",
-        description="The page to search for",
-        opt_type=ipy.OptionType.STRING,
-        required=True,
-        autocomplete=True,
+    @docs.subcommand(
+        "api", sub_cmd_description="Pull up an API Reference in the interactions.py docs."
     )
-    async def api(self, ctx: ipy.SlashContext, query: str):
-        """Pull up an API Reference in the i.py docs"""
+    async def api(
+        self,
+        ctx: ipy.SlashContext,
+        query: str = tansy.Option("The page to search for.", autocomplete=True),
+    ):
         for page in self.api_ref:
             if url_encode(query) in url_encode(page):
-                await ctx.respond(page)
+                await ctx.send(page)
                 return
-        return "Not Found"
+        raise ipy.errors.BadArgument("API Reference not found.")
 
     @api.autocomplete("query")
     async def api_autocomplete(self, ctx: ipy.AutocompleteContext):
