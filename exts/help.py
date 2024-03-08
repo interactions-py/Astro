@@ -28,8 +28,6 @@ class HelpChannel(ipy.Extension):
     async def create_thread_context_menu(self, ctx: ipy.ContextMenuContext):
         message: ipy.Message = ctx.target  # type: ignore
 
-        ctx.send
-
         thread_name = f"[AUTO] {message.content[:40]}"
         if len(message.content) > 40:
             thread_name += "..."
