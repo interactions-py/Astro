@@ -13,7 +13,7 @@ class UserExt(ipy.Extension):
 
     async def fill_action_logs(self):
         await self.bot.wait_until_ready()
-        self.action_logs = self.bot.get_channel(METADATA["channels"]["action-logs"])  # type: ignore
+        self.action_logs = self.bot.get_channel(METADATA["channels"]["logs"])  # type: ignore
 
     @ipy.context_menu("Get User Information", context_type=ipy.CommandType.USER)
     async def get_user_information(self, ctx: ipy.InteractionContext):
