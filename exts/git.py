@@ -8,7 +8,7 @@ import githubkit
 import interactions as ipy
 import unidiff
 from githubkit.exception import RequestFailed
-from githubkit.rest.models import Issue
+from githubkit.rest import Issue
 from interactions.ext import paginators
 from interactions.ext import prefixed_commands as prefixed
 
