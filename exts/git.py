@@ -83,6 +83,7 @@ class Git(ipy.Extension):
         content = content.replace("### Pull-Request specification", "")
         content = content.replace("[ ]", "❌")
         content = content.replace("[x]", "✅")
+        content = content.replace("[X]", "✅")
         content = CODEBLOCK_REGEX.sub(string=content, repl="`[CODEBLOCK]`")
         content = IMAGE_REGEX.sub(string=content, repl="`[IMAGE]`")
         content = COMMENT_REGEX.sub(string=content, repl="")
@@ -97,18 +98,20 @@ class Git(ipy.Extension):
         return ipy.Color(0xC40000)
 
     def create_timestamps(self, issue: Issue):
-        timestamps = [f"• Created: <t:{round(issue.created_at.timestamp())}:R>"]
+        timestamps = [f"• Created <t:{round(issue.created_at.timestamp())}:R>"]
 
         if issue.state == "closed":
             if issue.pull_request and issue.pull_request.merged_at:
                 timestamps.append(
-                    f"• Merged: <t:{round(issue.pull_request.merged_at.timestamp())}:R>"
-                    f" by {issue.closed_by.login}"
+                    f"• Merged <t:{round(issue.pull_request.merged_at.timestamp())}:R>"
+                    f" by [{issue.closed_by.login}](https://github.com/{issue.closed_by.login})"
                 )
             else:
+                # 18: we should check if issues are closed as under wontfix or completed status.
+                # (see github api)
                 timestamps.append(
-                    f"• Closed: <t:{round(issue.closed_at.timestamp())}:R> by"
-                    f" {issue.closed_by.login}"
+                    f"• Closed <t:{round(issue.closed_at.timestamp())}:R> by"
+                    f" [{issue.closed_by.login}](https://github.com/{issue.closed_by.login})"
                 )
 
         return "\n".join(timestamps)
@@ -149,7 +152,7 @@ class Git(ipy.Extension):
             url=issue.html_url,
         )
         if issue.user:
-            embed.set_footer(text=issue.user.login, icon_url=issue.user.avatar_url)
+            embed.set_footer(text=issue.user.login, icon_url=issue.user.avatar_url, )
 
         body = self.clean_content(issue.body or "No description")
         line_split = body.split("\n")  # purposely using \n for consistency
@@ -171,6 +174,16 @@ class Git(ipy.Extension):
             # ugly hack
             if line.startswith("## Pull Request Type"):
                 check_types = True
+
+            # 18: we look for keywords, like "closes" or "fixes" to look for a tagged issue.
+            # this code assumes ONLY issues are tagged, otherwise a pr WILL be mistaken.
+            # commenting this out for further revision, sorry!
+            # if line.lower() in {"closes", "fixes"}:
+            #     tmp = line
+            #     tmp = tmp.strip("#").split(" ")
+            #     for chars in tmp:
+            #         if chars.isdigit():
+            #             chars = chars.replace(chars, f"https://github.com/issues/{chars}")
 
             # once we're ready to check the checkboxes and know we're searching for types in the first
             # place, we go in here
